@@ -1,0 +1,103 @@
+<UserControl x:Class="SemiTool.Hmi.Wpf.Views.ManualControlView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel IsEnabled="{Binding IsManualEnabled}">
+            <UniformGrid Columns="3">
+                <GroupBox Header="Servo / Home">
+                    <UniformGrid Columns="2">
+                        <Button Content="Servo ON" Command="{Binding ServoOnCommand}" />
+                        <Button Content="Servo OFF" Command="{Binding ServoOffCommand}" />
+                        <Button Content="Home Z" Command="{Binding HomeZCommand}" />
+                        <Button Content="Home Theta" Command="{Binding HomeThetaCommand}" />
+                    </UniformGrid>
+                </GroupBox>
+
+                <GroupBox Header="Absolute Move">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Z" VerticalAlignment="Center" Margin="4" />
+                        <TextBox Grid.Column="1" Text="{Binding TargetZ, UpdateSourceTrigger=PropertyChanged}" Margin="4" />
+                        <Button Grid.Column="2" Content="Move" Command="{Binding MoveZCommand}" />
+                        <TextBlock Grid.Row="1" Text="Theta" VerticalAlignment="Center" Margin="4" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding TargetTheta, UpdateSourceTrigger=PropertyChanged}" Margin="4" />
+                        <Button Grid.Row="1" Grid.Column="2" Content="Move" Command="{Binding MoveThetaCommand}" />
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Pose Move">
+                    <UniformGrid Columns="2">
+                        <Button Content="FOUP A" Command="{Binding MovePoseCommand}" CommandParameter="FoupA" />
+                        <Button Content="FOUP B" Command="{Binding MovePoseCommand}" CommandParameter="FoupB" />
+                        <Button Content="Chamber A" Command="{Binding MovePoseCommand}" CommandParameter="ChamberA" />
+                        <Button Content="Chamber B" Command="{Binding MovePoseCommand}" CommandParameter="ChamberB" />
+                        <Button Content="Chamber C" Command="{Binding MovePoseCommand}" CommandParameter="ChamberC" />
+                        <Button Content="Home" Command="{Binding MovePoseCommand}" CommandParameter="Home" />
+                    </UniformGrid>
+                </GroupBox>
+            </UniformGrid>
+
+            <UniformGrid Columns="3">
+                <GroupBox Header="Cylinder / Vacuum">
+                    <UniformGrid Columns="2">
+                        <Button Content="Cylinder Forward" Command="{Binding CylinderForwardCommand}" />
+                        <Button Content="Cylinder Backward" Command="{Binding CylinderBackwardCommand}" />
+                        <Button Content="Vacuum Suction" Command="{Binding VacuumSuctionCommand}" />
+                        <Button Content="Vacuum Exhaust" Command="{Binding VacuumExhaustCommand}" />
+                    </UniformGrid>
+                </GroupBox>
+
+                <GroupBox Header="Tower Lamp">
+                    <UniformGrid Columns="3">
+                        <Button Content="Red ON" Command="{Binding SetOutputCommand}" CommandParameter="TowerRed|True" />
+                        <Button Content="Yellow ON" Command="{Binding SetOutputCommand}" CommandParameter="TowerYellow|True" />
+                        <Button Content="Green ON" Command="{Binding SetOutputCommand}" CommandParameter="TowerGreen|True" />
+                        <Button Content="Red OFF" Command="{Binding SetOutputCommand}" CommandParameter="TowerRed|False" />
+                        <Button Content="Yellow OFF" Command="{Binding SetOutputCommand}" CommandParameter="TowerYellow|False" />
+                        <Button Content="Green OFF" Command="{Binding SetOutputCommand}" CommandParameter="TowerGreen|False" />
+                    </UniformGrid>
+                </GroupBox>
+
+                <GroupBox Header="Chamber Lamp">
+                    <UniformGrid Columns="3">
+                        <Button Content="A ON" Command="{Binding SetOutputCommand}" CommandParameter="ChamberALamp|True" />
+                        <Button Content="B ON" Command="{Binding SetOutputCommand}" CommandParameter="ChamberBLamp|True" />
+                        <Button Content="C ON" Command="{Binding SetOutputCommand}" CommandParameter="ChamberCLamp|True" />
+                        <Button Content="A OFF" Command="{Binding SetOutputCommand}" CommandParameter="ChamberALamp|False" />
+                        <Button Content="B OFF" Command="{Binding SetOutputCommand}" CommandParameter="ChamberBLamp|False" />
+                        <Button Content="C OFF" Command="{Binding SetOutputCommand}" CommandParameter="ChamberCLamp|False" />
+                    </UniformGrid>
+                </GroupBox>
+            </UniformGrid>
+
+            <UniformGrid Columns="3">
+                <GroupBox Header="Chamber A Door">
+                    <UniformGrid Columns="2">
+                        <Button Content="Open" Command="{Binding DoorCommand}" CommandParameter="A|Open" />
+                        <Button Content="Close" Command="{Binding DoorCommand}" CommandParameter="A|Close" />
+                    </UniformGrid>
+                </GroupBox>
+                <GroupBox Header="Chamber B Door">
+                    <UniformGrid Columns="2">
+                        <Button Content="Open" Command="{Binding DoorCommand}" CommandParameter="B|Open" />
+                        <Button Content="Close" Command="{Binding DoorCommand}" CommandParameter="B|Close" />
+                    </UniformGrid>
+                </GroupBox>
+                <GroupBox Header="Chamber C Door">
+                    <UniformGrid Columns="2">
+                        <Button Content="Open" Command="{Binding DoorCommand}" CommandParameter="C|Open" />
+                        <Button Content="Close" Command="{Binding DoorCommand}" CommandParameter="C|Close" />
+                    </UniformGrid>
+                </GroupBox>
+            </UniformGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

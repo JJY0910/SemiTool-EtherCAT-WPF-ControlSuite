@@ -1,0 +1,65 @@
+<UserControl x:Class="SemiTool.Hmi.Wpf.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <UniformGrid Grid.Row="0" Columns="4">
+            <GroupBox Header="Connection">
+                <StackPanel>
+                    <TextBlock Text="{Binding ConnectionStatus}" FontSize="22" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Mode}" />
+                    <TextBlock Text="{Binding AxisSummary}" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Machine">
+                <StackPanel>
+                    <TextBlock Text="{Binding MachineState}" FontSize="22" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding CurrentStep}" />
+                    <TextBlock Text="{Binding SelectedRecipe}" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Transfer">
+                <TextBlock Text="{Binding WaferTransferSummary}" TextWrapping="Wrap" FontSize="16" />
+            </GroupBox>
+            <GroupBox Header="Alarm">
+                <TextBlock Text="{Binding AlarmSummary}" TextWrapping="Wrap" FontSize="16" />
+            </GroupBox>
+        </UniformGrid>
+
+        <Grid Grid.Row="1" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Header="Auto Controls">
+                <UniformGrid Columns="3" Rows="3">
+                    <Button Content="Connect" Command="{Binding ConnectCommand}" />
+                    <Button Content="Disconnect" Command="{Binding DisconnectCommand}" />
+                    <Button Content="Reset" Command="{Binding ResetCommand}" />
+                    <Button Content="Start" Command="{Binding StartCommand}" />
+                    <Button Content="Pause" Command="{Binding PauseCommand}" />
+                    <Button Content="Stop" Command="{Binding StopCommand}" />
+                    <Button Grid.ColumnSpan="3"
+                            Content="EMERGENCY STOP"
+                            Command="{Binding EmergencyStopCommand}"
+                            Background="{StaticResource DangerBrush}"
+                            Foreground="White"
+                            FontWeight="Bold" />
+                </UniformGrid>
+            </GroupBox>
+
+            <GroupBox Grid.Column="1" Header="Operator Gate">
+                <StackPanel>
+                    <TextBlock Text="Real Hardware requires Settings unlock and manual Connect." TextWrapping="Wrap" />
+                    <TextBlock Text="No output or motion is commanded on startup." TextWrapping="Wrap" Margin="0,8,0,0" />
+                    <TextBlock Text="Auto Start requires connection, Z home, and Theta home." TextWrapping="Wrap" Margin="0,8,0,0" />
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</UserControl>

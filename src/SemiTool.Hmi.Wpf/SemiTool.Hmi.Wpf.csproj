@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SemiTool.Application\SemiTool.Application.csproj" />
+    <ProjectReference Include="..\SemiTool.Domain\SemiTool.Domain.csproj" />
+    <ProjectReference Include="..\SemiTool.Hardware\SemiTool.Hardware.csproj" />
+    <ProjectReference Include="..\SemiTool.Infrastructure\SemiTool.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\config\EquipmentProfile.finaltest.json" Link="config\EquipmentProfile.finaltest.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

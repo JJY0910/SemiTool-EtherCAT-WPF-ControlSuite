@@ -1,0 +1,34 @@
+# Build outputs
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.cache
+*.log
+*.pdb
+*.exe
+*.dll
+!libs/README.md
+
+# Local runtime/config outputs
+logs/
+config/appsettings.local.json
+
+# Vendor and machine-local dependencies
+libs/*
+!libs/README.md
+
+# Migration source inputs are reference-only and must not be committed publicly.
+migration_inputs/
+
+# IDE/editor noise
+.idea/
+.vscode/
+*.tmp
+*.bak
+
+# Test artifacts
+TestResults/
+coverage/
+*.trx

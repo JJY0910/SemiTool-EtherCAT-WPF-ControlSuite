@@ -1,0 +1,38 @@
+<UserControl x:Class="SemiTool.Hmi.Wpf.Views.IoMonitorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="Digital Outputs">
+            <DataGrid ItemsSource="{Binding Outputs}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="DO" Binding="{Binding Channel}" Width="60" />
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                    <DataGridCheckBoxColumn Header="State" Binding="{Binding IsOn}" Width="90" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+
+        <GroupBox Grid.Column="1" Header="Digital Inputs">
+            <DataGrid ItemsSource="{Binding Inputs}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="DI" Binding="{Binding Channel}" Width="60" />
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                    <DataGridCheckBoxColumn Header="State" Binding="{Binding IsOn}" Width="90" />
+                    <DataGridTemplateColumn Header="Simulator" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Toggle"
+                                        Command="{Binding ToggleCommand}"
+                                        IsEnabled="{Binding CanToggle}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+    </Grid>
+</UserControl>

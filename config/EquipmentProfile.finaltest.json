@@ -1,0 +1,202 @@
+{
+  "profileName": "FinalTest_2504110108_ActualEtherCATProfile",
+  "sourceProject": "2504110108_FinalTest/CMPClusterSim/WindowsFormsApp1",
+  "hardware": {
+    "adapter": "IEG3268_Dll.IEG3268",
+    "connectionMethod": "CIFX_50RE_Connect",
+    "notes": "Original project directly calls IEG3268_Dll for EtherCAT I/O and motion. Keep the hardware wrapper isolated."
+  },
+  "communication": {
+    "readDataPeriodMs": 300,
+    "statusPushIntervalMs": 300
+  },
+  "motion": {
+    "axis1Name": "Z",
+    "axis2Name": "Theta",
+    "velocity": 1000000,
+    "maxVelocity": 1000000,
+    "acceleration": 1000000,
+    "deceleration": 100000000
+  },
+  "timing": {
+    "motionWaitMs": 900,
+    "extraIntervalMs": 1000,
+    "doorWaitMs": 2000,
+    "cylinderWaitTimeoutMs": 1000,
+    "vacuumSuctionMs": 1200,
+    "vacuumExhaustMs": 1200,
+    "autoRealTickMs": 1000,
+    "autoSimTickMs": 3000
+  },
+  "io": {
+    "digitalOutputs": {
+      "0": "TowerRed",
+      "1": "TowerYellow",
+      "2": "TowerGreen",
+      "3": "ChamberALamp",
+      "4": "ChamberADoorClose",
+      "5": "ChamberADoorOpen",
+      "6": "ChamberBLamp",
+      "7": "ChamberBDoorClose",
+      "8": "ChamberBDoorOpen",
+      "9": "ChamberCLamp",
+      "10": "ChamberCDoorClose",
+      "11": "ChamberCDoorOpen",
+      "12": "CylinderForward",
+      "13": "CylinderBackward",
+      "14": "VacuumSuction",
+      "15": "VacuumExhaust"
+    },
+    "digitalInputs": {
+      "0": "ChamberADoorOpenSensor",
+      "1": "ChamberADoorCloseSensor",
+      "2": "ChamberBDoorOpenSensor",
+      "3": "ChamberBDoorCloseSensor",
+      "4": "ChamberCDoorOpenSensor",
+      "5": "ChamberCDoorCloseSensor",
+      "12": "CylinderRearSensor",
+      "13": "CylinderFrontSensor"
+    }
+  },
+  "poses": {
+    "Home": {
+      "zSafe": 0,
+      "zWork": 0,
+      "theta": 0
+    },
+    "FoupA": {
+      "zSafe": 3018457,
+      "zWork": 2818463,
+      "theta": 14140
+    },
+    "FoupB": {
+      "zSafe": 3018457,
+      "zWork": 2818463,
+      "theta": -394293
+    },
+    "ChamberA": {
+      "zSafe": 1156931,
+      "zWork": 1153931,
+      "theta": -59064
+    },
+    "ChamberB": {
+      "zSafe": 1156931,
+      "zWork": 1153931,
+      "theta": -190823
+    },
+    "ChamberC": {
+      "zSafe": 1156931,
+      "zWork": 1153931,
+      "theta": -322000
+    }
+  },
+  "foupSlots": {
+    "Slot1": {
+      "zSafe": 302380,
+      "zWork": 102379
+    },
+    "Slot2": {
+      "zSafe": 982378,
+      "zWork": 782378
+    },
+    "Slot3": {
+      "zSafe": 1627604,
+      "zWork": 1432388
+    },
+    "Slot4": {
+      "zSafe": 2332102,
+      "zWork": 2119399
+    },
+    "Slot5": {
+      "zSafe": 3018457,
+      "zWork": 2818463
+    }
+  },
+  "recipes": {
+    "A": {
+      "recipeName": "PreClean_Default",
+      "steps": [
+        {
+          "stepName": "Pre DI Rinse",
+          "durationSec": 20,
+          "pressure": 0.8,
+          "slurryFlow": 0
+        },
+        {
+          "stepName": "Chem Clean",
+          "durationSec": 30,
+          "pressure": 1.0,
+          "slurryFlow": 0
+        },
+        {
+          "stepName": "DI Rinse",
+          "durationSec": 20,
+          "pressure": 0.7,
+          "slurryFlow": 0
+        }
+      ]
+    },
+    "B": {
+      "recipeName": "CMP_Main",
+      "steps": [
+        {
+          "stepName": "Pad Conditioning",
+          "durationSec": 15,
+          "pressure": 2.0,
+          "slurryFlow": 50
+        },
+        {
+          "stepName": "Bulk Polish",
+          "durationSec": 45,
+          "pressure": 3.0,
+          "slurryFlow": 80
+        },
+        {
+          "stepName": "Over-Polish",
+          "durationSec": 20,
+          "pressure": 2.5,
+          "slurryFlow": 60
+        }
+      ]
+    },
+    "C": {
+      "recipeName": "PostClean_Dry",
+      "steps": [
+        {
+          "stepName": "Brush Clean",
+          "durationSec": 25,
+          "pressure": 1.2,
+          "slurryFlow": 0
+        },
+        {
+          "stepName": "Rinse",
+          "durationSec": 20,
+          "pressure": 0.8,
+          "slurryFlow": 0
+        },
+        {
+          "stepName": "Spin Dry",
+          "durationSec": 30,
+          "pressure": 0.5,
+          "slurryFlow": 0
+        }
+      ]
+    }
+  },
+  "uiGeometry": {
+    "robotPivot": {
+      "x": 420,
+      "y": 310
+    },
+    "bladeRadiusRetracted": 100.0,
+    "bladeRadiusExtended": 150.0,
+    "angleMap": {
+      "Center": 270.0,
+      "FoupA": 225.0,
+      "FoupB": 315.0,
+      "ChamberA": 180.0,
+      "ChamberB": 90.0,
+      "ChamberC": 0.0
+    }
+  }
+}

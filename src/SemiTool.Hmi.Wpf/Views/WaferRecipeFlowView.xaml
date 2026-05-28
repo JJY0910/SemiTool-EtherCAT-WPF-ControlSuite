@@ -1,0 +1,55 @@
+<UserControl x:Class="SemiTool.Hmi.Wpf.Views.WaferRecipeFlowView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <GroupBox Header="Recipe Selection">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Recipe" VerticalAlignment="Center" Margin="4" />
+                <ComboBox Width="220"
+                          ItemsSource="{Binding RecipeKeys}"
+                          SelectedItem="{Binding SelectedRecipeKey}" />
+            </StackPanel>
+        </GroupBox>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1.2*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <GroupBox Header="FOUP A">
+                <DataGrid ItemsSource="{Binding FoupA}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" Width="60" />
+                        <DataGridTextColumn Header="Wafer" Binding="{Binding WaferId}" Width="*" />
+                        <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+            <GroupBox Grid.Column="1" Header="Process Modules">
+                <DataGrid ItemsSource="{Binding Chambers}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="PM" Binding="{Binding Chamber}" Width="80" />
+                        <DataGridTextColumn Header="Wafer" Binding="{Binding WaferId}" Width="*" />
+                        <DataGridTextColumn Header="Recipe" Binding="{Binding Recipe}" Width="150" />
+                        <DataGridTextColumn Header="State" Binding="{Binding State}" Width="110" />
+                        <DataGridTextColumn Header="Remain" Binding="{Binding RemainingSeconds}" Width="90" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+            <GroupBox Grid.Column="2" Header="FOUP B">
+                <DataGrid ItemsSource="{Binding FoupB}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" Width="60" />
+                        <DataGridTextColumn Header="Wafer" Binding="{Binding WaferId}" Width="*" />
+                        <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</UserControl>

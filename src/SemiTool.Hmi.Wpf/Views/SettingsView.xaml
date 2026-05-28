@@ -1,0 +1,51 @@
+<UserControl x:Class="SemiTool.Hmi.Wpf.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="Runtime Settings">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Mode" Margin="4" VerticalAlignment="Center" />
+                <ComboBox Grid.Column="1" Margin="4" ItemsSource="{Binding Modes}" SelectedItem="{Binding SelectedMode}" />
+
+                <TextBlock Grid.Row="1" Text="Vendor DLL Path" Margin="4" VerticalAlignment="Center" />
+                <TextBox Grid.Row="1" Grid.Column="1" Margin="4" Text="{Binding VendorDllPath, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Grid.Row="2" Text="Profile File Path" Margin="4" VerticalAlignment="Center" />
+                <TextBox Grid.Row="2" Grid.Column="1" Margin="4" Text="{Binding ProfileFilePath, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Grid.Row="3" Text="Polling Interval ms" Margin="4" VerticalAlignment="Center" />
+                <TextBox Grid.Row="3" Grid.Column="1" Margin="4" Text="{Binding PollingIntervalMs, UpdateSourceTrigger=PropertyChanged}" />
+
+                <CheckBox Grid.Row="4" Grid.ColumnSpan="2" Margin="4" Content="Require door sensor interlock" IsChecked="{Binding RequireDoorSensorInterlock}" />
+                <CheckBox Grid.Row="5" Grid.ColumnSpan="2" Margin="4" Content="Require cylinder sensor interlock" IsChecked="{Binding RequireCylinderSensorInterlock}" />
+                <CheckBox Grid.Row="6" Grid.ColumnSpan="2" Margin="4" Content="Unlock Real Hardware control for explicit manual connection" IsChecked="{Binding HardwareUnlocked}" />
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Column="1" Header="Settings Commands">
+            <StackPanel>
+                <Button Content="Apply" Command="{Binding ApplyCommand}" />
+                <Button Content="Save" Command="{Binding SaveCommand}" />
+                <Button Content="Load" Command="{Binding LoadCommand}" />
+                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="8" />
+            </StackPanel>
+        </GroupBox>
+    </Grid>
+</UserControl>

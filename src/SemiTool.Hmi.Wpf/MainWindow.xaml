@@ -1,0 +1,48 @@
+<Window x:Class="SemiTool.Hmi.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:SemiTool.Hmi.Wpf.Views"
+        Title="SemiTool EtherCAT WPF Control Suite"
+        Height="860"
+        Width="1280"
+        MinHeight="720"
+        MinWidth="1080">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="#253238" Padding="16,10">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left"
+                           Text="SemiTool EtherCAT WPF Control Suite"
+                           Foreground="White"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+                <TextBlock DockPanel.Dock="Right"
+                           Text="Default startup: Simulator / Manual Connect"
+                           Foreground="#D9E2EC" />
+            </DockPanel>
+        </Border>
+
+        <TabControl Margin="10">
+            <TabItem Header="Dashboard">
+                <views:DashboardView DataContext="{Binding Dashboard}" />
+            </TabItem>
+            <TabItem Header="Manual Control">
+                <views:ManualControlView DataContext="{Binding Manual}" />
+            </TabItem>
+            <TabItem Header="I/O Monitor">
+                <views:IoMonitorView DataContext="{Binding IoMonitor}" />
+            </TabItem>
+            <TabItem Header="Auto Sequence">
+                <views:AutoSequenceView DataContext="{Binding AutoSequence}" />
+            </TabItem>
+            <TabItem Header="Wafer / Recipe Flow">
+                <views:WaferRecipeFlowView DataContext="{Binding WaferRecipeFlow}" />
+            </TabItem>
+            <TabItem Header="Alarm &amp; Event Log">
+                <views:AlarmEventLogView DataContext="{Binding AlarmEventLog}" />
+            </TabItem>
+            <TabItem Header="Settings">
+                <views:SettingsView DataContext="{Binding Settings}" />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
