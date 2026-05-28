@@ -1,8 +1,12 @@
 # SemiTool-EtherCAT-WPF-ControlSuite
 
-Clean WPF/MVVM semiconductor equipment-control HMI and sequence platform rebuilt from a legacy WinForms EtherCAT project that successfully controlled real hardware.
+## Summary
+
+SemiTool-EtherCAT-WPF-ControlSuite is a clean WPF/MVVM semiconductor equipment-control HMI and sequence platform rebuilt from a legacy WinForms EtherCAT project that successfully controlled real hardware.
 
 This is not a WinForms screen conversion. The new solution separates HMI, application sequence logic, hardware abstraction, simulator behavior, real EtherCAT adapter loading, profile-based equipment values, alarms, interlocks, logs, recipes, and wafer transfer flow.
+
+The original WinForms project controlled real EtherCAT hardware. This new WPF project preserves the real equipment values and is prepared for supervised real-hardware verification, but it does not claim that the new WPF implementation has already been verified on the physical machine.
 
 ## Portfolio Highlights
 
@@ -19,9 +23,9 @@ This is not a WinForms screen conversion. The new solution separates HMI, applic
 
 - Build: passed locally
 - Tests: 16 passed locally
-- GitHub Actions: enabled after this change
+- GitHub Actions: enabled for Windows .NET build/test
 - Simulator mode: ready for developer PC verification
-- Real hardware mode: requires local `IEG3268_Dll.dll` and school equipment verification
+- Real hardware mode: prepared for verification with local `IEG3268_Dll.dll` and school equipment
 
 ## Demo Plan
 
