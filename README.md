@@ -4,6 +4,39 @@ Clean WPF/MVVM semiconductor equipment-control HMI and sequence platform rebuilt
 
 This is not a WinForms screen conversion. The new solution separates HMI, application sequence logic, hardware abstraction, simulator behavior, real EtherCAT adapter loading, profile-based equipment values, alarms, interlocks, logs, recipes, and wafer transfer flow.
 
+## Portfolio Highlights
+
+- Real EtherCAT equipment-control experience base
+- WPF/MVVM redesign instead of one-to-one WinForms screen conversion
+- Simulator-first safe startup with no auto-connect, no auto-run, no auto-motion, and all outputs off
+- Real hardware adapter isolated behind `IEthercatController`
+- Preserved DO/DI, robot pose, FOUP slot, and timing values in `EquipmentProfile`
+- Async sequence logic with cancellation, timeout, and alarm handling
+- Unit tests for preserved values, simulator behavior, safety blocking, timeout alarms, and scheduler priority
+- Public repo excludes vendor DLLs, generated binaries, and legacy binary outputs
+
+## Current Verification Status
+
+- Build: passed locally
+- Tests: 16 passed locally
+- GitHub Actions: enabled after this change
+- Simulator mode: ready for developer PC verification
+- Real hardware mode: requires local `IEG3268_Dll.dll` and school equipment verification
+
+## Demo Plan
+
+- Simulator demo GIF: `docs/images/simulator-demo.gif`
+- Real hardware short video plan after supervised commissioning
+- I/O monitor screenshot: `docs/images/io-monitor.png`
+- Auto sequence screenshot: `docs/images/auto-sequence.png`
+- Alarm/reset screenshot: `docs/images/alarm-log.png`
+
+## TODO: Actual Equipment Verification
+
+- TODO(real-hardware): Run the commissioning checklist on the school equipment with E-stop supervision.
+- TODO(real-hardware): Capture an approved short real hardware verification video.
+- TODO(real-hardware): Add approved screenshots/GIFs to `docs/images/` after simulator and hardware checks.
+
 ## Why This Is Real Equipment-Control Related
 
 The preserved I/O map, Z/Theta robot poses, FOUP slot positions, timing constants, and transfer priority came from the original EtherCAT equipment-control project. The new project keeps those values in `config/EquipmentProfile.finaltest.json` and protects them with unit tests.
