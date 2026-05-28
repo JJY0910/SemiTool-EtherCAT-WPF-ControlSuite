@@ -142,5 +142,5 @@ My previous project controlled real EtherCAT equipment from a WinForms applicati
 Korean:
 
 ```text
-기존에는 WinForms 기반 프로그램으로 실제 EtherCAT 장비를 제어한 경험이 있습니다. 이 프로젝트에서는 그 경험을 바탕으로 WPF/MVVM 구조로 새롭게 재설계했습니다. 실제 장비에서 사용했던 DO/DI 맵, Z/Theta 포즈, FOUP 슬롯 위치, 타이밍 값, 이송 우선순위를 EquipmentProfile JSON으로 분리했고 단위 테스트로 보존값을 검증합니다. UI는 ViewModel을 통해 Application Service를 호출하고, 실제 하드웨어 접근은 IEthercatController 인터페이스 뒤로 격리했습니다. 하드웨어가 없는 PC에서는 Simulator 모드로 동작하고, 실제 장비 모드는 IEG3268 어댑터에서 vendor DLL을 런타임에 로드하도록 분리했습니다.
+기존 프로젝트에서는 WinForms 기반 프로그램으로 실제 EtherCAT 장비를 제어했습니다. 이 프로젝트에서는 그 경험을 바탕으로 WPF/MVVM 구조의 장비 제어 HMI와 시퀀스 플랫폼을 새로 설계했습니다. 실제 장비에서 사용했던 DO/DI 맵, Z/Theta 포즈, FOUP 슬롯 위치, 타이밍 값, 이송 우선순위를 EquipmentProfile JSON으로 분리했고 단위 테스트로 보존값을 검증합니다. UI는 ViewModel을 통해 Application Service를 호출하고, 실제 하드웨어 접근은 IEthercatController 인터페이스 뒤로 격리했습니다. 하드웨어가 없는 PC에서는 Simulator 모드로 동작하고, 실제 장비 모드는 IEG3268 어댑터에서 vendor DLL을 런타임에 로드하도록 분리했습니다.
 ```
