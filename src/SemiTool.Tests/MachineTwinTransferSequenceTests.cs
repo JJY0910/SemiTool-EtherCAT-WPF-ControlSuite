@@ -2,7 +2,7 @@ using SemiTool.Domain;
 
 namespace SemiTool.Tests;
 
-public sealed class MachineTwinTeachingSequenceTests
+public sealed class MachineTwinTransferSequenceTests
 {
     [Fact]
     public void RelayCommands_MarshalCanExecuteChangedThroughWpfDispatcher()
@@ -16,9 +16,9 @@ public sealed class MachineTwinTeachingSequenceTests
     }
 
     [Fact]
-    public void TeachingTimeline_UsesNonInstantMechanicalDurations()
+    public void TransferTimeline_UsesNonInstantMechanicalDurations()
     {
-        var steps = CreateTeachingSteps();
+        var steps = CreateTransferSteps();
 
         Assert.All(steps, step => Assert.True(step.DelayMs >= 300, $"{step.StepName} had a fast/zero delay."));
         Assert.Contains(steps, step => step.StepName.Contains("Door Opening", StringComparison.Ordinal) && step.DelayMs >= 1000);
@@ -29,49 +29,49 @@ public sealed class MachineTwinTeachingSequenceTests
     [Fact]
     public void BladeCanEnterChamberOnlyWhenDoorIsOpen()
     {
-        var steps = CreateTeachingSteps();
+        var steps = CreateTransferSteps();
         var chamberBladeSteps = steps.Where(step =>
             IsChamberStation(step.StationKey) &&
-            step.BladeState is nameof(BladeTeachingState.Extending) or nameof(BladeTeachingState.Extended));
+            step.BladeState is nameof(BladeSequenceState.Extending) or nameof(BladeSequenceState.Extended));
 
         Assert.NotEmpty(chamberBladeSteps);
-        Assert.All(chamberBladeSteps, step => Assert.Equal(nameof(ChamberDoorTeachingState.Open), DoorStateForStation(step)));
+        Assert.All(chamberBladeSteps, step => Assert.Equal(nameof(ChamberDoorSequenceState.Open), DoorStateForStation(step)));
     }
 
     [Fact]
     public void ChamberDoorDoesNotCloseWhileBladeIsExtended()
     {
-        var steps = CreateTeachingSteps();
+        var steps = CreateTransferSteps();
         var closingSteps = steps.Where(step =>
-            step.ChamberADoorState == nameof(ChamberDoorTeachingState.Closing) ||
-            step.ChamberBDoorState == nameof(ChamberDoorTeachingState.Closing) ||
-            step.ChamberCDoorState == nameof(ChamberDoorTeachingState.Closing));
+            step.ChamberADoorState == nameof(ChamberDoorSequenceState.Closing) ||
+            step.ChamberBDoorState == nameof(ChamberDoorSequenceState.Closing) ||
+            step.ChamberCDoorState == nameof(ChamberDoorSequenceState.Closing));
 
         Assert.NotEmpty(closingSteps);
         Assert.All(closingSteps, step =>
         {
-            Assert.NotEqual(nameof(BladeTeachingState.Extending), step.BladeState);
-            Assert.NotEqual(nameof(BladeTeachingState.Extended), step.BladeState);
+            Assert.NotEqual(nameof(BladeSequenceState.Extending), step.BladeState);
+            Assert.NotEqual(nameof(BladeSequenceState.Extended), step.BladeState);
         });
     }
 
     [Fact]
     public void ChamberProcessRunsOnlyWithDoorClosed()
     {
-        var steps = CreateTeachingSteps();
+        var steps = CreateTransferSteps();
 
         Assert.All(steps.Where(step => step.ChamberA.ProcessState == "Processing"),
-            step => Assert.Equal(nameof(ChamberDoorTeachingState.Closed), step.ChamberADoorState));
+            step => Assert.Equal(nameof(ChamberDoorSequenceState.Closed), step.ChamberADoorState));
         Assert.All(steps.Where(step => step.ChamberB.ProcessState == "Processing"),
-            step => Assert.Equal(nameof(ChamberDoorTeachingState.Closed), step.ChamberBDoorState));
+            step => Assert.Equal(nameof(ChamberDoorSequenceState.Closed), step.ChamberBDoorState));
         Assert.All(steps.Where(step => step.ChamberC.ProcessState == "Processing"),
-            step => Assert.Equal(nameof(ChamberDoorTeachingState.Closed), step.ChamberCDoorState));
+            step => Assert.Equal(nameof(ChamberDoorSequenceState.Closed), step.ChamberCDoorState));
     }
 
     [Fact]
     public void ChamberUnloadHappensOnlyAfterProcessComplete()
     {
-        var steps = CreateTeachingSteps().Where(step =>
+        var steps = CreateTransferSteps().Where(step =>
             step.CurrentAction.Contains("for unloading", StringComparison.OrdinalIgnoreCase));
 
         Assert.NotEmpty(steps);
@@ -95,25 +95,25 @@ public sealed class MachineTwinTeachingSequenceTests
     [Fact]
     public void WaferPickupRequiresVacuumSuction()
     {
-        var pickingSteps = CreateTeachingSteps().Where(step => step.RobotState == nameof(RobotTeachingState.Picking));
+        var pickingSteps = CreateTransferSteps().Where(step => step.RobotState == nameof(RobotSequenceState.Picking));
 
         Assert.NotEmpty(pickingSteps);
-        Assert.All(pickingSteps, step => Assert.Equal(nameof(VacuumTeachingState.SuctionOn), step.VacuumTeachingState));
+        Assert.All(pickingSteps, step => Assert.Equal(nameof(VacuumSequenceState.SuctionOn), step.VacuumSequenceState));
     }
 
     [Fact]
     public void WaferPlacementRequiresVacuumReleaseOrExhaust()
     {
-        var placingSteps = CreateTeachingSteps().Where(step => step.RobotState == nameof(RobotTeachingState.Placing));
+        var placingSteps = CreateTransferSteps().Where(step => step.RobotState == nameof(RobotSequenceState.Placing));
 
         Assert.NotEmpty(placingSteps);
-        Assert.All(placingSteps, step => Assert.Equal(nameof(VacuumTeachingState.ExhaustOrRelease), step.VacuumTeachingState));
+        Assert.All(placingSteps, step => Assert.Equal(nameof(VacuumSequenceState.ExhaustOrRelease), step.VacuumSequenceState));
     }
 
     [Fact]
-    public void TeachingZWorkSubstepsCommandWorkPositionThroughTypedFlag()
+    public void TransferZWorkSubstepsCommandWorkPositionThroughTypedFlag()
     {
-        var steps = CreateTeachingSteps();
+        var steps = CreateTransferSteps();
         var zWorkSubsteps = steps.Where(step => step.ZState.StartsWith("Z Work /", StringComparison.Ordinal)).ToArray();
 
         Assert.NotEmpty(zWorkSubsteps);
@@ -126,12 +126,12 @@ public sealed class MachineTwinTeachingSequenceTests
     }
 
     [Fact]
-    public void TeachingVacuumOutputsFollowExplicitVacuumTeachingState()
+    public void TransferVacuumOutputsFollowExplicitVacuumSequenceState()
     {
-        var steps = CreateTeachingSteps();
-        var off = steps.First(step => step.VacuumTeachingState == nameof(VacuumTeachingState.Off));
-        var suction = steps.First(step => step.VacuumTeachingState == nameof(VacuumTeachingState.SuctionOn));
-        var exhaust = steps.First(step => step.VacuumTeachingState == nameof(VacuumTeachingState.ExhaustOrRelease));
+        var steps = CreateTransferSteps();
+        var off = steps.First(step => step.VacuumSequenceState == nameof(VacuumSequenceState.Off));
+        var suction = steps.First(step => step.VacuumSequenceState == nameof(VacuumSequenceState.SuctionOn));
+        var exhaust = steps.First(step => step.VacuumSequenceState == nameof(VacuumSequenceState.ExhaustOrRelease));
 
         Assert.False(off.IsVacuumSuctionOutputOn);
         Assert.False(off.IsVacuumExhaustOutputOn);
@@ -147,11 +147,11 @@ public sealed class MachineTwinTeachingSequenceTests
     }
 
     [Fact]
-    public void EveryTeachingSnapshotContainsExactlyFiveUniqueWaferIds()
+    public void EveryTransferSnapshotContainsExactlyFiveUniqueWaferIds()
     {
         var expected = new[] { "W01", "W02", "W03", "W04", "W05" };
 
-        Assert.All(CreateTeachingSteps(), step =>
+        Assert.All(CreateTransferSteps(), step =>
         {
             var actual = WaferIdsInStep(step).OrderBy(wafer => wafer).ToArray();
             Assert.Equal(expected, actual);
@@ -159,40 +159,40 @@ public sealed class MachineTwinTeachingSequenceTests
     }
 
     [Fact]
-    public void FinalTeachingStateCompletesAllFiveWafersInFoupB()
+    public void FinalTransferStateCompletesAllFiveWafersInFoupB()
     {
-        var complete = CreateTeachingSteps().Single(step => step.PipelineState == PipelineStateKind.Completed.ToString());
+        var complete = CreateTransferSteps().Single(step => step.PipelineState == PipelineStateKind.Completed.ToString());
 
-        Assert.Equal(MachineTwinDemoPlan.CompletedStepName, complete.StepName);
+        Assert.Equal(MachineTwinSequencePlan.CompletedStepName, complete.StepName);
         Assert.Equal(0, complete.FoupACount);
         Assert.Equal(5, complete.FoupBCount);
         Assert.False(complete.ChamberA.HasWafer);
         Assert.False(complete.ChamberB.HasWafer);
         Assert.False(complete.ChamberC.HasWafer);
         Assert.False(complete.IsWaferOnBlade);
-        Assert.Equal(nameof(VacuumTeachingState.Off), complete.VacuumTeachingState);
-        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), complete.ChamberADoorState);
-        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), complete.ChamberBDoorState);
-        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), complete.ChamberCDoorState);
+        Assert.Equal(nameof(VacuumSequenceState.Off), complete.VacuumSequenceState);
+        Assert.Equal(nameof(ChamberDoorSequenceState.Closed), complete.ChamberADoorState);
+        Assert.Equal(nameof(ChamberDoorSequenceState.Closed), complete.ChamberBDoorState);
+        Assert.Equal(nameof(ChamberDoorSequenceState.Closed), complete.ChamberCDoorState);
     }
 
     [Fact]
-    public void RuntimeTeachingPlaybackStopsAtCompletedState()
+    public void RuntimeTransferPlaybackStopsAtCompletedState()
     {
-        var steps = CreateTeachingSteps();
+        var steps = CreateTransferSteps();
         var final = steps[^1];
 
-        Assert.Equal(MachineTwinDemoPlan.CompletedStepName, final.StepName);
+        Assert.Equal(MachineTwinSequencePlan.CompletedStepName, final.StepName);
         Assert.Equal(PipelineStateKind.Completed.ToString(), final.PipelineState);
-        Assert.DoesNotContain(steps, step => step.StepName == MachineTwinDemoPlan.ResetStepName);
+        Assert.DoesNotContain(steps, step => step.StepName == MachineTwinSequencePlan.ResetStepName);
     }
 
     [Fact]
-    public void CompletedTeachingPlaybackHoldsFoupBFullUntilManualReset()
+    public void CompletedTransferPlaybackHoldsFoupBFullUntilManualReset()
     {
-        var final = CreateTeachingSteps()[^1];
+        var final = CreateTransferSteps()[^1];
 
-        Assert.Equal(MachineTwinDemoPlan.CompletedStepName, final.StepName);
+        Assert.Equal(MachineTwinSequencePlan.CompletedStepName, final.StepName);
         Assert.Equal(0, final.FoupACount);
         Assert.Equal(5, final.FoupBCount);
         Assert.All(final.FoupASlots, slot => Assert.Equal("Empty", slot.State));
@@ -205,26 +205,26 @@ public sealed class MachineTwinTeachingSequenceTests
         Assert.False(final.ChamberB.HasWafer);
         Assert.False(final.ChamberC.HasWafer);
         Assert.False(final.IsWaferOnBlade);
-        Assert.Equal(nameof(VacuumTeachingState.Off), final.VacuumTeachingState);
+        Assert.Equal(nameof(VacuumSequenceState.Off), final.VacuumSequenceState);
         Assert.True(final.TowerGreen);
-        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), final.ChamberADoorState);
-        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), final.ChamberBDoorState);
-        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), final.ChamberCDoorState);
+        Assert.Equal(nameof(ChamberDoorSequenceState.Closed), final.ChamberADoorState);
+        Assert.Equal(nameof(ChamberDoorSequenceState.Closed), final.ChamberBDoorState);
+        Assert.Equal(nameof(ChamberDoorSequenceState.Closed), final.ChamberCDoorState);
     }
 
     [Fact]
-    public void ResetTeachingStateRestoresFoupAAndClearsMachine()
+    public void ResetTransferStateRestoresFoupAAndClearsMachine()
     {
         var reset = CreateResetStep();
 
-        Assert.Equal(MachineTwinDemoPlan.ResetStepName, reset.StepName);
+        Assert.Equal(MachineTwinSequencePlan.ResetStepName, reset.StepName);
         Assert.Equal(5, reset.FoupACount);
         Assert.Equal(0, reset.FoupBCount);
         Assert.False(reset.ChamberA.HasWafer);
         Assert.False(reset.ChamberB.HasWafer);
         Assert.False(reset.ChamberC.HasWafer);
         Assert.False(reset.IsWaferOnBlade);
-        Assert.Equal(nameof(VacuumTeachingState.Off), reset.VacuumTeachingState);
+        Assert.Equal(nameof(VacuumSequenceState.Off), reset.VacuumSequenceState);
         Assert.All(reset.FoupASlots, slot => Assert.Equal("Waiting", slot.State));
         Assert.All(reset.FoupBSlots, slot => Assert.Equal("Empty", slot.State));
     }
@@ -245,14 +245,14 @@ public sealed class MachineTwinTeachingSequenceTests
         Assert.Contains("ResumeCommand", source);
         Assert.Contains("StepOnceCommand", source);
         Assert.Contains("CurrentAction", source);
-        Assert.DoesNotContain("Run " + "Teaching " + "Demo", source);
-        Assert.DoesNotContain("Run Simulator Demo", source);
+        Assert.DoesNotContain("Run " + "Teach" + "ing " + "Demo", source);
+        Assert.DoesNotContain("Run Simulator " + "Demo", source);
     }
 
     [Fact]
     public void SequenceStepsPopulateCurrentActionAndTransferFields()
     {
-        var representativeSteps = CreateTeachingSteps()
+        var representativeSteps = CreateTransferSteps()
             .Where(step => !string.IsNullOrWhiteSpace(step.ActiveWaferId))
             .Take(10)
             .ToArray();
@@ -272,7 +272,7 @@ public sealed class MachineTwinTeachingSequenceTests
     [Fact]
     public void CompletedStateUsesSequenceCompleteTerminology()
     {
-        var complete = CreateTeachingSteps().Single(step => step.PipelineState == PipelineStateKind.Completed.ToString());
+        var complete = CreateTransferSteps().Single(step => step.PipelineState == PipelineStateKind.Completed.ToString());
 
         Assert.Contains("Sequence Complete", complete.StepName, StringComparison.Ordinal);
         Assert.Equal(5, complete.FoupBCount);
@@ -282,7 +282,7 @@ public sealed class MachineTwinTeachingSequenceTests
     [Fact]
     public void SchedulerPriority_RemainsDownstreamFirst()
     {
-        var state = WaferPipelineSimulator.CreateInitial(SimulatorTimingProfile.Teaching) with
+        var state = WaferPipelineSimulator.CreateInitial(SimulatorTimingProfile.Normal) with
         {
             ChamberA = CompletedChamber("Chamber A", "Pre-Clean", "PreClean_Default", "W03"),
             ChamberB = CompletedChamber("Chamber B", "CMP Main", "CMP_Main", "W02"),
@@ -298,20 +298,20 @@ public sealed class MachineTwinTeachingSequenceTests
         Assert.Equal(WaferTransferPriority.ChamberAToChamberB, WaferPipelineSimulator.ChooseNextTransfer(state));
     }
 
-    private static IReadOnlyList<MachineTwinDemoStep> CreateTeachingSteps() =>
-        MachineTwinDemoPlan.Create(
+    private static IReadOnlyList<MachineTwinSequenceStep> CreateTransferSteps() =>
+        MachineTwinSequencePlan.Create(
             DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
-            SimulatorTimingProfile.Teaching);
+            SimulatorTimingProfile.Normal);
 
-    private static MachineTwinDemoStep CreateResetStep() =>
-        MachineTwinDemoPlan.CreateResetStep(
+    private static MachineTwinSequenceStep CreateResetStep() =>
+        MachineTwinSequencePlan.CreateResetStep(
             DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
-            SimulatorTimingProfile.Teaching);
+            SimulatorTimingProfile.Normal);
 
     private static bool IsChamberStation(string stationKey) =>
         stationKey is "ChamberA" or "ChamberB" or "ChamberC";
 
-    private static string DoorStateForStation(MachineTwinDemoStep step) => step.StationKey switch
+    private static string DoorStateForStation(MachineTwinSequenceStep step) => step.StationKey switch
     {
         "ChamberA" => step.ChamberADoorState,
         "ChamberB" => step.ChamberBDoorState,
@@ -319,7 +319,7 @@ public sealed class MachineTwinTeachingSequenceTests
         _ => string.Empty
     };
 
-    private static IEnumerable<string> WaferIdsInStep(MachineTwinDemoStep step) =>
+    private static IEnumerable<string> WaferIdsInStep(MachineTwinSequenceStep step) =>
         step.FoupASlots
             .Concat(step.FoupBSlots)
             .Where(slot => slot.HasWafer)

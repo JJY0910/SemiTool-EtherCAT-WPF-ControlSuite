@@ -37,7 +37,7 @@ public sealed class RuntimeIntegrationTests
     [Fact]
     public void RuntimeDebugEvidence_DocumentsMainWindowIntegration()
     {
-        var captureSource = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DemoAssetCapture.cs");
+        var captureSource = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "SequenceAssetCapture.cs");
 
         Assert.Contains("## Runtime Integration Check", captureSource);
         Assert.Contains("00-startup-simulator.png", captureSource);

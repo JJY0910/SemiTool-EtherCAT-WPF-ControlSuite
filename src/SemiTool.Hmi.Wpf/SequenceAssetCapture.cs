@@ -15,7 +15,7 @@ using SemiTool.Hmi.Wpf.Views;
 
 namespace SemiTool.Hmi.Wpf;
 
-internal static class DemoAssetCapture
+internal static class SequenceAssetCapture
 {
     private const int CaptureWidth = 1280;
     private const int CaptureHeight = 820;
@@ -55,7 +55,7 @@ internal static class DemoAssetCapture
         await viewModel.RefreshAsync();
 
         var trace = new List<MachineTwinStateTraceEntry>();
-        await viewModel.MachineTwin.RunSimulatorDemoForCaptureAsync(async step =>
+        await viewModel.MachineTwin.RunTransferSequenceForCaptureAsync(async step =>
         {
             if (!ShouldCaptureDebugStep(step))
             {
@@ -82,7 +82,7 @@ internal static class DemoAssetCapture
 
     private static async Task CaptureMachineTwinPortfolioFramesAsync(MachineTwinViewModel machineTwin, string outputDirectory)
     {
-        await machineTwin.RunSimulatorDemoForCaptureAsync(async step =>
+        await machineTwin.RunTransferSequenceForCaptureAsync(async step =>
         {
             var fileName = step.ScreenshotName switch
             {
@@ -103,7 +103,7 @@ internal static class DemoAssetCapture
         });
     }
 
-    private static bool ShouldCaptureDebugStep(MachineTwinDemoStep step) =>
+    private static bool ShouldCaptureDebugStep(MachineTwinSequenceStep step) =>
         step.StepIndex == 0 ||
         step.ScreenshotName is
             "01-foup-a-before-pickup.png" or
@@ -443,8 +443,8 @@ internal static class DemoAssetCapture
         runtime.Scheduler.State.PmC.RemainingSeconds = 0;
         runtime.Scheduler.State.PmC.ProcessComplete = true;
 
-        runtime.Events.Info(nameof(DemoAssetCapture), "Simulator capture mode started.");
-        runtime.Events.Info(nameof(DemoAssetCapture), "Real hardware mode was not selected or connected.");
+        runtime.Events.Info(nameof(SequenceAssetCapture), "Simulator capture mode started.");
+        runtime.Events.Info(nameof(SequenceAssetCapture), "Real hardware mode was not selected or connected.");
     }
 
     private static async Task RenderAsync(FrameworkElement content, string title, string subtitle, string path)
@@ -532,7 +532,7 @@ internal static class DemoAssetCapture
         return surface;
     }
 
-    private static FrameworkElement CreateDigitalTwinLayout(DigitalTwinPhysicalModel model, DigitalTwinDemoState state)
+    private static FrameworkElement CreateDigitalTwinLayout(DigitalTwinPhysicalModel model, DigitalTwinSequenceAssetState state)
     {
         var root = new Grid { Background = new SolidColorBrush(Color.FromRgb(18, 26, 32)) };
         root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -634,7 +634,7 @@ internal static class DemoAssetCapture
         AddEllipse(canvas, 720, 152, 24, 24, greenOn ? Color.FromRgb(25, 155, 83) : Color.FromRgb(28, 73, 48), Color.FromRgb(160, 240, 190), 1);
     }
 
-    private static void DrawThetaBaseAndBlade(Canvas canvas, Point center, Point target, DigitalTwinDemoState state)
+    private static void DrawThetaBaseAndBlade(Canvas canvas, Point center, Point target, DigitalTwinSequenceAssetState state)
     {
         AddEllipse(canvas, center.X - 66, center.Y - 66, 132, 132, Color.FromRgb(38, 47, 54), Color.FromRgb(207, 216, 222), 3);
         AddEllipse(canvas, center.X - 34, center.Y - 34, 68, 68, Color.FromRgb(85, 96, 104), Color.FromRgb(232, 238, 242), 2);
@@ -656,7 +656,7 @@ internal static class DemoAssetCapture
         }
     }
 
-    private static Border CreateStatusPanel(DigitalTwinPhysicalModel model, DigitalTwinDemoState state)
+    private static Border CreateStatusPanel(DigitalTwinPhysicalModel model, DigitalTwinSequenceAssetState state)
     {
         var panel = new StackPanel { Margin = new Thickness(16) };
         panel.Children.Add(new TextBlock { Text = "Physical Model", Foreground = Brushes.White, FontSize = 22, FontWeight = FontWeights.SemiBold });
@@ -782,7 +782,7 @@ internal static class DemoAssetCapture
         AddText(canvas, label, Math.Min(start.X, end.X), Math.Min(start.Y, end.Y) - 30, 15, Brushes.White, FontWeights.SemiBold);
     }
 
-    private sealed record DigitalTwinDemoState(
+    private sealed record DigitalTwinSequenceAssetState(
         string CurrentTargetKey,
         string TargetLabel,
         bool BladeExtended,
@@ -794,12 +794,12 @@ internal static class DemoAssetCapture
         string CurrentStep,
         bool TowerGreen)
     {
-        public static DigitalTwinDemoState LimitedSwingOverview { get; } = new("ChamberB", "Chamber B (CMP)", false, false, "Z Safe", "Cylinder Backward", "Vacuum OFF", "No wafer on blade", "Station arc overview", false);
-        public static DigitalTwinDemoState TransferRobotWithWafer { get; } = new("ChamberA", "Chamber A", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer held on blade", "Place wafer into Chamber A", false);
-        public static DigitalTwinDemoState PickFromFoupA { get; } = new("FoupA", "FOUP A Slot 1", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer picked from FOUP A", "Pick FOUP A Slot 1", false);
-        public static DigitalTwinDemoState PlaceToChamberA { get; } = new("ChamberA", "Chamber A", true, false, "Z Work", "Cylinder Forward", "Vacuum Exhaust / release", "Wafer in Chamber A", "PreClean_Default starts", false);
-        public static DigitalTwinDemoState TransferToChamberC { get; } = new("ChamberC", "Chamber C", false, true, "Z Safe", "Cylinder Backward", "Vacuum Suction ON", "Wafer carried from Chamber B", "CMP_Main complete, moving to PostClean_Dry", false);
-        public static DigitalTwinDemoState PlaceToFoupB { get; } = new("FoupB", "FOUP B Slot 1", true, false, "Z Work -> Z Safe", "Cylinder Forward then Backward", "Vacuum Exhaust / release", "Wafer stored in FOUP B Slot 1", "Overall simulator flow complete", true);
+        public static DigitalTwinSequenceAssetState LimitedSwingOverview { get; } = new("ChamberB", "Chamber B (CMP)", false, false, "Z Safe", "Cylinder Backward", "Vacuum OFF", "No wafer on blade", "Station arc overview", false);
+        public static DigitalTwinSequenceAssetState TransferRobotWithWafer { get; } = new("ChamberA", "Chamber A", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer held on blade", "Place wafer into Chamber A", false);
+        public static DigitalTwinSequenceAssetState PickFromFoupA { get; } = new("FoupA", "FOUP A Slot 1", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer picked from FOUP A", "Pick FOUP A Slot 1", false);
+        public static DigitalTwinSequenceAssetState PlaceToChamberA { get; } = new("ChamberA", "Chamber A", true, false, "Z Work", "Cylinder Forward", "Vacuum Exhaust / release", "Wafer in Chamber A", "PreClean_Default starts", false);
+        public static DigitalTwinSequenceAssetState TransferToChamberC { get; } = new("ChamberC", "Chamber C", false, true, "Z Safe", "Cylinder Backward", "Vacuum Suction ON", "Wafer carried from Chamber B", "CMP_Main complete, moving to PostClean_Dry", false);
+        public static DigitalTwinSequenceAssetState PlaceToFoupB { get; } = new("FoupB", "FOUP B Slot 1", true, false, "Z Work -> Z Safe", "Cylinder Forward then Backward", "Vacuum Exhaust / release", "Wafer stored in FOUP B Slot 1", "Overall simulator flow complete", true);
     }
 
     private static string FindRepositoryRoot()
@@ -815,6 +815,6 @@ internal static class DemoAssetCapture
             directory = directory.Parent;
         }
 
-        throw new DirectoryNotFoundException("Could not locate repository root for demo asset output.");
+        throw new DirectoryNotFoundException("Could not locate repository root for sequence asset output.");
     }
 }

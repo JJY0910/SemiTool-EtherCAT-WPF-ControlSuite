@@ -10,7 +10,7 @@ namespace SemiTool.Domain;
 /// axis targets, I/O mapping, vendor DLL loading, or real-hardware adapter
 /// behavior.
 /// </remarks>
-internal static class TeachingWaferPipelineSequence
+internal static class WaferTransferSequence
 {
     private const int TotalWafers = WaferPipelineSimulator.TotalWafers;
 
@@ -34,9 +34,9 @@ internal static class TeachingWaferPipelineSequence
         private string _previousStation = "-";
         private string _nextStation = "Chamber A";
         private string _zState = "Z Safe";
-        private BladeTeachingState _bladeState = BladeTeachingState.Retracted;
-        private VacuumTeachingState _vacuumState = VacuumTeachingState.Off;
-        private RobotTeachingState _robotState = RobotTeachingState.Idle;
+        private BladeSequenceState _bladeState = BladeSequenceState.Retracted;
+        private VacuumSequenceState _vacuumState = VacuumSequenceState.Off;
+        private RobotSequenceState _robotState = RobotSequenceState.Idle;
         private bool _towerGreen;
         private int _stepIndex;
 
@@ -79,12 +79,12 @@ internal static class TeachingWaferPipelineSequence
             _previousStation = "Chamber C";
             _nextStation = "-";
             _zState = "Z Safe";
-            _bladeState = BladeTeachingState.Retracted;
-            _vacuumState = VacuumTeachingState.Off;
-            _robotState = RobotTeachingState.Idle;
+            _bladeState = BladeSequenceState.Retracted;
+            _vacuumState = VacuumSequenceState.Off;
+            _robotState = RobotSequenceState.Idle;
             _towerGreen = true;
             Add(
-                MachineTwinDemoPlan.CompletedStepName,
+                MachineTwinSequencePlan.CompletedStepName,
                 "09-final-foup-b-5-completed.png",
                 PipelineStateKind.Completed,
                 "All 5 wafers complete in FOUP B",
@@ -154,10 +154,10 @@ internal static class TeachingWaferPipelineSequence
             _stationKey = transfer.Kind == TransferKind.FoupAToChamberA ? "FoupA" : transfer.SourceChamber!.StationKey;
             _previousStation = DisplayStation(_previousStation);
             _nextStation = targetName;
-            _robotState = RobotTeachingState.MovingTheta;
+            _robotState = RobotSequenceState.MovingTheta;
             _zState = transfer.Kind == TransferKind.FoupAToChamberA ? $"Z Work / {sourceName}" : "Z Safe";
-            _bladeState = BladeTeachingState.Retracted;
-            _vacuumState = VacuumTeachingState.Off;
+            _bladeState = BladeSequenceState.Retracted;
+            _vacuumState = VacuumSequenceState.Off;
             Add(
                 $"Move To {sourceName}",
                 FirstMatchingScreenshot(sourceName, "01-foup-a-before-pickup.png"),
@@ -173,9 +173,9 @@ internal static class TeachingWaferPipelineSequence
                 OpenDoor(transfer.SourceChamber, $"Open {sourceName} door for unloading {waferId}");
             }
 
-            _robotState = RobotTeachingState.MovingZ;
-            _bladeState = BladeTeachingState.Extending;
-            _vacuumState = VacuumTeachingState.Off;
+            _robotState = RobotSequenceState.MovingZ;
+            _bladeState = BladeSequenceState.Extending;
+            _vacuumState = VacuumSequenceState.Off;
             Add(
                 $"Blade Extending Into {sourceName}",
                 transfer.SourceChamber == _chamberA ? Once("08-chamber-a-unload-after-process-complete.png") : null,
@@ -186,9 +186,9 @@ internal static class TeachingWaferPipelineSequence
                 waferId,
                 _timing.BladeExtendMs);
 
-            _robotState = RobotTeachingState.Picking;
-            _bladeState = BladeTeachingState.Extended;
-            _vacuumState = VacuumTeachingState.SuctionOn;
+            _robotState = RobotSequenceState.Picking;
+            _bladeState = BladeSequenceState.Extended;
+            _vacuumState = VacuumSequenceState.SuctionOn;
             Add(
                 $"Vacuum Suction {waferId} At {sourceName}",
                 null,
@@ -211,8 +211,8 @@ internal static class TeachingWaferPipelineSequence
                 waferId,
                 _timing.VacuumSuctionSettleMs);
 
-            _robotState = RobotTeachingState.MovingZ;
-            _bladeState = BladeTeachingState.Retracting;
+            _robotState = RobotSequenceState.MovingZ;
+            _bladeState = BladeSequenceState.Retracting;
             Add(
                 $"Blade Retracting With {waferId}",
                 null,
@@ -223,7 +223,7 @@ internal static class TeachingWaferPipelineSequence
                 waferId,
                 _timing.BladeRetractMs);
 
-            _bladeState = BladeTeachingState.Retracted;
+            _bladeState = BladeSequenceState.Retracted;
             _zState = "Z Safe";
             Add(
                 $"{waferId} Clear Of {sourceName}",
@@ -246,10 +246,10 @@ internal static class TeachingWaferPipelineSequence
             _stationKey = transfer.Kind == TransferKind.ChamberCToFoupB ? "FoupB" : transfer.TargetChamber!.StationKey;
             _previousStation = sourceName;
             _nextStation = targetName;
-            _robotState = RobotTeachingState.MovingTheta;
+            _robotState = RobotSequenceState.MovingTheta;
             _zState = transfer.Kind == TransferKind.ChamberCToFoupB ? $"Z Work / {targetName}" : "Z Safe";
-            _bladeState = BladeTeachingState.Retracted;
-            _vacuumState = VacuumTeachingState.SuctionOn;
+            _bladeState = BladeSequenceState.Retracted;
+            _vacuumState = VacuumSequenceState.SuctionOn;
             Add(
                 $"Move {waferId} To {targetName}",
                 null,
@@ -265,8 +265,8 @@ internal static class TeachingWaferPipelineSequence
                 OpenDoor(transfer.TargetChamber, $"Open {targetName} door before loading {waferId}");
             }
 
-            _robotState = RobotTeachingState.MovingZ;
-            _bladeState = BladeTeachingState.Extending;
+            _robotState = RobotSequenceState.MovingZ;
+            _bladeState = BladeSequenceState.Extending;
             Add(
                 $"Blade Entering {targetName}",
                 transfer.TargetChamber == _chamberA ? Once("04-blade-entering-chamber-a-door-open.png") : null,
@@ -277,9 +277,9 @@ internal static class TeachingWaferPipelineSequence
                 waferId,
                 _timing.BladeExtendMs);
 
-            _robotState = RobotTeachingState.Placing;
-            _bladeState = BladeTeachingState.Extended;
-            _vacuumState = VacuumTeachingState.ExhaustOrRelease;
+            _robotState = RobotSequenceState.Placing;
+            _bladeState = BladeSequenceState.Extended;
+            _vacuumState = VacuumSequenceState.ExhaustOrRelease;
             Add(
                 $"Vacuum Release {waferId} At {targetName}",
                 null,
@@ -302,9 +302,9 @@ internal static class TeachingWaferPipelineSequence
                 waferId,
                 _timing.VacuumExhaustSettleMs);
 
-            _robotState = RobotTeachingState.MovingZ;
-            _vacuumState = VacuumTeachingState.Off;
-            _bladeState = BladeTeachingState.Retracting;
+            _robotState = RobotSequenceState.MovingZ;
+            _vacuumState = VacuumSequenceState.Off;
+            _bladeState = BladeSequenceState.Retracting;
             Add(
                 $"Blade Retracting Empty From {targetName}",
                 transfer.TargetChamber == _chamberA ? Once("06-blade-retracted-before-chamber-a-door-closes.png") : null,
@@ -315,7 +315,7 @@ internal static class TeachingWaferPipelineSequence
                 waferId,
                 _timing.BladeRetractMs);
 
-            _bladeState = BladeTeachingState.Retracted;
+            _bladeState = BladeSequenceState.Retracted;
             _zState = "Z Safe";
             Add(
                 $"Blade Clear Of {targetName}",
@@ -336,8 +336,8 @@ internal static class TeachingWaferPipelineSequence
 
         private void OpenDoor(ChamberState chamber, string action)
         {
-            chamber.DoorState = ChamberDoorTeachingState.Opening;
-            _robotState = RobotTeachingState.Idle;
+            chamber.DoorState = ChamberDoorSequenceState.Opening;
+            _robotState = RobotSequenceState.Idle;
             Add(
                 $"{chamber.Name} Door Opening",
                 chamber == _chamberA ? Once("03-chamber-a-door-opening.png") : null,
@@ -348,7 +348,7 @@ internal static class TeachingWaferPipelineSequence
                 chamber.WaferId,
                 _timing.DoorOpenCloseMs);
 
-            chamber.DoorState = ChamberDoorTeachingState.Open;
+            chamber.DoorState = ChamberDoorSequenceState.Open;
             Add(
                 $"{chamber.Name} Door Open",
                 null,
@@ -362,8 +362,8 @@ internal static class TeachingWaferPipelineSequence
 
         private void CloseDoor(ChamberState chamber, string action)
         {
-            chamber.DoorState = ChamberDoorTeachingState.Closing;
-            _robotState = RobotTeachingState.Idle;
+            chamber.DoorState = ChamberDoorSequenceState.Closing;
+            _robotState = RobotSequenceState.Idle;
             Add(
                 $"{chamber.Name} Door Closing",
                 null,
@@ -374,7 +374,7 @@ internal static class TeachingWaferPipelineSequence
                 chamber.WaferId,
                 _timing.DoorOpenCloseMs);
 
-            chamber.DoorState = ChamberDoorTeachingState.Closed;
+            chamber.DoorState = ChamberDoorSequenceState.Closed;
             Add(
                 $"{chamber.Name} Door Closed",
                 null,
@@ -391,7 +391,7 @@ internal static class TeachingWaferPipelineSequence
             chamber.ProcessState = "Processing";
             chamber.ProgressPercent = 10;
             chamber.RemainingSeconds = ProcessSeconds(chamber);
-            _robotState = RobotTeachingState.Idle;
+            _robotState = RobotSequenceState.Idle;
             Add(
                 $"{chamber.Name} Processing {waferId}",
                 chamber == _chamberA ? Once("07-chamber-a-processing-door-closed.png") : null,
@@ -416,9 +416,9 @@ internal static class TeachingWaferPipelineSequence
             chamber.ProgressPercent = 100;
             chamber.RemainingSeconds = 0;
             chamber.ProcessState = "Completed";
-            _robotState = RobotTeachingState.Idle;
-            _bladeState = BladeTeachingState.Retracted;
-            _vacuumState = VacuumTeachingState.Off;
+            _robotState = RobotSequenceState.Idle;
+            _bladeState = BladeSequenceState.Retracted;
+            _vacuumState = VacuumSequenceState.Off;
             Add(
                 $"{chamber.Name} Process Complete {chamber.WaferId}",
                 null,
@@ -486,11 +486,11 @@ internal static class TeachingWaferPipelineSequence
                 _chamberA.DoorState,
                 _chamberB.DoorState,
                 _chamberC.DoorState,
-                _robotState is RobotTeachingState.MovingTheta or RobotTeachingState.MovingZ,
+                _robotState is RobotSequenceState.MovingTheta or RobotSequenceState.MovingZ,
                 _zState,
-                _bladeState is BladeTeachingState.Extending or BladeTeachingState.Extended,
-                _bladeState is BladeTeachingState.Extending or BladeTeachingState.Extended,
-                _bladeState is BladeTeachingState.Retracted or BladeTeachingState.Retracting,
+                _bladeState is BladeSequenceState.Extending or BladeSequenceState.Extended,
+                _bladeState is BladeSequenceState.Extending or BladeSequenceState.Extended,
+                _bladeState is BladeSequenceState.Retracted or BladeSequenceState.Retracting,
                 VacuumLabel(_vacuumState),
                 !string.IsNullOrWhiteSpace(_bladeWaferId),
                 _bladeWaferId,
@@ -555,17 +555,17 @@ internal static class TeachingWaferPipelineSequence
             _chamberA.Clear();
             _chamberB.Clear();
             _chamberC.Clear();
-            _chamberA.DoorState = ChamberDoorTeachingState.Closed;
-            _chamberB.DoorState = ChamberDoorTeachingState.Closed;
-            _chamberC.DoorState = ChamberDoorTeachingState.Closed;
+            _chamberA.DoorState = ChamberDoorSequenceState.Closed;
+            _chamberB.DoorState = ChamberDoorSequenceState.Closed;
+            _chamberC.DoorState = ChamberDoorSequenceState.Closed;
             _bladeWaferId = string.Empty;
             _stationKey = "FoupA";
             _previousStation = "-";
             _nextStation = "FOUP A";
             _zState = "Z Safe";
-            _bladeState = BladeTeachingState.Retracted;
-            _vacuumState = VacuumTeachingState.Off;
-            _robotState = RobotTeachingState.Idle;
+            _bladeState = BladeSequenceState.Retracted;
+            _vacuumState = VacuumSequenceState.Off;
+            _robotState = RobotSequenceState.Idle;
             _towerGreen = false;
         }
 
@@ -582,10 +582,10 @@ internal static class TeachingWaferPipelineSequence
         private static string DisplayStation(string value) =>
             string.IsNullOrWhiteSpace(value) ? "-" : value;
 
-        private static string VacuumLabel(VacuumTeachingState state) => state switch
+        private static string VacuumLabel(VacuumSequenceState state) => state switch
         {
-            VacuumTeachingState.SuctionOn => "Suction",
-            VacuumTeachingState.ExhaustOrRelease => "Exhaust",
+            VacuumSequenceState.SuctionOn => "Suction",
+            VacuumSequenceState.ExhaustOrRelease => "Exhaust",
             _ => "Off"
         };
 
@@ -638,7 +638,7 @@ internal static class TeachingWaferPipelineSequence
         public string ProcessState { get; set; } = "Empty";
         public int RemainingSeconds { get; set; }
         public double ProgressPercent { get; set; }
-        public ChamberDoorTeachingState DoorState { get; set; } = ChamberDoorTeachingState.Closed;
+        public ChamberDoorSequenceState DoorState { get; set; } = ChamberDoorSequenceState.Closed;
         public bool HasWafer => !string.IsNullOrWhiteSpace(WaferId);
 
         public void Load(string waferId)
@@ -668,7 +668,7 @@ internal static class TeachingWaferPipelineSequence
                 HasWafer ? ProcessStep : "-",
                 RemainingSeconds,
                 ProgressPercent,
-                DoorState == ChamberDoorTeachingState.Open);
+                DoorState == ChamberDoorSequenceState.Open);
     }
 
     private enum TransferKind

@@ -5,10 +5,10 @@ namespace SemiTool.Domain;
 /// </summary>
 /// <remarks>
 /// The plan is separate from <see cref="EquipmentProfile"/> because it does not define hardware constants. It maps the
-/// preserved station/pose values into readable UI states so the WPF HMI can demonstrate FOUP-to-chamber transfer flow
+/// preserved station/pose values into readable UI states so the WPF HMI can visualize FOUP-to-chamber transfer flow
 /// without touching real EtherCAT hardware or loading the vendor DLL.
 /// </remarks>
-public static class MachineTwinDemoPlan
+public static class MachineTwinSequencePlan
 {
     public const string CompletedStepName = "Sequence Complete - FOUP B 5/5";
     public const string ResetStepName = "Reset Safe State";
@@ -24,30 +24,30 @@ public static class MachineTwinDemoPlan
     /// <see cref="DigitalTwinPhysicalModel"/> and are never interpreted as
     /// display degrees. The visual angle is a separate HMI-only arc position.
     /// </remarks>
-    public static IReadOnlyList<MachineTwinDemoStep> CreateDefault(DigitalTwinPhysicalModel model) =>
-        Create(model, SimulatorTimingProfile.Teaching);
+    public static IReadOnlyList<MachineTwinSequenceStep> CreateDefault(DigitalTwinPhysicalModel model) =>
+        Create(model, SimulatorTimingProfile.Normal);
 
-    public static IReadOnlyList<MachineTwinDemoStep> Create(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing) =>
+    public static IReadOnlyList<MachineTwinSequenceStep> Create(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing) =>
         CreateWithReset(model, timing)
             .Where(step => !string.Equals(step.StepName, ResetStepName, StringComparison.Ordinal))
             .ToArray();
 
-    public static MachineTwinDemoStep CreateResetStep(DigitalTwinPhysicalModel model) =>
-        CreateResetStep(model, SimulatorTimingProfile.Teaching);
+    public static MachineTwinSequenceStep CreateResetStep(DigitalTwinPhysicalModel model) =>
+        CreateResetStep(model, SimulatorTimingProfile.Normal);
 
-    public static MachineTwinDemoStep CreateResetStep(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing) =>
+    public static MachineTwinSequenceStep CreateResetStep(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing) =>
         CreateWithReset(model, timing)
             .Single(step => string.Equals(step.StepName, ResetStepName, StringComparison.Ordinal));
 
-    public static IReadOnlyList<MachineTwinDemoStep> CreateWithReset(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing)
+    public static IReadOnlyList<MachineTwinSequenceStep> CreateWithReset(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing)
     {
         var stationByKey = model.ThetaSwing.Stations.ToDictionary(station => station.PoseKey, StringComparer.OrdinalIgnoreCase);
 
-        return WaferPipelineSimulator.CreateTeachingTimeline(timing)
+        return WaferPipelineSimulator.CreateTransferTimeline(timing)
             .Select(snapshot =>
             {
                 var station = stationByKey[snapshot.CurrentStationKey];
-                return new MachineTwinDemoStep(
+                return new MachineTwinSequenceStep(
                     snapshot.StepIndex,
                     snapshot.StepName,
                     snapshot.CurrentStationKey,
@@ -60,7 +60,7 @@ public static class MachineTwinDemoPlan
                     snapshot.CurrentAction,
                     snapshot.RobotState.ToString(),
                     snapshot.BladeState.ToString(),
-                    snapshot.VacuumTeachingState.ToString(),
+                    snapshot.VacuumSequenceState.ToString(),
                     snapshot.ChamberADoorState.ToString(),
                     snapshot.ChamberBDoorState.ToString(),
                     snapshot.ChamberCDoorState.ToString(),
@@ -103,7 +103,7 @@ public static class MachineTwinDemoPlan
     }
 }
 
-public sealed record MachineTwinDemoStep(
+public sealed record MachineTwinSequenceStep(
     int StepIndex,
     string StepName,
     string StationKey,
@@ -116,7 +116,7 @@ public sealed record MachineTwinDemoStep(
     string CurrentAction,
     string RobotState,
     string BladeState,
-    string VacuumTeachingState,
+    string VacuumSequenceState,
     string ChamberADoorState,
     string ChamberBDoorState,
     string ChamberCDoorState,
@@ -158,8 +158,8 @@ public sealed record MachineTwinDemoStep(
     public bool IsZWorkPosition => ZState.StartsWith("Z Work", StringComparison.OrdinalIgnoreCase);
 
     public bool IsVacuumSuctionOutputOn =>
-        string.Equals(VacuumTeachingState, nameof(SemiTool.Domain.VacuumTeachingState.SuctionOn), StringComparison.Ordinal);
+        string.Equals(VacuumSequenceState, nameof(SemiTool.Domain.VacuumSequenceState.SuctionOn), StringComparison.Ordinal);
 
     public bool IsVacuumExhaustOutputOn =>
-        string.Equals(VacuumTeachingState, nameof(SemiTool.Domain.VacuumTeachingState.ExhaustOrRelease), StringComparison.Ordinal);
+        string.Equals(VacuumSequenceState, nameof(SemiTool.Domain.VacuumSequenceState.ExhaustOrRelease), StringComparison.Ordinal);
 }
