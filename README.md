@@ -64,6 +64,28 @@ The demo runs in Simulator mode only. It does not load `IEG3268_Dll.dll`, does n
 
 The first runtime debug screenshot captures the actual `MainWindow` with the `Machine Twin` tab selected. That tab contains `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`, and `MainViewModel.MachineTwin` shares the same `RuntimeCoordinator` used by the other HMI tabs.
 
+## Five-Wafer Pipeline Simulator
+
+The runtime simulator now models a five-wafer cassette pipeline instead of a single-wafer toy sequence.
+
+- FOUP A starts with five wafers in slots `A1` through `A5`.
+- FOUP B starts empty in slots `B1` through `B5`.
+- Each FOUP slot shows an occupied/empty wafer disk, wafer ID, state, and active highlight.
+- FOUP A count decreases from `5/5` to `0/5`.
+- FOUP B count increases from `0/5` to `5/5`.
+- Chamber A, Chamber B, and Chamber C show wafer ID, recipe, current step, remaining time, and progress.
+- The demo completes only when all five wafers are in FOUP B and the chambers/blade are empty.
+
+Scheduler priority is downstream-first:
+
+1. Chamber C -> FOUP B when Chamber C is complete.
+2. Chamber B -> Chamber C when Chamber B is complete and Chamber C is empty.
+3. Chamber A -> Chamber B when Chamber A is complete and Chamber B is empty.
+4. FOUP A -> Chamber A when Chamber A is empty and FOUP A still has waiting wafers.
+5. If no transfer is possible, chamber process countdown advances.
+
+Normal runtime demo timing defaults to `Realistic`, so the robot, blade, Z, vacuum, and chamber processing states remain visible instead of instantly jumping to completion. `Fast` and `Step` speed options are available for review and capture workflows, but they still preserve intermediate states. The visible app remains open after the demo completes.
+
 ## Runtime UI Evidence Pack
 
 The repo includes a repeatable runtime UI evidence pack:
@@ -75,6 +97,19 @@ The repo includes a repeatable runtime UI evidence pack:
 - `docs/debug/latest/screenshots/*.png`
 
 The startup screenshot `docs/debug/latest/screenshots/00-startup-simulator.png` is the integration proof: it shows the actual running shell with Machine Twin selected as the first/default tab.
+
+The debug evidence now includes the five-wafer pipeline milestones:
+
+- `01-foup-a-5-wafers.png`
+- `02-w01-pick-a1.png`
+- `03-w01-on-blade.png`
+- `04-w01-chamber-a-processing.png`
+- `05-w02-enters-chamber-a-while-w01-moves-to-b.png`
+- `06-pipeline-three-chambers-occupied.png`
+- `07-w01-chamber-c-complete.png`
+- `08-w01-placed-foup-b-b1.png`
+- `09-foup-a-empty-pipeline-finishing.png`
+- `10-foup-b-5-wafers-complete.png`
 
 Regenerate it with:
 

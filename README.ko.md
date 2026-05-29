@@ -52,6 +52,28 @@ FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 
 첫 번째 runtime debug screenshot은 실제 `MainWindow`에서 `Machine Twin` 탭이 선택된 상태를 캡처합니다. 이 탭은 `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`를 사용하며, `MainViewModel.MachineTwin`은 다른 HMI 탭과 같은 `RuntimeCoordinator`를 공유합니다.
 
+## 5-wafer Pipeline Simulator
+
+런타임 simulator는 이제 단일 wafer 장난감 시퀀스가 아니라 5장 cassette pipeline을 모델링합니다.
+
+- FOUP A는 `A1`~`A5` 슬롯에 wafer 5장으로 시작합니다.
+- FOUP B는 `B1`~`B5`가 비어 있는 상태로 시작합니다.
+- 각 FOUP slot은 wafer disk, wafer ID, 상태, active highlight를 표시합니다.
+- FOUP A count는 `5/5`에서 `0/5`로 감소합니다.
+- FOUP B count는 `0/5`에서 `5/5`로 증가합니다.
+- Chamber A/B/C는 wafer ID, recipe, current step, remaining time, progress를 표시합니다.
+- 모든 wafer 5장이 FOUP B에 들어가고 chamber/blade가 비어야 완료됩니다.
+
+Scheduler priority는 downstream-first입니다.
+
+1. Chamber C complete -> FOUP B
+2. Chamber B complete -> Chamber C
+3. Chamber A complete -> Chamber B
+4. FOUP A waiting wafer -> Chamber A
+5. 이동이 불가능하면 chamber process countdown 진행
+
+일반 runtime demo 기본 속도는 `Realistic`입니다. 그래서 robot, blade, Z, vacuum, chamber processing 상태가 눈에 보이게 진행되며 즉시 완료로 점프하지 않습니다. `Fast`와 `Step` 옵션은 리뷰/캡처용으로 사용할 수 있지만 중간 상태는 유지합니다. 데모가 끝나도 실제 앱 창은 닫히지 않고 완료 상태를 유지합니다.
+
 ## Runtime UI Evidence Pack
 
 런타임 UI 동작 증거는 다음 경로에 생성됩니다.
@@ -63,6 +85,19 @@ FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 - `docs/debug/latest/screenshots/*.png`
 
 `docs/debug/latest/screenshots/00-startup-simulator.png`는 실제 실행 셸에서 Machine Twin이 첫 번째/default 탭으로 선택되어 있음을 보여주는 통합 증거입니다.
+
+debug evidence에는 다음 5-wafer pipeline milestone이 포함됩니다.
+
+- `01-foup-a-5-wafers.png`
+- `02-w01-pick-a1.png`
+- `03-w01-on-blade.png`
+- `04-w01-chamber-a-processing.png`
+- `05-w02-enters-chamber-a-while-w01-moves-to-b.png`
+- `06-pipeline-three-chambers-occupied.png`
+- `07-w01-chamber-c-complete.png`
+- `08-w01-placed-foup-b-b1.png`
+- `09-foup-a-empty-pipeline-finishing.png`
+- `10-foup-b-5-wafers-complete.png`
 
 재생성 명령:
 

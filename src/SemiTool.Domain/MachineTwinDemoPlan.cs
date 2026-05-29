@@ -21,84 +21,63 @@ public static class MachineTwinDemoPlan
     /// <see cref="DigitalTwinPhysicalModel"/> and are never interpreted as
     /// display degrees. The visual angle is a separate HMI-only arc position.
     /// </remarks>
-    public static IReadOnlyList<MachineTwinDemoStep> CreateDefault(DigitalTwinPhysicalModel model)
+    public static IReadOnlyList<MachineTwinDemoStep> CreateDefault(DigitalTwinPhysicalModel model) =>
+        Create(model, SimulatorTimingProfile.Realistic);
+
+    public static IReadOnlyList<MachineTwinDemoStep> Create(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing)
     {
         var stationByKey = model.ThetaSwing.Stations.ToDictionary(station => station.PoseKey, StringComparer.OrdinalIgnoreCase);
 
-        // This local factory keeps each demo step explicit while ensuring every
-        // trace row carries both the preserved machine encoder value and the
-        // separate limited-swing visual angle used by the WPF Canvas.
-        MachineTwinDemoStep Step(
-            int index,
-            string name,
-            string stationKey,
-            string previous,
-            string next,
-            string currentStep,
-            string zState,
-            bool bladeExtended,
-            bool cylinderForward,
-            bool cylinderBackward,
-            bool vacuumOn,
-            bool waferOnBlade,
-            bool foupA,
-            bool chamberA,
-            bool chamberB,
-            bool chamberC,
-            bool foupB,
-            bool doorA,
-            bool doorB,
-            bool doorC,
-            bool towerGreen,
-            string eventMessage)
-        {
-            var station = stationByKey[stationKey];
-            return new MachineTwinDemoStep(
-                index,
-                name,
-                stationKey,
-                station.DisplayName,
-                previous,
-                next,
-                currentStep,
-                station.ThetaEncoderPosition,
-                station.VisualArcPositionDegrees,
-                zState,
-                bladeExtended,
-                cylinderForward,
-                cylinderBackward,
-                vacuumOn,
-                waferOnBlade,
-                foupA,
-                chamberA,
-                chamberB,
-                chamberC,
-                foupB,
-                doorA,
-                doorB,
-                doorC,
-                towerGreen,
-                eventMessage);
-        }
-
-        // The list intentionally includes the capture/report milestones, not
-        // every possible low-level motion command. The WPF view interpolates
-        // these safe simulator states without touching real hardware.
-        return
-        [
-            Step(0, "Startup Simulator", "FoupA", "-", "FOUP A", "Simulator startup / safe state", "Z Safe", false, false, true, false, false, true, false, false, false, false, false, false, false, false, "Startup simulator state. No real hardware connected."),
-            Step(1, "Initial FOUP A Slot 1", "FoupA", "-", "FOUP A", "FOUP A Slot 1 contains wafer", "Z Safe", false, false, true, false, false, true, false, false, false, false, false, false, false, false, "Wafer A01 is ready in FOUP A Slot 1."),
-            Step(2, "Theta To FOUP A", "FoupA", "-", "Chamber A", "Theta target FOUP A", "Z Safe", false, false, true, false, false, true, false, false, false, false, false, false, false, false, "Limited theta swing targets FOUP A."),
-            Step(3, "Z Work / Blade Extend", "FoupA", "-", "Chamber A", "Z Work and blade extended into FOUP A", "Z Work", true, true, false, false, false, true, false, false, false, false, false, false, false, false, "CylinderForward extends the telescopic blade."),
-            Step(4, "Vacuum Suction / Wafer On Blade", "FoupA", "-", "Chamber A", "Vacuum suction holds wafer", "Z Work", true, true, false, true, true, false, false, false, false, false, false, false, false, false, "VacuumSuction holds wafer A01 on the blade."),
-            Step(5, "Transfer To Chamber A", "ChamberA", "FOUP A", "Chamber A", "Swing toward Chamber A", "Z Safe", false, false, true, true, true, false, false, false, false, false, true, false, false, false, "Blade retracts and theta swings to Chamber A."),
-            Step(6, "Place Chamber A", "ChamberA", "FOUP A", "Chamber B", "Release wafer into Chamber A / PreClean starts", "Z Work", true, true, false, false, false, false, true, false, false, false, false, false, false, false, "VacuumExhaust releases wafer into Chamber A."),
-            Step(7, "Transfer Chamber A To B", "ChamberB", "Chamber A", "Chamber B", "Move wafer to Chamber B CMP_Main", "Z Work", true, true, false, false, false, false, false, true, false, false, false, true, false, false, "Chamber B CMP_Main process starts."),
-            Step(8, "Transfer Chamber B To C", "ChamberC", "Chamber B", "Chamber C", "Move wafer to Chamber C PostClean_Dry", "Z Work", true, true, false, false, false, false, false, false, true, false, false, false, true, false, "Chamber C PostClean_Dry process starts."),
-            Step(9, "Transfer Chamber C To FOUP B", "FoupB", "Chamber C", "FOUP B", "Place wafer into FOUP B Slot 1", "Z Work", true, true, false, false, false, false, false, false, false, true, false, false, false, false, "Wafer A01 is placed into FOUP B Slot 1."),
-            Step(10, "Process Complete Green Blink", "FoupB", "Chamber C", "-", "Overall simulator flow complete", "Z Safe", false, false, true, false, false, false, false, false, false, true, false, false, false, true, "Tower green indicates simulator flow complete."),
-            Step(11, "Reset Safe State", "FoupA", "-", "FOUP A", "Reset to safe simulator state", "Z Safe", false, false, true, false, false, true, false, false, false, false, false, false, false, false, "Reset returns the simulator display to a safe state.")
-        ];
+        return WaferPipelineSimulator.CreateDebugTimeline(timing)
+            .Select(snapshot =>
+            {
+                var station = stationByKey[snapshot.CurrentStationKey];
+                return new MachineTwinDemoStep(
+                    snapshot.StepIndex,
+                    snapshot.StepName,
+                    snapshot.CurrentStationKey,
+                    station.DisplayName,
+                    snapshot.PreviousStation,
+                    snapshot.NextStation,
+                    snapshot.CurrentStepName,
+                    station.ThetaEncoderPosition,
+                    station.VisualArcPositionDegrees,
+                    snapshot.ZState,
+                    snapshot.IsBladeExtended,
+                    snapshot.IsCylinderForward,
+                    snapshot.IsCylinderBackward,
+                    snapshot.VacuumState == "Suction",
+                    snapshot.IsWaferOnBlade,
+                    snapshot.FoupASlots.First(slot => slot.SlotName == "A1").HasWafer,
+                    snapshot.ChamberA.HasWafer,
+                    snapshot.ChamberB.HasWafer,
+                    snapshot.ChamberC.HasWafer,
+                    snapshot.FoupBSlots.First(slot => slot.SlotName == "B1").HasWafer,
+                    snapshot.ChamberA.DoorOpen,
+                    snapshot.ChamberB.DoorOpen,
+                    snapshot.ChamberC.DoorOpen,
+                    snapshot.TowerGreen,
+                    snapshot.EventLogMessage,
+                    snapshot.ScreenshotName,
+                    snapshot.PipelineState.ToString(),
+                    snapshot.FoupACount,
+                    snapshot.FoupBCount,
+                    snapshot.CompletedCount,
+                    snapshot.TotalWafers,
+                    snapshot.CurrentTransferDescription,
+                    snapshot.ActiveWaferId,
+                    snapshot.WaferIdOnBlade,
+                    snapshot.VacuumState,
+                    snapshot.WaferIds,
+                    timing.Name,
+                    snapshot.DelayMs,
+                    snapshot.FoupASlots,
+                    snapshot.FoupBSlots,
+                    snapshot.ChamberA,
+                    snapshot.ChamberB,
+                    snapshot.ChamberC);
+            })
+            .ToArray();
     }
 }
 
@@ -127,4 +106,22 @@ public sealed record MachineTwinDemoStep(
     bool ChamberBDoorOpen,
     bool ChamberCDoorOpen,
     bool TowerGreen,
-    string EventLogMessage);
+    string EventLogMessage,
+    string ScreenshotName,
+    string PipelineState,
+    int FoupACount,
+    int FoupBCount,
+    int CompletedCount,
+    int TotalWafers,
+    string CurrentTransferDescription,
+    string ActiveWaferId,
+    string WaferIdOnBlade,
+    string VacuumState,
+    string WaferIds,
+    string TimingProfileName,
+    int DelayMs,
+    IReadOnlyList<WaferPipelineSlot> FoupASlots,
+    IReadOnlyList<WaferPipelineSlot> FoupBSlots,
+    ChamberPipelineSnapshot ChamberA,
+    ChamberPipelineSnapshot ChamberB,
+    ChamberPipelineSnapshot ChamberC);

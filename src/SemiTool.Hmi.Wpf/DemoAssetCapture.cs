@@ -57,7 +57,7 @@ internal static class DemoAssetCapture
         var trace = new List<MachineTwinStateTraceEntry>();
         await viewModel.MachineTwin.RunSimulatorDemoForCaptureAsync(async step =>
         {
-            var fileName = GetDebugScreenshotName(step.StepIndex);
+            var fileName = step.ScreenshotName;
             var path = IoPath.Combine(screenshotDirectory, fileName);
             if (step.StepIndex == 0)
             {
@@ -83,9 +83,9 @@ internal static class DemoAssetCapture
             {
                 0 => "digital-twin-limited-theta-swing.png",
                 4 => "digital-twin-wafer-transfer-robot.png",
-                3 => "digital-twin-blade-mechanism.png",
+                2 => "digital-twin-blade-mechanism.png",
                 1 => "simulator-demo-frame-01.png",
-                6 => "simulator-demo-frame-02.png",
+                5 => "simulator-demo-frame-02.png",
                 8 => "simulator-demo-frame-03.png",
                 10 => "simulator-demo-frame-04.png",
                 _ => string.Empty
@@ -188,6 +188,22 @@ internal static class DemoAssetCapture
             "TowerGreen",
             "AlarmSummary",
             "EventLogMessage",
+            "PipelineState",
+            "FoupACount",
+            "FoupBCount",
+            "CompletedCount",
+            "TotalWafers",
+            "CurrentTransferDescription",
+            "ActiveWaferId",
+            "WaferIdOnBlade",
+            "VacuumState",
+            "WaferIds",
+            "TimingProfileName",
+            "FoupASlotStates",
+            "FoupBSlotStates",
+            "ChamberAState",
+            "ChamberBState",
+            "ChamberCState",
             "ScreenshotPath"
         }));
 
@@ -228,6 +244,22 @@ internal static class DemoAssetCapture
                 item.TowerGreen.ToString(),
                 Csv(item.AlarmSummary),
                 Csv(item.EventLogMessage),
+                Csv(item.PipelineState),
+                item.FoupACount.ToString(),
+                item.FoupBCount.ToString(),
+                item.CompletedCount.ToString(),
+                item.TotalWafers.ToString(),
+                Csv(item.CurrentTransferDescription),
+                Csv(item.ActiveWaferId),
+                Csv(item.WaferIdOnBlade),
+                Csv(item.VacuumState),
+                Csv(item.WaferIds),
+                Csv(item.TimingProfileName),
+                Csv(item.FoupASlotStates),
+                Csv(item.FoupBSlotStates),
+                Csv(item.ChamberAState),
+                Csv(item.ChamberBState),
+                Csv(item.ChamberCState),
                 Csv(item.ScreenshotPath)
             }));
         }
@@ -258,6 +290,7 @@ internal static class DemoAssetCapture
         builder.AppendLine("- Visual theta angle is for HMI rendering only.");
         builder.AppendLine("- Preserved theta encoder values are machine/teaching values, not literal UI degrees.");
         builder.AppendLine("- The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.");
+        builder.AppendLine("- Normal runtime `Run Simulator Demo` remains open after completion; only explicit capture modes call application shutdown.");
         builder.AppendLine();
         builder.AppendLine("## Runtime Integration Check");
         builder.AppendLine();
@@ -270,12 +303,13 @@ internal static class DemoAssetCapture
         builder.AppendLine();
         builder.AppendLine("## Captured Steps");
         builder.AppendLine();
-        builder.AppendLine("| Step | State | Station | Z | Blade | Vacuum | Wafer | Screenshot |");
-        builder.AppendLine("|---:|---|---|---|---|---|---|---|");
+        builder.AppendLine("| Step | State | Station | FOUP A | FOUP B | Chambers | Z | Blade | Vacuum | Screenshot |");
+        builder.AppendLine("|---:|---|---|---:|---:|---|---|---|---|---|");
 
         foreach (var item in trace)
         {
-            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentStation} | {item.ZState} | {(item.IsBladeExtended ? "Extended" : "Retracted")} | {(item.IsVacuumOn ? "ON" : "OFF")} | {(item.IsWaferOnBlade ? "On blade" : item.CurrentStepName)} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
+            var chamberSummary = $"{item.ChamberAState}<br>{item.ChamberBState}<br>{item.ChamberCState}";
+            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentStation} | {item.FoupACount}/5 | {item.FoupBCount}/5 | {chamberSummary} | {item.ZState} | {(item.IsBladeExtended ? "Extended" : "Retracted")} | {item.VacuumState} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
         }
 
         builder.AppendLine();
@@ -284,14 +318,19 @@ internal static class DemoAssetCapture
         builder.AppendLine("| Expected simulator movement | Evidence in this report |");
         builder.AppendLine("|---|---|");
         builder.AppendLine("| Machine Twin starts in Simulator mode and does not connect to real hardware. | Step 0 shows `IsSimulatorMode=true` and `IsRealHardwareMode=false`; `IsConnected` refers to the simulator controller connection, not real equipment. |");
-        builder.AppendLine("| FOUP A Slot 1 starts with a wafer. | Step 1 keeps `IsWaferInFoupA1=true` and no wafer on the blade. |");
-        builder.AppendLine("| Theta target follows the limited station arc instead of a 360-degree dial. | Steps 2, 5, 7, 8, and 9 show station-to-station `ThetaTargetName` changes plus preserved encoder values. |");
-        builder.AppendLine("| Z moves from Safe to Work only during pick/place visualization. | Steps 3, 4, 6, 7, 8, and 9 show `ZState=Z Work`; reset returns to `Z Safe`. |");
+        builder.AppendLine("| FOUP A starts with five wafers. | Steps 0 and 1 show `FoupACount=5` and `FoupBCount=0`. |");
+        builder.AppendLine("| Theta target follows the limited station arc instead of a 360-degree dial. | The trace records station-to-station `ThetaTargetName` changes plus preserved encoder values. |");
+        builder.AppendLine("| Z moves from Safe to Work only during pick/place visualization. | Pick/place steps show `ZState=Z Work`; processing and reset states return to `Z Safe`. |");
         builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `IsCylinderForward=true` also show `IsBladeExtended=true`. |");
-        builder.AppendLine("| Vacuum suction attaches the wafer to the blade. | Step 4 shows `IsVacuumOn=true` and `IsWaferOnBlade=true`. |");
+        builder.AppendLine("| Vacuum suction attaches the wafer to the blade. | Step 3 shows `VacuumState=Suction`, `IsVacuumOn=true`, and `IsWaferOnBlade=true`. |");
         builder.AppendLine("| Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps turn vacuum off and move the wafer flag to the target location. |");
         builder.AppendLine("| Tower green indicates simulator sequence completion. | Step 10 shows `TowerGreen=true`. |");
         builder.AppendLine("| Reset returns the visual to a safe simulator state. | Step 11 returns to FOUP A, blade retracted, vacuum off, and Z Safe. |");
+        builder.AppendLine("| FOUP A count decreases from 5 to 0. | Captured states show FOUP A 5/5 at startup, 4/5 after W01 pick, and 0/5 while the pipeline drains. |");
+        builder.AppendLine("| FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |");
+        builder.AppendLine("| Chambers are used as a pipeline. | Step 6 shows Chamber A, Chamber B, and Chamber C occupied simultaneously. |");
+        builder.AppendLine("| Scheduler drains downstream first. | Step 7 shows Chamber C complete and ready for the highest-priority Chamber C -> FOUP B transfer. |");
+        builder.AppendLine("| Runtime demo does not auto-close. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Simulator Demo` leaves the window open. |");
         builder.AppendLine();
         builder.AppendLine("## Screenshot Timeline");
         builder.AppendLine();
@@ -333,23 +372,6 @@ internal static class DemoAssetCapture
         builder.AppendLine("- `event-log.txt`");
         return builder.ToString();
     }
-
-    private static string GetDebugScreenshotName(int stepIndex) => stepIndex switch
-    {
-        0 => "00-startup-simulator.png",
-        1 => "01-initial-foup-a-slot1.png",
-        2 => "02-theta-to-foup-a.png",
-        3 => "03-z-work-blade-extend.png",
-        4 => "04-vacuum-suction-wafer-on-blade.png",
-        5 => "05-transfer-to-chamber-a.png",
-        6 => "06-place-chamber-a.png",
-        7 => "07-transfer-chamber-a-to-b.png",
-        8 => "08-transfer-chamber-b-to-c.png",
-        9 => "09-transfer-chamber-c-to-foup-b.png",
-        10 => "10-process-complete-green-blink.png",
-        11 => "11-reset-safe-state.png",
-        _ => $"{stepIndex:00}-machine-twin.png"
-    };
 
     private static string Csv(string value) => $"\"{value.Replace("\"", "\"\"")}\"";
 

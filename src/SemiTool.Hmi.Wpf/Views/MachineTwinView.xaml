@@ -5,8 +5,8 @@
     <UserControl.Resources>
         <Style x:Key="SlotChipStyle" TargetType="Border">
             <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Padding" Value="8,5" />
-            <Setter Property="Margin" Value="3" />
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="Margin" Value="1.5" />
             <Setter Property="Background" Value="#24343C" />
             <Setter Property="BorderBrush" Value="#49616E" />
             <Setter Property="BorderThickness" Value="1" />
@@ -14,6 +14,11 @@
                 <DataTrigger Binding="{Binding HasWafer}" Value="True">
                     <Setter Property="Background" Value="#24533F" />
                     <Setter Property="BorderBrush" Value="#64DB9D" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                    <Setter Property="Background" Value="#6B5426" />
+                    <Setter Property="BorderBrush" Value="{StaticResource HmiWarningBrush}" />
+                    <Setter Property="BorderThickness" Value="2" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -90,81 +95,96 @@
                                 Padding="4">
                             <Image Source="{Binding ReferencePhotoPath}"
                                    Stretch="Uniform"
-                                   Height="250" />
+                                   Height="105" />
                         </Border>
                         <TextBlock Text="{Binding PhotoCaption}"
                                    Foreground="{StaticResource HmiMutedTextBrush}"
                                    TextWrapping="Wrap"
-                                   Margin="0,8,0,0" />
+                                   FontSize="11"
+                                   Margin="0,5,0,0" />
                         <TextBlock Text="Approved portfolio context photo. It does not claim WPF real-hardware verification."
                                    Foreground="{StaticResource HmiWarningBrush}"
                                    TextWrapping="Wrap"
-                                   Margin="0,4,0,0" />
+                                   FontSize="11"
+                                   Margin="0,2,0,0" />
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Row="1" Style="{StaticResource HmiStatusCard}">
-                    <StackPanel>
-                        <TextBlock Text="FOUP A" Style="{StaticResource HmiSectionHeader}" />
-                        <ItemsControl ItemsSource="{Binding FoupASlots}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="5" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:FoupSlotChipViewModel}">
-                                    <Border Style="{StaticResource SlotChipStyle}">
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock Text="{Binding Label}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" />
-                                            <TextBlock Text="wafer" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasWafer}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="FOUP B" Style="{StaticResource HmiSectionHeader}" Margin="0,16,0,8" />
-                        <ItemsControl ItemsSource="{Binding FoupBSlots}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="5" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:FoupSlotChipViewModel}">
-                                    <Border Style="{StaticResource SlotChipStyle}">
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock Text="{Binding Label}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" />
-                                            <TextBlock Text="wafer" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasWafer}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
+                        <!-- FOUPs are shown as vertical 5-slot cassette stacks so the runtime UI mirrors the pipeline state, not a single symbolic button. -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="FOUP A" Style="{StaticResource HmiSectionHeader}" />
+                            <TextBlock Text="{Binding FoupASummary}" Foreground="{StaticResource HmiMutedTextBrush}" Margin="0,0,0,4" FontSize="12" />
+                            <ItemsControl ItemsSource="{Binding FoupASlots}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="1" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:FoupSlotChipViewModel}">
+                                        <Border Style="{StaticResource SlotChipStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="23" />
+                                                    <ColumnDefinition Width="16" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding Label}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" />
+                                                <Ellipse Grid.Column="1" Width="11" Height="11" Fill="#6BC29B" Stroke="#D9F8EA" StrokeThickness="1" VerticalAlignment="Center"
+                                                         Visibility="{Binding HasWafer, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding WaferId}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" FontSize="10" />
+                                                    <TextBlock Text=" " />
+                                                    <TextBlock Text="{Binding State}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="FOUP B" Style="{StaticResource HmiSectionHeader}" />
+                            <TextBlock Text="{Binding FoupBSummary}" Foreground="{StaticResource HmiMutedTextBrush}" Margin="0,0,0,4" FontSize="12" />
+                            <ItemsControl ItemsSource="{Binding FoupBSlots}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="1" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:FoupSlotChipViewModel}">
+                                        <Border Style="{StaticResource SlotChipStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="23" />
+                                                    <ColumnDefinition Width="16" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding Label}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" />
+                                                <Ellipse Grid.Column="1" Width="11" Height="11" Fill="#6BC29B" Stroke="#D9F8EA" StrokeThickness="1" VerticalAlignment="Center"
+                                                         Visibility="{Binding HasWafer, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding WaferId}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" FontSize="10" />
+                                                    <TextBlock Text=" " />
+                                                    <TextBlock Text="{Binding State}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
                 </Border>
 
                 <Border Grid.Row="2" Style="{StaticResource HmiAlarmBadge}">
@@ -200,6 +220,11 @@
                             <Button Content="Reset"
                                     Command="{Binding ResetCommand}"
                                     Style="{StaticResource HmiButton}" />
+                            <TextBlock Text="Demo Speed" Foreground="{StaticResource HmiMutedTextBrush}" VerticalAlignment="Center" Margin="12,0,4,0" />
+                            <ComboBox ItemsSource="{Binding DemoSpeedOptions}"
+                                      SelectedItem="{Binding SelectedDemoSpeed}"
+                                      Width="110"
+                                      MinHeight="34" />
                         </StackPanel>
                     </StackPanel>
 
@@ -228,26 +253,38 @@
                                     <TextBlock Text="Source / A1-A5" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
                                 </StackPanel>
                             </Border>
-                            <Border Canvas.Left="60" Canvas.Top="242" Width="126" Height="66" Style="{StaticResource ChamberCardStyle}">
+                            <Border Canvas.Left="42" Canvas.Top="226" Width="170" Height="112" Style="{StaticResource ChamberCardStyle}">
                                 <StackPanel>
-                                    <TextBlock Text="Chamber A" Foreground="White" FontWeight="SemiBold" />
-                                    <TextBlock Text="PreClean" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="Chamber A / Pre-Clean" Foreground="White" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding ChamberA.Summary}" Foreground="{StaticResource HmiGreenBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ChamberA.RecipeName}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ChamberA.CurrentStep}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <ProgressBar Height="7" Minimum="0" Maximum="100" Value="{Binding ChamberA.ProgressPercent, Mode=OneWay}" Margin="0,3,0,0" />
+                                    <TextBlock Text="{Binding ChamberA.RemainingTime, StringFormat=Remain {0}s}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
                                     <TextBlock Text="Door open" Foreground="{StaticResource HmiGreenBrush}" FontSize="11"
                                                Visibility="{Binding ChamberADoorOpen, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>
                             </Border>
-                            <Border Canvas.Left="284" Canvas.Top="70" Width="132" Height="66" Style="{StaticResource ChamberCardStyle}">
+                            <Border Canvas.Left="264" Canvas.Top="58" Width="172" Height="112" Style="{StaticResource ChamberCardStyle}">
                                 <StackPanel>
-                                    <TextBlock Text="Chamber B" Foreground="White" FontWeight="SemiBold" />
-                                    <TextBlock Text="CMP_Main" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="Chamber B / CMP Main" Foreground="White" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding ChamberB.Summary}" Foreground="{StaticResource HmiGreenBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ChamberB.RecipeName}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ChamberB.CurrentStep}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <ProgressBar Height="7" Minimum="0" Maximum="100" Value="{Binding ChamberB.ProgressPercent, Mode=OneWay}" Margin="0,3,0,0" />
+                                    <TextBlock Text="{Binding ChamberB.RemainingTime, StringFormat=Remain {0}s}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
                                     <TextBlock Text="Door open" Foreground="{StaticResource HmiGreenBrush}" FontSize="11"
                                                Visibility="{Binding ChamberBDoorOpen, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>
                             </Border>
-                            <Border Canvas.Left="514" Canvas.Top="242" Width="126" Height="66" Style="{StaticResource ChamberCardStyle}">
+                            <Border Canvas.Left="488" Canvas.Top="226" Width="174" Height="112" Style="{StaticResource ChamberCardStyle}">
                                 <StackPanel>
-                                    <TextBlock Text="Chamber C" Foreground="White" FontWeight="SemiBold" />
-                                    <TextBlock Text="PostClean_Dry" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="Chamber C / Post-Clean" Foreground="White" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding ChamberC.Summary}" Foreground="{StaticResource HmiGreenBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ChamberC.RecipeName}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ChamberC.CurrentStep}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <ProgressBar Height="7" Minimum="0" Maximum="100" Value="{Binding ChamberC.ProgressPercent, Mode=OneWay}" Margin="0,3,0,0" />
+                                    <TextBlock Text="{Binding ChamberC.RemainingTime, StringFormat=Remain {0}s}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
                                     <TextBlock Text="Door open" Foreground="{StaticResource HmiGreenBrush}" FontSize="11"
                                                Visibility="{Binding ChamberCDoorOpen, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>
@@ -346,6 +383,8 @@
                 <Border Grid.Row="0" Style="{StaticResource HmiStatusCard}">
                     <StackPanel>
                         <TextBlock Text="Motion / Actuator State" Style="{StaticResource HmiSectionHeader}" />
+                        <TextBlock Text="{Binding PipelineState, StringFormat=Pipeline: {0}}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding CurrentTransferDescription}" Foreground="{StaticResource HmiMutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,8" />
                         <TextBlock Text="{Binding CurrentStepName}" Foreground="{StaticResource HmiTextBrush}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding CurrentStation, StringFormat=Current station: {0}}" Foreground="{StaticResource HmiMutedTextBrush}" Margin="0,8,0,0" />
                         <TextBlock Text="{Binding ThetaTargetName, StringFormat=Theta target: {0}}" Foreground="{StaticResource HmiMutedTextBrush}" />

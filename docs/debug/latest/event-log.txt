@@ -1,12 +1,12 @@
-﻿2026-05-29T14:10:49.5634637+09:00 | Startup simulator state. No real hardware connected.
-2026-05-29T14:10:49.6249887+09:00 | Wafer A01 is ready in FOUP A Slot 1.
-2026-05-29T14:10:49.6701016+09:00 | Limited theta swing targets FOUP A.
-2026-05-29T14:10:49.7237015+09:00 | CylinderForward extends the telescopic blade.
-2026-05-29T14:10:49.7650880+09:00 | VacuumSuction holds wafer A01 on the blade.
-2026-05-29T14:10:49.8199277+09:00 | Blade retracts and theta swings to Chamber A.
-2026-05-29T14:10:49.8678595+09:00 | VacuumExhaust releases wafer into Chamber A.
-2026-05-29T14:10:49.9187500+09:00 | Chamber B CMP_Main process starts.
-2026-05-29T14:10:49.9612918+09:00 | Chamber C PostClean_Dry process starts.
-2026-05-29T14:10:50.0123809+09:00 | Wafer A01 is placed into FOUP B Slot 1.
-2026-05-29T14:10:50.0710399+09:00 | Tower green indicates simulator flow complete.
-2026-05-29T14:10:50.1286493+09:00 | Reset returns the simulator display to a safe state.
+﻿2026-05-29T18:43:15.9628595+09:00 | Pipeline ready: FOUP A 5 wafers, FOUP B empty.
+2026-05-29T18:43:16.0302387+09:00 | FOUP A slots A1-A5 are loaded. FOUP B is empty.
+2026-05-29T18:43:16.0902879+09:00 | Transfer W01: FOUP A Slot A1 -> Chamber A started. Z Work, blade extended.
+2026-05-29T18:43:16.1430293+09:00 | Vacuum suction ON: W01 is on the blade.
+2026-05-29T18:43:16.1842759+09:00 | W01 placed in Chamber A. PreClean_Default started.
+2026-05-29T18:43:16.2390029+09:00 | Scheduler fed W02 into Chamber A after W01 moved to Chamber B.
+2026-05-29T18:43:16.2868819+09:00 | Pipeline state: Chamber A W03, Chamber B W02, Chamber C W01.
+2026-05-29T18:43:16.3307348+09:00 | W01 Chamber C process complete. Scheduler priority selects Chamber C -> FOUP B.
+2026-05-29T18:43:16.3808073+09:00 | W01 placed into FOUP B Slot B1. FOUP B count is now 1/5.
+2026-05-29T18:43:16.4450911+09:00 | FOUP A is empty. Pipeline is draining remaining wafers toward FOUP B.
+2026-05-29T18:43:16.4903295+09:00 | All 5 wafers completed in FOUP B. Tower green blink enabled.
+2026-05-29T18:43:16.5387802+09:00 | Reset returns simulator to FOUP A loaded, FOUP B empty, blade retracted, vacuum off.

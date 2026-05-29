@@ -40,6 +40,15 @@ public sealed class MachineTwinViewModel : ObservableObject
     private bool _towerYellow;
     private bool _towerGreen;
     private string _alarmSummary = "No active alarms";
+    private string _selectedDemoSpeed = "Realistic";
+    private string _pipelineState = PipelineStateKind.Ready.ToString();
+    private int _foupACount = 5;
+    private int _foupBCount;
+    private int _completedCount;
+    private string _currentTransferDescription = "Ready";
+    private string _activeWaferId = string.Empty;
+    private string _waferIdOnBlade = string.Empty;
+    private string _timingProfileName = SimulatorTimingProfile.Realistic.Name;
 
     public MachineTwinViewModel(RuntimeCoordinator runtime)
     {
@@ -48,8 +57,12 @@ public sealed class MachineTwinViewModel : ObservableObject
         _demoSteps = MachineTwinDemoPlan.CreateDefault(_physicalModel);
         ReferencePhotoPath = ResolveRepositoryPath("docs", "images", "real-equipment-context-top-view.jpg");
         EventLogLines = new ObservableCollection<string>();
-        FoupASlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots("A", hasFirstWafer: true));
-        FoupBSlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots("B", hasFirstWafer: false));
+        DemoSpeedOptions = new ObservableCollection<string>(["Realistic", "Fast", "Step"]);
+        FoupASlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots(_demoSteps[0].FoupASlots));
+        FoupBSlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots(_demoSteps[0].FoupBSlots));
+        ChamberA = ChamberPipelineViewModel.From(_demoSteps[0].ChamberA);
+        ChamberB = ChamberPipelineViewModel.From(_demoSteps[0].ChamberB);
+        ChamberC = ChamberPipelineViewModel.From(_demoSteps[0].ChamberC);
         Stations = new ObservableCollection<MachineTwinStationViewModel>(
             _physicalModel.ThetaSwing.Stations.OrderBy(station => station.Order).Select(MachineTwinStationViewModel.From));
         RunSimulatorDemoCommand = new AsyncRelayCommand(_ => RunSimulatorDemoCommandAsync());
@@ -64,7 +77,11 @@ public sealed class MachineTwinViewModel : ObservableObject
     public ObservableCollection<MachineTwinStationViewModel> Stations { get; }
     public ObservableCollection<FoupSlotChipViewModel> FoupASlots { get; }
     public ObservableCollection<FoupSlotChipViewModel> FoupBSlots { get; }
+    public ObservableCollection<string> DemoSpeedOptions { get; }
     public ObservableCollection<string> EventLogLines { get; }
+    public ChamberPipelineViewModel ChamberA { get; }
+    public ChamberPipelineViewModel ChamberB { get; }
+    public ChamberPipelineViewModel ChamberC { get; }
     public string ReferencePhotoPath { get; }
     public bool HasReferencePhoto => File.Exists(ReferencePhotoPath);
     public string ScenarioName => _physicalModel.ScenarioName;
@@ -103,6 +120,15 @@ public sealed class MachineTwinViewModel : ObservableObject
     public bool TowerYellow { get => _towerYellow; private set => SetProperty(ref _towerYellow, value); }
     public bool TowerGreen { get => _towerGreen; private set => SetProperty(ref _towerGreen, value); }
     public string AlarmSummary { get => _alarmSummary; private set => SetProperty(ref _alarmSummary, value); }
+    public string SelectedDemoSpeed { get => _selectedDemoSpeed; set => SetProperty(ref _selectedDemoSpeed, value); }
+    public string PipelineState { get => _pipelineState; private set => SetProperty(ref _pipelineState, value); }
+    public int FoupACount { get => _foupACount; private set => SetProperty(ref _foupACount, value); }
+    public int FoupBCount { get => _foupBCount; private set => SetProperty(ref _foupBCount, value); }
+    public int CompletedCount { get => _completedCount; private set => SetProperty(ref _completedCount, value); }
+    public string CurrentTransferDescription { get => _currentTransferDescription; private set => SetProperty(ref _currentTransferDescription, value); }
+    public string ActiveWaferId { get => _activeWaferId; private set => SetProperty(ref _activeWaferId, value); }
+    public string WaferIdOnBlade { get => _waferIdOnBlade; private set => SetProperty(ref _waferIdOnBlade, value); }
+    public string TimingProfileName { get => _timingProfileName; private set => SetProperty(ref _timingProfileName, value); }
     public string ModeLabel => IsSimulatorMode ? "SIMULATOR" : "REAL HARDWARE";
     public string ConnectionLabel => IsConnected ? "Connected" : "Disconnected";
     public double BladeLength => IsBladeExtended ? 245 : 160;
@@ -110,13 +136,11 @@ public sealed class MachineTwinViewModel : ObservableObject
     public string CylinderState => IsCylinderForward ? "Forward / blade extended" : "Backward / blade retracted";
     public string VacuumState => IsVacuumOn ? "Suction ON / wafer held" : "Exhaust or OFF / wafer released";
     public string WaferSummary => IsWaferOnBlade
-        ? "Wafer on blade"
-        : IsWaferInFoupB1 ? "Wafer stored in FOUP B Slot 1"
-        : IsWaferInChamberC ? "Wafer in Chamber C"
-        : IsWaferInChamberB ? "Wafer in Chamber B"
-        : IsWaferInChamberA ? "Wafer in Chamber A"
-        : IsWaferInFoupA1 ? "Wafer in FOUP A Slot 1"
-        : "No wafer visible";
+        ? $"{WaferIdOnBlade} on blade"
+        : CompletedCount == 5 ? "All 5 wafers in FOUP B"
+        : $"{FoupACount}/5 in FOUP A, {FoupBCount}/5 in FOUP B";
+    public string FoupASummary => $"FOUP A: {FoupACount}/5 loaded";
+    public string FoupBSummary => $"FOUP B: {FoupBCount}/5 completed";
 
     public AsyncRelayCommand RunSimulatorDemoCommand { get; }
     public AsyncRelayCommand StopCommand { get; }
@@ -172,8 +196,8 @@ public sealed class MachineTwinViewModel : ObservableObject
         IsSimulatorMode,
         IsRealHardwareMode,
         IsConnected,
-        MachineState,
-        CurrentStation,
+            MachineState,
+            CurrentStation,
         PreviousStation,
         NextStation,
         CurrentStepName,
@@ -196,10 +220,26 @@ public sealed class MachineTwinViewModel : ObservableObject
         ChamberCDoorOpen,
         TowerRed,
         TowerYellow,
-        TowerGreen,
-        AlarmSummary,
-        step.EventLogMessage,
-        screenshotPath);
+            TowerGreen,
+            AlarmSummary,
+            step.EventLogMessage,
+            step.PipelineState,
+            step.FoupACount,
+            step.FoupBCount,
+            step.CompletedCount,
+            step.TotalWafers,
+            step.CurrentTransferDescription,
+            step.ActiveWaferId,
+            step.WaferIdOnBlade,
+            step.VacuumState,
+            step.WaferIds,
+            step.TimingProfileName,
+            FormatSlots(step.FoupASlots),
+            FormatSlots(step.FoupBSlots),
+            FormatChamber(step.ChamberA),
+            FormatChamber(step.ChamberB),
+            FormatChamber(step.ChamberC),
+            screenshotPath);
 
     private async Task RunSimulatorDemoCommandAsync()
     {
@@ -213,7 +253,7 @@ public sealed class MachineTwinViewModel : ObservableObject
             {
                 _demoCts.Token.ThrowIfCancellationRequested();
                 await ApplySimulatorStepAsync(step, _demoCts.Token).ConfigureAwait(true);
-                await Task.Delay(550, _demoCts.Token).ConfigureAwait(true);
+                await Task.Delay(GetRuntimeDelayForSelectedSpeed(step), _demoCts.Token).ConfigureAwait(true);
             }
         }
         catch (OperationCanceledException)
@@ -303,8 +343,19 @@ public sealed class MachineTwinViewModel : ObservableObject
         TowerRed = false;
         TowerYellow = false;
         TowerGreen = step.TowerGreen;
-        SetSlot(FoupASlots, 1, step.IsWaferInFoupA1);
-        SetSlot(FoupBSlots, 1, step.IsWaferInFoupB1);
+        PipelineState = step.PipelineState;
+        FoupACount = step.FoupACount;
+        FoupBCount = step.FoupBCount;
+        CompletedCount = step.CompletedCount;
+        CurrentTransferDescription = step.CurrentTransferDescription;
+        ActiveWaferId = step.ActiveWaferId;
+        WaferIdOnBlade = step.WaferIdOnBlade;
+        TimingProfileName = step.TimingProfileName;
+        UpdateSlots(FoupASlots, step.FoupASlots);
+        UpdateSlots(FoupBSlots, step.FoupBSlots);
+        ChamberA.Update(step.ChamberA);
+        ChamberB.Update(step.ChamberB);
+        ChamberC.Update(step.ChamberC);
         SelectStation(step.CurrentStation);
         UpdateComputedProperties();
     }
@@ -348,6 +399,8 @@ public sealed class MachineTwinViewModel : ObservableObject
         OnPropertyChanged(nameof(CylinderState));
         OnPropertyChanged(nameof(VacuumState));
         OnPropertyChanged(nameof(WaferSummary));
+        OnPropertyChanged(nameof(FoupASummary));
+        OnPropertyChanged(nameof(FoupBSummary));
         OnPropertyChanged(nameof(FeedbackBoundary));
     }
 
@@ -359,19 +412,31 @@ public sealed class MachineTwinViewModel : ObservableObject
         }
     }
 
-    private static IEnumerable<FoupSlotChipViewModel> CreateSlots(string prefix, bool hasFirstWafer)
-    {
-        for (var slot = 1; slot <= 5; slot++)
+    private int GetRuntimeDelayForSelectedSpeed(MachineTwinDemoStep step) =>
+        SelectedDemoSpeed switch
         {
-            yield return new FoupSlotChipViewModel($"{prefix}{slot}", slot == 1 && hasFirstWafer);
+            _ when string.Equals(step.StepName, "Reset Safe State", StringComparison.OrdinalIgnoreCase) => 800,
+            "Fast" => Math.Max(180, Math.Min(step.DelayMs / 6, 450)),
+            "Step" => 1200,
+            _ => Math.Max(800, step.DelayMs)
+        };
+
+    private static IEnumerable<FoupSlotChipViewModel> CreateSlots(IEnumerable<WaferPipelineSlot> slots) =>
+        slots.Select(FoupSlotChipViewModel.From);
+
+    private static void UpdateSlots(IList<FoupSlotChipViewModel> target, IReadOnlyList<WaferPipelineSlot> source)
+    {
+        for (var i = 0; i < source.Count; i++)
+        {
+            target[i].Update(source[i]);
         }
     }
 
-    private static void SetSlot(IEnumerable<FoupSlotChipViewModel> slots, int slotNumber, bool hasWafer)
-    {
-        var slot = slots.ElementAt(slotNumber - 1);
-        slot.HasWafer = hasWafer;
-    }
+    private static string FormatSlots(IEnumerable<WaferPipelineSlot> slots) =>
+        string.Join("; ", slots.Select(slot => $"{slot.SlotName}:{(slot.HasWafer ? slot.WaferId : "Empty")}:{slot.State}"));
+
+    private static string FormatChamber(ChamberPipelineSnapshot chamber) =>
+        $"{chamber.ChamberName}:{chamber.ProcessState}:{chamber.WaferId}:{chamber.RecipeName}:{chamber.CurrentStep}:{chamber.RemainingSeconds}s:{chamber.ProgressPercent:F0}%";
 
     private static string ResolveRepositoryPath(params string[] segments)
     {
@@ -415,15 +480,85 @@ public sealed class MachineTwinStationViewModel : ObservableObject
 public sealed class FoupSlotChipViewModel : ObservableObject
 {
     private bool _hasWafer;
+    private string _waferId = string.Empty;
+    private string _state = "Empty";
+    private bool _isActive;
 
-    public FoupSlotChipViewModel(string label, bool hasWafer)
+    private FoupSlotChipViewModel(string label, bool hasWafer, string waferId, string state, bool isActive)
     {
         Label = label;
         _hasWafer = hasWafer;
+        _waferId = waferId;
+        _state = state;
+        _isActive = isActive;
     }
 
     public string Label { get; }
     public bool HasWafer { get => _hasWafer; set => SetProperty(ref _hasWafer, value); }
+    public string WaferId { get => _waferId; private set => SetProperty(ref _waferId, value); }
+    public string State { get => _state; private set => SetProperty(ref _state, value); }
+    public bool IsActive { get => _isActive; private set => SetProperty(ref _isActive, value); }
+
+    public static FoupSlotChipViewModel From(WaferPipelineSlot slot) =>
+        new(slot.SlotName, slot.HasWafer, slot.WaferId, slot.State, slot.IsActive);
+
+    public void Update(WaferPipelineSlot slot)
+    {
+        HasWafer = slot.HasWafer;
+        WaferId = slot.WaferId;
+        State = slot.State;
+        IsActive = slot.IsActive;
+    }
+}
+
+public sealed class ChamberPipelineViewModel : ObservableObject
+{
+    private bool _hasWafer;
+    private string _waferId = string.Empty;
+    private string _processState = "Empty";
+    private string _recipeName = string.Empty;
+    private string _currentStep = "-";
+    private int _remainingTime;
+    private double _progressPercent;
+    private bool _doorOpen;
+
+    private ChamberPipelineViewModel(string chamberName, string role)
+    {
+        ChamberName = chamberName;
+        Role = role;
+    }
+
+    public string ChamberName { get; }
+    public string Role { get; }
+    public bool HasWafer { get => _hasWafer; private set => SetProperty(ref _hasWafer, value); }
+    public string WaferId { get => _waferId; private set => SetProperty(ref _waferId, value); }
+    public string ProcessState { get => _processState; private set => SetProperty(ref _processState, value); }
+    public string RecipeName { get => _recipeName; private set => SetProperty(ref _recipeName, value); }
+    public string CurrentStep { get => _currentStep; private set => SetProperty(ref _currentStep, value); }
+    public int RemainingTime { get => _remainingTime; private set => SetProperty(ref _remainingTime, value); }
+    public double ProgressPercent { get => _progressPercent; private set => SetProperty(ref _progressPercent, value); }
+    public bool DoorOpen { get => _doorOpen; private set => SetProperty(ref _doorOpen, value); }
+    public string Summary => HasWafer ? $"{WaferId} / {ProcessState}" : "Empty";
+
+    public static ChamberPipelineViewModel From(ChamberPipelineSnapshot source)
+    {
+        var viewModel = new ChamberPipelineViewModel(source.ChamberName, source.Role);
+        viewModel.Update(source);
+        return viewModel;
+    }
+
+    public void Update(ChamberPipelineSnapshot source)
+    {
+        HasWafer = source.HasWafer;
+        WaferId = source.WaferId;
+        ProcessState = source.ProcessState;
+        RecipeName = source.RecipeName;
+        CurrentStep = source.CurrentStep;
+        RemainingTime = source.RemainingSeconds;
+        ProgressPercent = source.ProgressPercent;
+        DoorOpen = source.DoorOpen;
+        OnPropertyChanged(nameof(Summary));
+    }
 }
 
 public sealed record MachineTwinStateTraceEntry(
@@ -460,4 +595,20 @@ public sealed record MachineTwinStateTraceEntry(
     bool TowerGreen,
     string AlarmSummary,
     string EventLogMessage,
+    string PipelineState,
+    int FoupACount,
+    int FoupBCount,
+    int CompletedCount,
+    int TotalWafers,
+    string CurrentTransferDescription,
+    string ActiveWaferId,
+    string WaferIdOnBlade,
+    string VacuumState,
+    string WaferIds,
+    string TimingProfileName,
+    string FoupASlotStates,
+    string FoupBSlotStates,
+    string ChamberAState,
+    string ChamberBState,
+    string ChamberCState,
     string ScreenshotPath);
