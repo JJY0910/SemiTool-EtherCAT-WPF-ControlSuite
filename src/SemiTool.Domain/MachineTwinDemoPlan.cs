@@ -10,6 +10,9 @@ namespace SemiTool.Domain;
 /// </remarks>
 public static class MachineTwinDemoPlan
 {
+    public const string CompletedStepName = "FOUP B 5 Wafers Complete";
+    public const string ResetStepName = "Reset Safe State";
+
     /// <summary>
     /// Builds the repeatable simulator timeline used by the runtime Machine Twin,
     /// portfolio captures, and debug evidence report.
@@ -24,7 +27,19 @@ public static class MachineTwinDemoPlan
     public static IReadOnlyList<MachineTwinDemoStep> CreateDefault(DigitalTwinPhysicalModel model) =>
         Create(model, SimulatorTimingProfile.Teaching);
 
-    public static IReadOnlyList<MachineTwinDemoStep> Create(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing)
+    public static IReadOnlyList<MachineTwinDemoStep> Create(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing) =>
+        CreateWithReset(model, timing)
+            .Where(step => !string.Equals(step.StepName, ResetStepName, StringComparison.Ordinal))
+            .ToArray();
+
+    public static MachineTwinDemoStep CreateResetStep(DigitalTwinPhysicalModel model) =>
+        CreateResetStep(model, SimulatorTimingProfile.Teaching);
+
+    public static MachineTwinDemoStep CreateResetStep(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing) =>
+        CreateWithReset(model, timing)
+            .Single(step => string.Equals(step.StepName, ResetStepName, StringComparison.Ordinal));
+
+    public static IReadOnlyList<MachineTwinDemoStep> CreateWithReset(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing)
     {
         var stationByKey = model.ThetaSwing.Stations.ToDictionary(station => station.PoseKey, StringComparer.OrdinalIgnoreCase);
 

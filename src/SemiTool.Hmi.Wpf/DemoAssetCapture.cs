@@ -323,7 +323,7 @@ internal static class DemoAssetCapture
         builder.AppendLine("- Visual theta angle is for HMI rendering only.");
         builder.AppendLine("- Preserved theta encoder values are machine/teaching values, not literal UI degrees.");
         builder.AppendLine("- The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.");
-        builder.AppendLine("- Normal runtime `Run Teaching Demo` remains open after completion; only explicit capture modes call application shutdown.");
+        builder.AppendLine("- Normal runtime `Run Teaching Demo` holds at FOUP B 5/5 completed until the user presses Reset; only explicit capture modes call application shutdown.");
         builder.AppendLine();
         builder.AppendLine("## Runtime Integration Check");
         builder.AppendLine();
@@ -365,7 +365,7 @@ internal static class DemoAssetCapture
         builder.AppendLine("| FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |");
         builder.AppendLine("| Chambers are used as a pipeline. | The state trace records Chamber A/B/C wafer ownership and process state while the five-wafer scheduler drains downstream first. |");
         builder.AppendLine("| Scheduler drains downstream first. | The timeline only unloads completed chambers and uses the priority C -> FOUP B, B -> C, A -> B, FOUP A -> A. |");
-        builder.AppendLine("| Runtime demo does not auto-close. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Teaching Demo` leaves the window open. |");
+        builder.AppendLine("| Runtime demo does not auto-close or auto-reset. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Teaching Demo` leaves the window open at FOUP B 5/5 completed until Reset is pressed. |");
         builder.AppendLine();
         builder.AppendLine("## Screenshot Timeline");
         builder.AppendLine();

@@ -77,7 +77,8 @@ public sealed class DigitalTwinPhysicalModelTests
         Assert.Contains(steps, step => step.CurrentStation == "Chamber A");
         Assert.Contains(steps, step => step.CurrentStation == "Chamber B (CMP)");
         Assert.Contains(steps, step => step.CurrentStation == "Chamber C");
-        Assert.Equal("FOUP B", steps[^2].CurrentStation);
+        Assert.Equal("FOUP B", steps[^1].CurrentStation);
+        Assert.Equal(MachineTwinDemoPlan.CompletedStepName, steps[^1].StepName);
     }
 
     [Fact]

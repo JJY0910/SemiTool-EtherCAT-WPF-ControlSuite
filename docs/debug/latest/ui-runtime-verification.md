@@ -18,7 +18,7 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 - Visual theta angle is for HMI rendering only.
 - Preserved theta encoder values are machine/teaching values, not literal UI degrees.
 - The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.
-- Normal runtime `Run Teaching Demo` remains open after completion; only explicit capture modes call application shutdown.
+- Normal runtime `Run Teaching Demo` holds at FOUP B 5/5 completed until the user presses Reset; only explicit capture modes call application shutdown.
 
 ## Runtime Integration Check
 
@@ -63,7 +63,7 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 | FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |
 | Chambers are used as a pipeline. | The state trace records Chamber A/B/C wafer ownership and process state while the five-wafer scheduler drains downstream first. |
 | Scheduler drains downstream first. | The timeline only unloads completed chambers and uses the priority C -> FOUP B, B -> C, A -> B, FOUP A -> A. |
-| Runtime demo does not auto-close. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Teaching Demo` leaves the window open. |
+| Runtime demo does not auto-close or auto-reset. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Teaching Demo` leaves the window open at FOUP B 5/5 completed until Reset is pressed. |
 
 ## Screenshot Timeline
 

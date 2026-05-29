@@ -109,7 +109,7 @@ Scheduler priority is downstream-first:
 4. FOUP A -> Chamber A when Chamber A is empty and FOUP A still has waiting wafers.
 5. If no transfer is possible, chamber process countdown advances.
 
-Normal runtime demo timing defaults to `Teaching`, so the robot, chamber doors, blade, Z, vacuum, and chamber processing states remain visible instead of instantly jumping to completion. `Realistic`, `Fast`, and `Step` speed options are available for review and capture workflows, but they still preserve intermediate states. The visible app remains open after the demo completes.
+Normal runtime demo timing defaults to `Teaching`, so the robot, chamber doors, blade, Z, vacuum, and chamber processing states remain visible instead of instantly jumping to completion. `Realistic`, `Fast`, and `Step` speed options are available for review and capture workflows, but they still preserve intermediate states. The visible app remains open and holds the completed FOUP B 5/5 state after the demo completes; it returns to FOUP A loaded only when the user presses Reset.
 
 ## Runtime UI Evidence Pack
 

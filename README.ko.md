@@ -97,7 +97,7 @@ Scheduler priority는 downstream-first입니다.
 4. FOUP A waiting wafer -> Chamber A
 5. 이동이 불가능하면 chamber process countdown 진행
 
-일반 runtime demo 기본 속도는 `Teaching`입니다. 그래서 robot, chamber door, blade, Z, vacuum, chamber processing 상태가 눈에 보이게 진행되며 즉시 완료로 점프하지 않습니다. `Realistic`, `Fast`, `Step` 옵션은 리뷰/캡처용으로 사용할 수 있지만 중간 상태는 유지합니다. 데모가 끝나도 실제 앱 창은 닫히지 않고 완료 상태를 유지합니다.
+일반 runtime demo 기본 속도는 `Teaching`입니다. 그래서 robot, chamber door, blade, Z, vacuum, chamber processing 상태가 눈에 보이게 진행되며 즉시 완료로 점프하지 않습니다. `Realistic`, `Fast`, `Step` 옵션은 리뷰/캡처용으로 사용할 수 있지만 중간 상태는 유지합니다. 데모가 끝나도 실제 앱 창은 닫히지 않고 FOUP B 5/5 completed 상태를 유지하며, FOUP A loaded 상태로 돌아가는 것은 사용자가 Reset을 눌렀을 때만 수행됩니다.
 
 ## Machine Twin Teaching Demo Update
 

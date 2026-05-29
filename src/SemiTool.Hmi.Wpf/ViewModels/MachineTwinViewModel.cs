@@ -9,6 +9,7 @@ public sealed class MachineTwinViewModel : ObservableObject
     private readonly RuntimeCoordinator _runtime;
     private readonly DigitalTwinPhysicalModel _physicalModel;
     private readonly IReadOnlyList<MachineTwinDemoStep> _demoSteps;
+    private readonly MachineTwinDemoStep _resetStep;
     private CancellationTokenSource? _demoCts;
     private bool _isDemoRunning;
     private bool _isSimulatorMode = true;
@@ -65,6 +66,7 @@ public sealed class MachineTwinViewModel : ObservableObject
         _runtime = runtime;
         _physicalModel = DigitalTwinPhysicalModel.CreateDefault(runtime.Profile);
         _demoSteps = MachineTwinDemoPlan.CreateDefault(_physicalModel);
+        _resetStep = MachineTwinDemoPlan.CreateResetStep(_physicalModel);
         ReferencePhotoPath = ResolveRepositoryPath("docs", "images", "real-equipment-context-top-view.jpg");
         EventLogLines = new ObservableCollection<string>();
         DemoSpeedOptions = new ObservableCollection<string>(["Teaching", "Realistic", "Fast", "Step"]);
@@ -240,6 +242,12 @@ public sealed class MachineTwinViewModel : ObservableObject
             await ApplySimulatorStepAsync(step, cancellationToken).ConfigureAwait(true);
             await captureStep(step).ConfigureAwait(true);
         }
+
+        // Reset is not part of normal runtime playback. Capture modes include it explicitly
+        // so evidence can still show the manual Reset target state without changing runtime UX.
+        cancellationToken.ThrowIfCancellationRequested();
+        await ApplySimulatorStepAsync(_resetStep, cancellationToken).ConfigureAwait(true);
+        await captureStep(_resetStep).ConfigureAwait(true);
     }
 
     public MachineTwinStateTraceEntry CreateTraceEntry(MachineTwinDemoStep step, string screenshotPath) => new(
@@ -415,7 +423,7 @@ public sealed class MachineTwinViewModel : ObservableObject
         IsDemoRunning = false;
         IsDemoPaused = false;
         _manualStepIndex = 0;
-        await ApplySimulatorStepAsync(_demoSteps[^1], CancellationToken.None).ConfigureAwait(true);
+        await ApplySimulatorStepAsync(_resetStep, CancellationToken.None).ConfigureAwait(true);
         await ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.ResetAsync).ConfigureAwait(true);
     }
 

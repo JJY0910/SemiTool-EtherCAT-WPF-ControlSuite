@@ -118,7 +118,7 @@ public sealed class MachineTwinTeachingSequenceTests
 
         Assert.NotEmpty(zWorkSubsteps);
         Assert.All(zWorkSubsteps, step => Assert.True(step.IsZWorkPosition, $"{step.StepName} should command Z Work."));
-        Assert.False(steps.Single(step => step.StepName == "Reset Safe State").IsZWorkPosition);
+        Assert.False(CreateResetStep().IsZWorkPosition);
 
         var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "ViewModels", "MachineTwinViewModel.cs");
         Assert.Contains("step.IsZWorkPosition ? pose.ZWork : pose.ZSafe", source);
@@ -163,6 +163,7 @@ public sealed class MachineTwinTeachingSequenceTests
     {
         var complete = CreateTeachingSteps().Single(step => step.PipelineState == PipelineStateKind.Completed.ToString());
 
+        Assert.Equal(MachineTwinDemoPlan.CompletedStepName, complete.StepName);
         Assert.Equal(0, complete.FoupACount);
         Assert.Equal(5, complete.FoupBCount);
         Assert.False(complete.ChamberA.HasWafer);
@@ -176,11 +177,47 @@ public sealed class MachineTwinTeachingSequenceTests
     }
 
     [Fact]
+    public void RuntimeTeachingPlaybackStopsAtCompletedState()
+    {
+        var steps = CreateTeachingSteps();
+        var final = steps[^1];
+
+        Assert.Equal(MachineTwinDemoPlan.CompletedStepName, final.StepName);
+        Assert.Equal(PipelineStateKind.Completed.ToString(), final.PipelineState);
+        Assert.DoesNotContain(steps, step => step.StepName == MachineTwinDemoPlan.ResetStepName);
+    }
+
+    [Fact]
+    public void CompletedTeachingPlaybackHoldsFoupBFullUntilManualReset()
+    {
+        var final = CreateTeachingSteps()[^1];
+
+        Assert.Equal(MachineTwinDemoPlan.CompletedStepName, final.StepName);
+        Assert.Equal(0, final.FoupACount);
+        Assert.Equal(5, final.FoupBCount);
+        Assert.All(final.FoupASlots, slot => Assert.Equal("Empty", slot.State));
+        Assert.All(final.FoupBSlots, slot =>
+        {
+            Assert.True(slot.HasWafer);
+            Assert.Equal("Completed", slot.State);
+        });
+        Assert.False(final.ChamberA.HasWafer);
+        Assert.False(final.ChamberB.HasWafer);
+        Assert.False(final.ChamberC.HasWafer);
+        Assert.False(final.IsWaferOnBlade);
+        Assert.Equal(nameof(VacuumTeachingState.Off), final.VacuumTeachingState);
+        Assert.True(final.TowerGreen);
+        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), final.ChamberADoorState);
+        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), final.ChamberBDoorState);
+        Assert.Equal(nameof(ChamberDoorTeachingState.Closed), final.ChamberCDoorState);
+    }
+
+    [Fact]
     public void ResetTeachingStateRestoresFoupAAndClearsMachine()
     {
-        var reset = CreateTeachingSteps().Last();
+        var reset = CreateResetStep();
 
-        Assert.Equal("Reset Safe State", reset.StepName);
+        Assert.Equal(MachineTwinDemoPlan.ResetStepName, reset.StepName);
         Assert.Equal(5, reset.FoupACount);
         Assert.Equal(0, reset.FoupBCount);
         Assert.False(reset.ChamberA.HasWafer);
@@ -226,6 +263,11 @@ public sealed class MachineTwinTeachingSequenceTests
 
     private static IReadOnlyList<MachineTwinDemoStep> CreateTeachingSteps() =>
         MachineTwinDemoPlan.Create(
+            DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
+            SimulatorTimingProfile.Teaching);
+
+    private static MachineTwinDemoStep CreateResetStep() =>
+        MachineTwinDemoPlan.CreateResetStep(
             DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
             SimulatorTimingProfile.Teaching);
 
