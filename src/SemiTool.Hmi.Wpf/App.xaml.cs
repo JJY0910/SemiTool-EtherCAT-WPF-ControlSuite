@@ -26,6 +26,15 @@ public partial class App : System.Windows.Application
         var scheduler = new TransferScheduler(recipes);
         var runtime = new RuntimeCoordinator(profile, controller, sequence, scheduler, safety, alarms, events, recipes);
 
+        if (e.Args.Any(arg => string.Equals(arg, "--capture-demo-assets", StringComparison.OrdinalIgnoreCase)))
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            var viewModel = new MainViewModel(runtime, profilePath, settingsPath);
+            await DemoAssetCapture.CaptureAsync(runtime, viewModel);
+            Shutdown();
+            return;
+        }
+
         var window = new MainWindow
         {
             DataContext = new MainViewModel(runtime, profilePath, settingsPath)
