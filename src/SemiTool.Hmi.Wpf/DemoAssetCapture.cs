@@ -28,7 +28,7 @@ internal static class DemoAssetCapture
 
         await PrepareSimulatorStateAsync(runtime);
         await viewModel.RefreshAsync();
-        await RenderMachineTwinAsync(viewModel.MachineTwin, "Machine Twin", "Actual runtime MachineTwinView / simulator mode", IoPath.Combine(outputDirectory, "machine-twin-runtime.png"));
+        await RenderMainWindowAsync(viewModel, IoPath.Combine(outputDirectory, "machine-twin-runtime.png"));
         await RenderAsync(new DashboardView { DataContext = viewModel.Dashboard }, "Dashboard", "Simulator mode overview", IoPath.Combine(outputDirectory, "dashboard.png"));
         await RenderAsync(new ManualControlView { DataContext = viewModel.Manual }, "Manual Control", "Simulator-only manual operations", IoPath.Combine(outputDirectory, "manual-control.png"));
         await RenderAsync(new IoMonitorView { DataContext = viewModel.IoMonitor }, "I/O Monitor", "Named DO/DI points from EquipmentProfile", IoPath.Combine(outputDirectory, "io-monitor.png"));
@@ -59,7 +59,15 @@ internal static class DemoAssetCapture
         {
             var fileName = GetDebugScreenshotName(step.StepIndex);
             var path = IoPath.Combine(screenshotDirectory, fileName);
-            await RenderMachineTwinAsync(viewModel.MachineTwin, "UI Debug", step.StepName, path);
+            if (step.StepIndex == 0)
+            {
+                await RenderMainWindowAsync(viewModel, path);
+            }
+            else
+            {
+                await RenderMachineTwinAsync(viewModel.MachineTwin, "UI Debug", step.StepName, path);
+            }
+
             var relativePath = $"docs/debug/latest/screenshots/{fileName}";
             trace.Add(viewModel.MachineTwin.CreateTraceEntry(step, relativePath));
         });
@@ -92,6 +100,43 @@ internal static class DemoAssetCapture
 
     private static Task RenderMachineTwinAsync(MachineTwinViewModel machineTwin, string title, string subtitle, string path) =>
         RenderAsync(new MachineTwinView { DataContext = machineTwin }, title, subtitle, path);
+
+    private static async Task RenderMainWindowAsync(MainViewModel viewModel, string path)
+    {
+        var window = new MainWindow
+        {
+            DataContext = viewModel,
+            Width = CaptureWidth,
+            Height = CaptureHeight,
+            WindowStartupLocation = WindowStartupLocation.Manual,
+            Left = -32000,
+            Top = -32000,
+            ShowInTaskbar = false,
+            WindowStyle = WindowStyle.None,
+            ResizeMode = ResizeMode.NoResize
+        };
+
+        try
+        {
+            window.Show();
+            window.Measure(new Size(CaptureWidth, CaptureHeight));
+            window.Arrange(new Rect(0, 0, CaptureWidth, CaptureHeight));
+            window.UpdateLayout();
+            await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+
+            var bitmap = new RenderTargetBitmap(CaptureWidth, CaptureHeight, Dpi, Dpi, PixelFormats.Pbgra32);
+            bitmap.Render(window);
+
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            await using var stream = File.Create(path);
+            encoder.Save(stream);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
 
     private static async Task WriteDebugReportAsync(string debugDirectory, IReadOnlyList<MachineTwinStateTraceEntry> trace)
     {
@@ -214,6 +259,15 @@ internal static class DemoAssetCapture
         builder.AppendLine("- Preserved theta encoder values are machine/teaching values, not literal UI degrees.");
         builder.AppendLine("- The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.");
         builder.AppendLine();
+        builder.AppendLine("## Runtime Integration Check");
+        builder.AppendLine();
+        builder.AppendLine("- MainWindow first tab is `Machine Twin`.");
+        builder.AppendLine("- MainWindow uses `<views:MachineTwinView DataContext=\"{Binding MachineTwin}\" />`.");
+        builder.AppendLine("- MainViewModel exposes `MachineTwinViewModel` through the `MachineTwin` property.");
+        builder.AppendLine("- `Run Simulator Demo` is a command on the actual `MachineTwinView` runtime screen.");
+        builder.AppendLine("- `00-startup-simulator.png` is captured from the actual `MainWindow`, so it shows the selected `Machine Twin` tab.");
+        builder.AppendLine("- The remaining screenshots are captured from the same `MachineTwinView` and `MachineTwinViewModel` used by the running app.");
+        builder.AppendLine();
         builder.AppendLine("## Captured Steps");
         builder.AppendLine();
         builder.AppendLine("| Step | State | Station | Z | Blade | Vacuum | Wafer | Screenshot |");
@@ -229,7 +283,7 @@ internal static class DemoAssetCapture
         builder.AppendLine();
         builder.AppendLine("| Expected simulator movement | Evidence in this report |");
         builder.AppendLine("|---|---|");
-        builder.AppendLine("| Machine Twin starts in Simulator mode and does not connect to real hardware. | Step 0 shows `IsSimulatorMode=true`, `IsRealHardwareMode=false`, and `IsConnected=false` in the JSON/CSV trace. |");
+        builder.AppendLine("| Machine Twin starts in Simulator mode and does not connect to real hardware. | Step 0 shows `IsSimulatorMode=true` and `IsRealHardwareMode=false`; `IsConnected` refers to the simulator controller connection, not real equipment. |");
         builder.AppendLine("| FOUP A Slot 1 starts with a wafer. | Step 1 keeps `IsWaferInFoupA1=true` and no wafer on the blade. |");
         builder.AppendLine("| Theta target follows the limited station arc instead of a 360-degree dial. | Steps 2, 5, 7, 8, and 9 show station-to-station `ThetaTargetName` changes plus preserved encoder values. |");
         builder.AppendLine("| Z moves from Safe to Work only during pick/place visualization. | Steps 3, 4, 6, 7, 8, and 9 show `ZState=Z Work`; reset returns to `Z Safe`. |");

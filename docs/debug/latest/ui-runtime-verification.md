@@ -19,6 +19,15 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 - Preserved theta encoder values are machine/teaching values, not literal UI degrees.
 - The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.
 
+## Runtime Integration Check
+
+- MainWindow first tab is `Machine Twin`.
+- MainWindow uses `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`.
+- MainViewModel exposes `MachineTwinViewModel` through the `MachineTwin` property.
+- `Run Simulator Demo` is a command on the actual `MachineTwinView` runtime screen.
+- `00-startup-simulator.png` is captured from the actual `MainWindow`, so it shows the selected `Machine Twin` tab.
+- The remaining screenshots are captured from the same `MachineTwinView` and `MachineTwinViewModel` used by the running app.
+
 ## Captured Steps
 
 | Step | State | Station | Z | Blade | Vacuum | Wafer | Screenshot |
@@ -40,7 +49,7 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 
 | Expected simulator movement | Evidence in this report |
 |---|---|
-| Machine Twin starts in Simulator mode and does not connect to real hardware. | Step 0 shows `IsSimulatorMode=true`, `IsRealHardwareMode=false`, and `IsConnected=false` in the JSON/CSV trace. |
+| Machine Twin starts in Simulator mode and does not connect to real hardware. | Step 0 shows `IsSimulatorMode=true` and `IsRealHardwareMode=false`; `IsConnected` refers to the simulator controller connection, not real equipment. |
 | FOUP A Slot 1 starts with a wafer. | Step 1 keeps `IsWaferInFoupA1=true` and no wafer on the blade. |
 | Theta target follows the limited station arc instead of a 360-degree dial. | Steps 2, 5, 7, 8, and 9 show station-to-station `ThetaTargetName` changes plus preserved encoder values. |
 | Z moves from Safe to Work only during pick/place visualization. | Steps 3, 4, 6, 7, 8, and 9 show `ZState=Z Work`; reset returns to `Z Safe`. |

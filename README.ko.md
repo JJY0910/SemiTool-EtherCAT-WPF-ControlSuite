@@ -50,6 +50,8 @@ FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 
 이 데모는 Simulator mode 전용이며 vendor DLL을 로드하지 않고 실제 장비에 연결하지 않습니다.
 
+첫 번째 runtime debug screenshot은 실제 `MainWindow`에서 `Machine Twin` 탭이 선택된 상태를 캡처합니다. 이 탭은 `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`를 사용하며, `MainViewModel.MachineTwin`은 다른 HMI 탭과 같은 `RuntimeCoordinator`를 공유합니다.
+
 ## Runtime UI Evidence Pack
 
 런타임 UI 동작 증거는 다음 경로에 생성됩니다.
@@ -59,6 +61,8 @@ FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 - `docs/debug/latest/machine-twin-state-trace.csv`
 - `docs/debug/latest/event-log.txt`
 - `docs/debug/latest/screenshots/*.png`
+
+`docs/debug/latest/screenshots/00-startup-simulator.png`는 실제 실행 셸에서 Machine Twin이 첫 번째/default 탭으로 선택되어 있음을 보여주는 통합 증거입니다.
 
 재생성 명령:
 

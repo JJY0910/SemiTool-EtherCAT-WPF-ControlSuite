@@ -62,6 +62,8 @@ FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 
 The demo runs in Simulator mode only. It does not load `IEG3268_Dll.dll`, does not connect to real equipment, and does not claim real-hardware verification.
 
+The first runtime debug screenshot captures the actual `MainWindow` with the `Machine Twin` tab selected. That tab contains `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`, and `MainViewModel.MachineTwin` shares the same `RuntimeCoordinator` used by the other HMI tabs.
+
 ## Runtime UI Evidence Pack
 
 The repo includes a repeatable runtime UI evidence pack:
@@ -71,6 +73,8 @@ The repo includes a repeatable runtime UI evidence pack:
 - `docs/debug/latest/machine-twin-state-trace.csv`
 - `docs/debug/latest/event-log.txt`
 - `docs/debug/latest/screenshots/*.png`
+
+The startup screenshot `docs/debug/latest/screenshots/00-startup-simulator.png` is the integration proof: it shows the actual running shell with Machine Twin selected as the first/default tab.
 
 Regenerate it with:
 
