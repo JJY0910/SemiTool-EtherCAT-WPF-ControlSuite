@@ -1,0 +1,12 @@
+﻿2026-05-29T13:24:40.3899459+09:00 | Startup simulator state. No real hardware connected.
+2026-05-29T13:24:40.4354050+09:00 | Wafer A01 is ready in FOUP A Slot 1.
+2026-05-29T13:24:40.4780077+09:00 | Limited theta swing targets FOUP A.
+2026-05-29T13:24:40.5215064+09:00 | CylinderForward extends the telescopic blade.
+2026-05-29T13:24:40.5592206+09:00 | VacuumSuction holds wafer A01 on the blade.
+2026-05-29T13:24:40.5998145+09:00 | Blade retracts and theta swings to Chamber A.
+2026-05-29T13:24:40.6378373+09:00 | VacuumExhaust releases wafer into Chamber A.
+2026-05-29T13:24:40.6818444+09:00 | Chamber B CMP_Main process starts.
+2026-05-29T13:24:40.7193085+09:00 | Chamber C PostClean_Dry process starts.
+2026-05-29T13:24:40.7663230+09:00 | Wafer A01 is placed into FOUP B Slot 1.
+2026-05-29T13:24:40.8029188+09:00 | Tower green indicates simulator flow complete.
+2026-05-29T13:24:40.8488322+09:00 | Reset returns the simulator display to a safe state.

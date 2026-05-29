@@ -6,15 +6,65 @@
 
 | Digital Twin Visual | Preview |
 |---|---|
+| 실제 장비 참고 사진 | ![Real equipment context reference](docs/images/real-equipment-context-top-view.jpg) |
+| 런타임 Machine Twin | ![Runtime Machine Twin](docs/images/machine-twin-runtime.png) |
 | 제한 θ 스윙 | ![Limited theta swing](docs/images/digital-twin-limited-theta-swing.png) |
 | 웨이퍼 이송 로봇 | ![Wafer transfer robot](docs/images/digital-twin-wafer-transfer-robot.png) |
 | 블레이드 메커니즘 | ![Blade mechanism](docs/images/digital-twin-blade-mechanism.png) |
 
-Digital Twin은 실제 사진을 복사하지 않고, 웨이퍼 이송 로봇 Teaching 장비를 추상화해서 표현합니다. 고정 알루미늄 베이스, 중앙 θ축 제한 스윙 베이스, 2단/텔레스코픽 블레이드, Z Safe/Work, 실린더 전진/후진, 진공 흡착/배기, FOUP A, Chamber A/B/C, FOUP B, 타워램프 맥락을 보여줍니다.
+실제 장비 사진은 사용자가 포트폴리오 맥락으로 공개해도 된다고 승인한 참고 이미지입니다. 이 사진은 새 WPF 앱이 실제 장비 검증을 완료했다는 주장으로 사용하지 않습니다.
+
+Digital Twin은 웨이퍼 이송 로봇 Teaching 장비를 추상화해서 표현합니다. 고정 알루미늄 베이스, 중앙 θ축 제한 스윙 베이스, 2단/텔레스코픽 블레이드, Z Safe/Work, 실린더 전진/후진, 진공 흡착/배기, FOUP A, Chamber A/B/C, FOUP B, 타워램프 맥락을 보여줍니다.
 
 `CMP Cluster`는 이전 HMI simulator scenario 이름으로 유지합니다. 실제 물리 장비는 웨이퍼 이송 로봇 Teaching 장비로 설명하며, θ축은 360도 무한회전이 아니라 station-to-station 제한 스윙으로 시각화합니다. 보존된 theta 숫자는 encoder position 값이지 literal degree 값이 아닙니다.
 
 단, 새 WPF 앱이 실제 장비에서 검증 완료되었다고 주장하지 않습니다. 현재 저장소는 supervised real-hardware verification을 준비한 상태입니다.
+
+## Runtime Machine Twin UI
+
+실제 실행되는 WPF 앱은 첫 번째 탭으로 `Machine Twin`을 보여줍니다.
+
+이 화면은 문서용 정적 그림이 아니라 `MachineTwinView`와 `MachineTwinViewModel`에 바인딩된 런타임 화면입니다.
+
+상태 매핑 항목은 다음과 같습니다.
+
+- 현재 station과 sequence step
+- Simulator / RealHardware mode
+- connection state
+- 제한 θ축 visual angle
+- 보존 theta encoder target
+- Z Safe / Work
+- blade extend/retract
+- cylinder forward/backward
+- vacuum suction/exhaust
+- wafer 위치
+- chamber door indicator
+- tower lamp indicator
+- alarm summary와 runtime event trace
+
+`Run Simulator Demo` 버튼은 실제 Machine Twin 화면을 다음 순서로 움직입니다.
+
+```text
+FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
+```
+
+이 데모는 Simulator mode 전용이며 vendor DLL을 로드하지 않고 실제 장비에 연결하지 않습니다.
+
+## Runtime UI Evidence Pack
+
+런타임 UI 동작 증거는 다음 경로에 생성됩니다.
+
+- [Runtime UI verification report](docs/debug/latest/ui-runtime-verification.md)
+- `docs/debug/latest/machine-twin-state-trace.json`
+- `docs/debug/latest/machine-twin-state-trace.csv`
+- `docs/debug/latest/event-log.txt`
+- `docs/debug/latest/screenshots/*.png`
+
+재생성 명령:
+
+```powershell
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
+```
 
 ## 프로젝트 요약
 
@@ -95,7 +145,7 @@ DLL은 RealHardware mode를 선택하고 hardware unlock 후 Connect를 눌렀�
 
 - GitHub Actions `.NET CI`: 통과
 - Local Release build: 통과
-- Unit tests: 37 passed / 0 failed
+- Unit tests: 41 passed / 0 failed
 - Safety audit: vendor DLL, exe, pdb, bin, obj, legacy zip 추적 없음
 
 ## 면접 설명

@@ -35,6 +35,15 @@ public partial class App : System.Windows.Application
             return;
         }
 
+        if (e.Args.Any(arg => string.Equals(arg, "--capture-ui-debug-report", StringComparison.OrdinalIgnoreCase)))
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            var viewModel = new MainViewModel(runtime, profilePath, settingsPath);
+            await DemoAssetCapture.CaptureUiDebugReportAsync(runtime, viewModel);
+            Shutdown();
+            return;
+        }
+
         var window = new MainWindow
         {
             DataContext = new MainViewModel(runtime, profilePath, settingsPath)

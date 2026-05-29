@@ -1,0 +1,463 @@
+using System.Collections.ObjectModel;
+using System.IO;
+using SemiTool.Domain;
+
+namespace SemiTool.Hmi.Wpf.ViewModels;
+
+public sealed class MachineTwinViewModel : ObservableObject
+{
+    private readonly RuntimeCoordinator _runtime;
+    private readonly DigitalTwinPhysicalModel _physicalModel;
+    private readonly IReadOnlyList<MachineTwinDemoStep> _demoSteps;
+    private CancellationTokenSource? _demoCts;
+    private bool _isDemoRunning;
+    private bool _isSimulatorMode = true;
+    private bool _isRealHardwareMode;
+    private bool _isConnected;
+    private string _machineState = SemiTool.Domain.MachineState.Offline.ToString();
+    private string _currentStation = "FOUP A";
+    private string _previousStation = "-";
+    private string _nextStation = "Chamber A";
+    private string _currentStepName = "Simulator startup / safe state";
+    private double _visualThetaAngle = -150;
+    private string _thetaTargetName = "FOUP A";
+    private long _preservedThetaEncoderValue = 14140;
+    private string _zState = "Z Safe";
+    private bool _isBladeExtended;
+    private bool _isCylinderForward;
+    private bool _isCylinderBackward = true;
+    private bool _isVacuumOn;
+    private bool _isWaferOnBlade;
+    private bool _isWaferInFoupA1 = true;
+    private bool _isWaferInChamberA;
+    private bool _isWaferInChamberB;
+    private bool _isWaferInChamberC;
+    private bool _isWaferInFoupB1;
+    private bool _chamberADoorOpen;
+    private bool _chamberBDoorOpen;
+    private bool _chamberCDoorOpen;
+    private bool _towerRed;
+    private bool _towerYellow;
+    private bool _towerGreen;
+    private string _alarmSummary = "No active alarms";
+
+    public MachineTwinViewModel(RuntimeCoordinator runtime)
+    {
+        _runtime = runtime;
+        _physicalModel = DigitalTwinPhysicalModel.CreateDefault(runtime.Profile);
+        _demoSteps = MachineTwinDemoPlan.CreateDefault(_physicalModel);
+        ReferencePhotoPath = ResolveRepositoryPath("docs", "images", "real-equipment-context-top-view.jpg");
+        EventLogLines = new ObservableCollection<string>();
+        FoupASlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots("A", hasFirstWafer: true));
+        FoupBSlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots("B", hasFirstWafer: false));
+        Stations = new ObservableCollection<MachineTwinStationViewModel>(
+            _physicalModel.ThetaSwing.Stations.OrderBy(station => station.Order).Select(MachineTwinStationViewModel.From));
+        RunSimulatorDemoCommand = new AsyncRelayCommand(_ => RunSimulatorDemoCommandAsync());
+        StopCommand = new AsyncRelayCommand(_ => StopDemoAsync());
+        ResetCommand = new AsyncRelayCommand(_ => ResetSafeStateAsync());
+        AutoStartCommand = new AsyncRelayCommand(_ => ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.StartAutoAsync));
+        AutoStopCommand = new AsyncRelayCommand(_ => ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.StopAutoAsync));
+        EmergencyStopCommand = new AsyncRelayCommand(_ => ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.EmergencyStopAsync));
+        ApplyDemoStep(_demoSteps[0]);
+    }
+
+    public ObservableCollection<MachineTwinStationViewModel> Stations { get; }
+    public ObservableCollection<FoupSlotChipViewModel> FoupASlots { get; }
+    public ObservableCollection<FoupSlotChipViewModel> FoupBSlots { get; }
+    public ObservableCollection<string> EventLogLines { get; }
+    public string ReferencePhotoPath { get; }
+    public bool HasReferencePhoto => File.Exists(ReferencePhotoPath);
+    public string ScenarioName => _physicalModel.ScenarioName;
+    public string EquipmentKind => _physicalModel.EquipmentKind;
+    public string PhotoCaption => "Real equipment context reference / user-approved portfolio photo";
+    public string FeedbackBoundary => IsRealHardwareMode
+        ? "Commanded / last-known state. Physical feedback depends on the real adapter."
+        : "Simulator state is the source of truth.";
+    public bool IsDemoRunning { get => _isDemoRunning; private set => SetProperty(ref _isDemoRunning, value); }
+    public bool IsSimulatorMode { get => _isSimulatorMode; private set => SetProperty(ref _isSimulatorMode, value); }
+    public bool IsRealHardwareMode { get => _isRealHardwareMode; private set => SetProperty(ref _isRealHardwareMode, value); }
+    public bool IsConnected { get => _isConnected; private set => SetProperty(ref _isConnected, value); }
+    public string MachineState { get => _machineState; private set => SetProperty(ref _machineState, value); }
+    public string CurrentStation { get => _currentStation; private set => SetProperty(ref _currentStation, value); }
+    public string PreviousStation { get => _previousStation; private set => SetProperty(ref _previousStation, value); }
+    public string NextStation { get => _nextStation; private set => SetProperty(ref _nextStation, value); }
+    public string CurrentStepName { get => _currentStepName; private set => SetProperty(ref _currentStepName, value); }
+    public double VisualThetaAngle { get => _visualThetaAngle; private set => SetProperty(ref _visualThetaAngle, value); }
+    public string ThetaTargetName { get => _thetaTargetName; private set => SetProperty(ref _thetaTargetName, value); }
+    public long PreservedThetaEncoderValue { get => _preservedThetaEncoderValue; private set => SetProperty(ref _preservedThetaEncoderValue, value); }
+    public string ZState { get => _zState; private set => SetProperty(ref _zState, value); }
+    public bool IsBladeExtended { get => _isBladeExtended; private set => SetProperty(ref _isBladeExtended, value); }
+    public bool IsCylinderForward { get => _isCylinderForward; private set => SetProperty(ref _isCylinderForward, value); }
+    public bool IsCylinderBackward { get => _isCylinderBackward; private set => SetProperty(ref _isCylinderBackward, value); }
+    public bool IsVacuumOn { get => _isVacuumOn; private set => SetProperty(ref _isVacuumOn, value); }
+    public bool IsWaferOnBlade { get => _isWaferOnBlade; private set => SetProperty(ref _isWaferOnBlade, value); }
+    public bool IsWaferInFoupA1 { get => _isWaferInFoupA1; private set => SetProperty(ref _isWaferInFoupA1, value); }
+    public bool IsWaferInChamberA { get => _isWaferInChamberA; private set => SetProperty(ref _isWaferInChamberA, value); }
+    public bool IsWaferInChamberB { get => _isWaferInChamberB; private set => SetProperty(ref _isWaferInChamberB, value); }
+    public bool IsWaferInChamberC { get => _isWaferInChamberC; private set => SetProperty(ref _isWaferInChamberC, value); }
+    public bool IsWaferInFoupB1 { get => _isWaferInFoupB1; private set => SetProperty(ref _isWaferInFoupB1, value); }
+    public bool ChamberADoorOpen { get => _chamberADoorOpen; private set => SetProperty(ref _chamberADoorOpen, value); }
+    public bool ChamberBDoorOpen { get => _chamberBDoorOpen; private set => SetProperty(ref _chamberBDoorOpen, value); }
+    public bool ChamberCDoorOpen { get => _chamberCDoorOpen; private set => SetProperty(ref _chamberCDoorOpen, value); }
+    public bool TowerRed { get => _towerRed; private set => SetProperty(ref _towerRed, value); }
+    public bool TowerYellow { get => _towerYellow; private set => SetProperty(ref _towerYellow, value); }
+    public bool TowerGreen { get => _towerGreen; private set => SetProperty(ref _towerGreen, value); }
+    public string AlarmSummary { get => _alarmSummary; private set => SetProperty(ref _alarmSummary, value); }
+    public string ModeLabel => IsSimulatorMode ? "SIMULATOR" : "REAL HARDWARE";
+    public string ConnectionLabel => IsConnected ? "Connected" : "Disconnected";
+    public double BladeLength => IsBladeExtended ? 245 : 160;
+    public double BladeScaleY => IsBladeExtended ? 1.0 : 0.68;
+    public string CylinderState => IsCylinderForward ? "Forward / blade extended" : "Backward / blade retracted";
+    public string VacuumState => IsVacuumOn ? "Suction ON / wafer held" : "Exhaust or OFF / wafer released";
+    public string WaferSummary => IsWaferOnBlade
+        ? "Wafer on blade"
+        : IsWaferInFoupB1 ? "Wafer stored in FOUP B Slot 1"
+        : IsWaferInChamberC ? "Wafer in Chamber C"
+        : IsWaferInChamberB ? "Wafer in Chamber B"
+        : IsWaferInChamberA ? "Wafer in Chamber A"
+        : IsWaferInFoupA1 ? "Wafer in FOUP A Slot 1"
+        : "No wafer visible";
+
+    public AsyncRelayCommand RunSimulatorDemoCommand { get; }
+    public AsyncRelayCommand StopCommand { get; }
+    public AsyncRelayCommand ResetCommand { get; }
+    public AsyncRelayCommand AutoStartCommand { get; }
+    public AsyncRelayCommand AutoStopCommand { get; }
+    public AsyncRelayCommand EmergencyStopCommand { get; }
+
+    public void Refresh(EquipmentStatus status)
+    {
+        IsSimulatorMode = status.Mode == OperatingMode.Simulator;
+        IsRealHardwareMode = status.Mode == OperatingMode.RealHardware;
+        IsConnected = status.IsConnected;
+        MachineState = status.MachineState.ToString();
+        AlarmSummary = status.AlarmSummary;
+        OnPropertyChanged(nameof(ModeLabel));
+        OnPropertyChanged(nameof(ConnectionLabel));
+        OnPropertyChanged(nameof(FeedbackBoundary));
+
+        if (IsDemoRunning)
+        {
+            return;
+        }
+
+        TowerRed = status.Outputs.TryGetValue(IoPoint.TowerRed, out var red) && red;
+        TowerYellow = status.Outputs.TryGetValue(IoPoint.TowerYellow, out var yellow) && yellow;
+        TowerGreen = status.Outputs.TryGetValue(IoPoint.TowerGreen, out var green) && green;
+        IsCylinderForward = status.Outputs.TryGetValue(IoPoint.CylinderForward, out var forward) && forward;
+        IsCylinderBackward = !IsCylinderForward && status.Outputs.TryGetValue(IoPoint.CylinderBackward, out var backward) && backward;
+        IsBladeExtended = IsCylinderForward;
+        IsVacuumOn = status.Outputs.TryGetValue(IoPoint.VacuumSuction, out var vacuum) && vacuum;
+        ChamberADoorOpen = status.Inputs.TryGetValue(IoPoint.ChamberADoorOpenSensor, out var doorA) && doorA;
+        ChamberBDoorOpen = status.Inputs.TryGetValue(IoPoint.ChamberBDoorOpenSensor, out var doorB) && doorB;
+        ChamberCDoorOpen = status.Inputs.TryGetValue(IoPoint.ChamberCDoorOpenSensor, out var doorC) && doorC;
+        UpdateComputedProperties();
+    }
+
+    public async Task RunSimulatorDemoForCaptureAsync(Func<MachineTwinDemoStep, Task> captureStep, CancellationToken cancellationToken = default)
+    {
+        await EnsureSimulatorReadyAsync(cancellationToken).ConfigureAwait(true);
+        foreach (var step in _demoSteps)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await ApplySimulatorStepAsync(step, cancellationToken).ConfigureAwait(true);
+            await captureStep(step).ConfigureAwait(true);
+        }
+    }
+
+    public MachineTwinStateTraceEntry CreateTraceEntry(MachineTwinDemoStep step, string screenshotPath) => new(
+        step.StepIndex,
+        step.StepName,
+        DateTimeOffset.Now,
+        IsSimulatorMode,
+        IsRealHardwareMode,
+        IsConnected,
+        MachineState,
+        CurrentStation,
+        PreviousStation,
+        NextStation,
+        CurrentStepName,
+        ThetaTargetName,
+        VisualThetaAngle,
+        PreservedThetaEncoderValue,
+        ZState,
+        IsBladeExtended,
+        IsCylinderForward,
+        IsCylinderBackward,
+        IsVacuumOn,
+        IsWaferOnBlade,
+        IsWaferInFoupA1,
+        IsWaferInChamberA,
+        IsWaferInChamberB,
+        IsWaferInChamberC,
+        IsWaferInFoupB1,
+        ChamberADoorOpen,
+        ChamberBDoorOpen,
+        ChamberCDoorOpen,
+        TowerRed,
+        TowerYellow,
+        TowerGreen,
+        AlarmSummary,
+        step.EventLogMessage,
+        screenshotPath);
+
+    private async Task RunSimulatorDemoCommandAsync()
+    {
+        _demoCts?.Cancel();
+        _demoCts = new CancellationTokenSource();
+        try
+        {
+            IsDemoRunning = true;
+            await EnsureSimulatorReadyAsync(_demoCts.Token).ConfigureAwait(true);
+            foreach (var step in _demoSteps)
+            {
+                _demoCts.Token.ThrowIfCancellationRequested();
+                await ApplySimulatorStepAsync(step, _demoCts.Token).ConfigureAwait(true);
+                await Task.Delay(550, _demoCts.Token).ConfigureAwait(true);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            AddEvent("Simulator demo canceled.");
+        }
+        finally
+        {
+            IsDemoRunning = false;
+        }
+    }
+
+    private Task StopDemoAsync()
+    {
+        _demoCts?.Cancel();
+        IsDemoRunning = false;
+        AddEvent("Stop requested. Simulator demo sequence canceled.");
+        return ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.StopAutoAsync);
+    }
+
+    private async Task ResetSafeStateAsync()
+    {
+        _demoCts?.Cancel();
+        IsDemoRunning = false;
+        await ApplySimulatorStepAsync(_demoSteps[^1], CancellationToken.None).ConfigureAwait(true);
+        await ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.ResetAsync).ConfigureAwait(true);
+    }
+
+    private async Task EnsureSimulatorReadyAsync(CancellationToken cancellationToken)
+    {
+        if (_runtime.Controller.Mode == OperatingMode.RealHardware && _runtime.Controller.IsConnected)
+        {
+            throw new InvalidOperationException("Simulator demo is blocked while Real Hardware mode is connected.");
+        }
+
+        if (_runtime.Controller.Mode != OperatingMode.Simulator)
+        {
+            _runtime.Controller.SetMode(OperatingMode.Simulator);
+        }
+
+        if (!_runtime.Controller.IsConnected)
+        {
+            await _runtime.ConnectAsync(cancellationToken).ConfigureAwait(true);
+        }
+
+        await _runtime.Controller.ServoOnAsync(cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.HomeAxisAsync(AxisId.Z, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.HomeAxisAsync(AxisId.Theta, cancellationToken).ConfigureAwait(true);
+        _runtime.Safety.MarkHomed(AxisId.Z);
+        _runtime.Safety.MarkHomed(AxisId.Theta);
+        IsConnected = true;
+        IsSimulatorMode = true;
+        IsRealHardwareMode = false;
+        MachineState = SemiTool.Domain.MachineState.Manual.ToString();
+    }
+
+    private async Task ApplySimulatorStepAsync(MachineTwinDemoStep step, CancellationToken cancellationToken)
+    {
+        ApplyDemoStep(step);
+        await ApplySimulatorOutputsAsync(step, cancellationToken).ConfigureAwait(true);
+        AddEvent(step.EventLogMessage);
+    }
+
+    private void ApplyDemoStep(MachineTwinDemoStep step)
+    {
+        CurrentStation = step.CurrentStation;
+        PreviousStation = step.PreviousStation;
+        NextStation = step.NextStation;
+        CurrentStepName = step.CurrentStepName;
+        ThetaTargetName = step.CurrentStation;
+        VisualThetaAngle = step.VisualThetaAngle;
+        PreservedThetaEncoderValue = step.PreservedThetaEncoderValue;
+        ZState = step.ZState;
+        IsBladeExtended = step.IsBladeExtended;
+        IsCylinderForward = step.IsCylinderForward;
+        IsCylinderBackward = step.IsCylinderBackward;
+        IsVacuumOn = step.IsVacuumOn;
+        IsWaferOnBlade = step.IsWaferOnBlade;
+        IsWaferInFoupA1 = step.IsWaferInFoupA1;
+        IsWaferInChamberA = step.IsWaferInChamberA;
+        IsWaferInChamberB = step.IsWaferInChamberB;
+        IsWaferInChamberC = step.IsWaferInChamberC;
+        IsWaferInFoupB1 = step.IsWaferInFoupB1;
+        ChamberADoorOpen = step.ChamberADoorOpen;
+        ChamberBDoorOpen = step.ChamberBDoorOpen;
+        ChamberCDoorOpen = step.ChamberCDoorOpen;
+        TowerRed = false;
+        TowerYellow = false;
+        TowerGreen = step.TowerGreen;
+        SetSlot(FoupASlots, 1, step.IsWaferInFoupA1);
+        SetSlot(FoupBSlots, 1, step.IsWaferInFoupB1);
+        SelectStation(step.CurrentStation);
+        UpdateComputedProperties();
+    }
+
+    private async Task ApplySimulatorOutputsAsync(MachineTwinDemoStep step, CancellationToken cancellationToken)
+    {
+        if (!_runtime.Controller.IsConnected || _runtime.Controller.Mode != OperatingMode.Simulator)
+        {
+            return;
+        }
+
+        // Keep the running Digital Twin and I/O Monitor aligned through named IoPoint writes, never raw DO numbers.
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.CylinderForward, step.IsCylinderForward, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.CylinderBackward, step.IsCylinderBackward, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.VacuumSuction, step.IsVacuumOn, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.VacuumExhaust, !step.IsVacuumOn && !step.IsWaferOnBlade, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.TowerGreen, step.TowerGreen, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberADoorOpenSensor, step.ChamberADoorOpen, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberBDoorOpenSensor, step.ChamberBDoorOpen, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberCDoorOpenSensor, step.ChamberCDoorOpen, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.MoveAxisAbsoluteAsync(AxisId.Theta, step.PreservedThetaEncoderValue, cancellationToken).ConfigureAwait(true);
+        var pose = _runtime.Profile.GetPose(step.StationKey);
+        var z = string.Equals(step.ZState, "Z Work", StringComparison.OrdinalIgnoreCase) ? pose.ZWork : pose.ZSafe;
+        await _runtime.Controller.MoveAxisAbsoluteAsync(AxisId.Z, z, cancellationToken).ConfigureAwait(true);
+    }
+
+    private void AddEvent(string message)
+    {
+        var line = $"{DateTimeOffset.Now:HH:mm:ss}  {message}";
+        EventLogLines.Insert(0, line);
+        while (EventLogLines.Count > 8)
+        {
+            EventLogLines.RemoveAt(EventLogLines.Count - 1);
+        }
+    }
+
+    private void UpdateComputedProperties()
+    {
+        OnPropertyChanged(nameof(BladeLength));
+        OnPropertyChanged(nameof(BladeScaleY));
+        OnPropertyChanged(nameof(CylinderState));
+        OnPropertyChanged(nameof(VacuumState));
+        OnPropertyChanged(nameof(WaferSummary));
+        OnPropertyChanged(nameof(FeedbackBoundary));
+    }
+
+    private void SelectStation(string displayName)
+    {
+        foreach (var station in Stations)
+        {
+            station.IsCurrent = string.Equals(station.DisplayName, displayName, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static IEnumerable<FoupSlotChipViewModel> CreateSlots(string prefix, bool hasFirstWafer)
+    {
+        for (var slot = 1; slot <= 5; slot++)
+        {
+            yield return new FoupSlotChipViewModel($"{prefix}{slot}", slot == 1 && hasFirstWafer);
+        }
+    }
+
+    private static void SetSlot(IEnumerable<FoupSlotChipViewModel> slots, int slotNumber, bool hasWafer)
+    {
+        var slot = slots.ElementAt(slotNumber - 1);
+        slot.HasWafer = hasWafer;
+    }
+
+    private static string ResolveRepositoryPath(params string[] segments)
+    {
+        var directory = new DirectoryInfo(Environment.CurrentDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "SemiTool.EtherCAT.WPF.ControlSuite.sln")))
+            {
+                return Path.Combine([directory.FullName, .. segments]);
+            }
+
+            directory = directory.Parent;
+        }
+
+        return Path.Combine([AppContext.BaseDirectory, "..", "..", "..", "..", .. segments]);
+    }
+}
+
+public sealed class MachineTwinStationViewModel : ObservableObject
+{
+    private bool _isCurrent;
+
+    private MachineTwinStationViewModel(string displayName, string role, long thetaEncoderPosition, double visualArcPositionDegrees)
+    {
+        DisplayName = displayName;
+        Role = role;
+        ThetaEncoderPosition = thetaEncoderPosition;
+        VisualArcPositionDegrees = visualArcPositionDegrees;
+    }
+
+    public string DisplayName { get; }
+    public string Role { get; }
+    public long ThetaEncoderPosition { get; }
+    public double VisualArcPositionDegrees { get; }
+    public bool IsCurrent { get => _isCurrent; set => SetProperty(ref _isCurrent, value); }
+
+    public static MachineTwinStationViewModel From(RobotSwingStation station) =>
+        new(station.DisplayName, station.Role, station.ThetaEncoderPosition, station.VisualArcPositionDegrees);
+}
+
+public sealed class FoupSlotChipViewModel : ObservableObject
+{
+    private bool _hasWafer;
+
+    public FoupSlotChipViewModel(string label, bool hasWafer)
+    {
+        Label = label;
+        _hasWafer = hasWafer;
+    }
+
+    public string Label { get; }
+    public bool HasWafer { get => _hasWafer; set => SetProperty(ref _hasWafer, value); }
+}
+
+public sealed record MachineTwinStateTraceEntry(
+    int StepIndex,
+    string StepName,
+    DateTimeOffset Timestamp,
+    bool IsSimulatorMode,
+    bool IsRealHardwareMode,
+    bool IsConnected,
+    string MachineState,
+    string CurrentStation,
+    string PreviousStation,
+    string NextStation,
+    string CurrentStepName,
+    string ThetaTargetName,
+    double VisualThetaAngle,
+    long PreservedThetaEncoderValue,
+    string ZState,
+    bool IsBladeExtended,
+    bool IsCylinderForward,
+    bool IsCylinderBackward,
+    bool IsVacuumOn,
+    bool IsWaferOnBlade,
+    bool IsWaferInFoupA1,
+    bool IsWaferInChamberA,
+    bool IsWaferInChamberB,
+    bool IsWaferInChamberC,
+    bool IsWaferInFoupB1,
+    bool ChamberADoorOpen,
+    bool ChamberBDoorOpen,
+    bool ChamberCDoorOpen,
+    bool TowerRed,
+    bool TowerYellow,
+    bool TowerGreen,
+    string AlarmSummary,
+    string EventLogMessage,
+    string ScreenshotPath);

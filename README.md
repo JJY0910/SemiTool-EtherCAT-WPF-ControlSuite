@@ -10,6 +10,7 @@ These screenshots are simulator-mode visuals generated from the WPF UI. The orig
 
 | Screen | Preview |
 |---|---|
+| Runtime Machine Twin | ![Runtime Machine Twin](docs/images/machine-twin-runtime.png) |
 | Dashboard | ![Dashboard](docs/images/dashboard.png) |
 | Manual Control | ![Manual Control](docs/images/manual-control.png) |
 | I/O Monitor | ![I/O Monitor](docs/images/io-monitor.png) |
@@ -22,6 +23,7 @@ Simulator demo frames: [01](docs/images/simulator-demo-frame-01.png), [02](docs/
 
 | Digital Twin Visual | Preview |
 |---|---|
+| Real equipment context reference | ![Real equipment context reference](docs/images/real-equipment-context-top-view.jpg) |
 | Limited theta swing | ![Limited theta swing](docs/images/digital-twin-limited-theta-swing.png) |
 | Wafer transfer robot | ![Wafer transfer robot](docs/images/digital-twin-wafer-transfer-robot.png) |
 | Blade mechanism | ![Blade mechanism](docs/images/digital-twin-blade-mechanism.png) |
@@ -30,7 +32,51 @@ The Digital Twin now uses an abstract wafer transfer robot teaching-equipment mo
 
 `CMP Cluster` is treated as a previous-year simulator/HMI scenario name. The physical teaching setup is explained as a wafer transfer robot. The theta axis is displayed as a limited station-to-station swing, not a 360-degree continuous rotation. Preserved theta values remain encoder positions, not literal UI degrees.
 
-The visuals are simulator-mode/generated abstractions. The repository does not include the user reference photo and does not claim that the new WPF app has already been verified on the physical machine.
+The real-equipment top-view photo is included with user approval as public portfolio context. It is not used as a claim that the new WPF app has already been verified on the physical machine.
+
+## Runtime Machine Twin UI
+
+The running WPF application now opens with a first tab named `Machine Twin`.
+
+This is not a static documentation mockup. The `MachineTwinView` is bound to `MachineTwinViewModel` and exposes simulator state for:
+
+- current station and sequence step
+- simulator / real hardware mode
+- connection state
+- limited theta visual angle
+- preserved theta encoder target
+- Z Safe / Work state
+- blade extend/retract state
+- cylinder forward/backward state
+- vacuum suction/exhaust state
+- wafer location on FOUP/chamber/blade
+- chamber door indicators
+- tower lamp indicators
+- alarm summary and runtime event trace
+
+`Run Simulator Demo` animates the actual Machine Twin view through:
+
+```text
+FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
+```
+
+The demo runs in Simulator mode only. It does not load `IEG3268_Dll.dll`, does not connect to real equipment, and does not claim real-hardware verification.
+
+## Runtime UI Evidence Pack
+
+The repo includes a repeatable runtime UI evidence pack:
+
+- [Runtime UI verification report](docs/debug/latest/ui-runtime-verification.md)
+- `docs/debug/latest/machine-twin-state-trace.json`
+- `docs/debug/latest/machine-twin-state-trace.csv`
+- `docs/debug/latest/event-log.txt`
+- `docs/debug/latest/screenshots/*.png`
+
+Regenerate it with:
+
+```powershell
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
+```
 
 ## Summary
 
@@ -58,7 +104,7 @@ The original WinForms project controlled real EtherCAT hardware. This new WPF pr
 ## Current Verification Status
 
 - Build: passed locally
-- Tests: 37 passed locally
+- Tests: 41 passed locally
 - GitHub Actions: enabled for Windows .NET build/test
 - Simulator mode: ready for developer PC verification
 - Real hardware mode: prepared for verification with local `IEG3268_Dll.dll` and school equipment
@@ -70,6 +116,7 @@ The original WinForms project controlled real EtherCAT hardware. This new WPF pr
 - [Physical equipment model](docs/physical-equipment-model.md)
 - [Blade transfer mechanism](docs/blade-transfer-mechanism.md)
 - [Theta limited swing model](docs/theta-limited-swing.md)
+- [Runtime UI verification report](docs/debug/latest/ui-runtime-verification.md)
 - [Real hardware DLL notes](docs/real-hardware-dll-notes.md)
 - [Real hardware commissioning checklist](.github/ISSUE_TEMPLATE/real-hardware-commissioning.md)
 

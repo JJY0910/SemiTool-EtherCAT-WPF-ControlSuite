@@ -16,6 +16,7 @@ public sealed class MainViewModel : ObservableObject
     public MainViewModel(RuntimeCoordinator runtime, string profilePath, string settingsPath)
     {
         _runtime = runtime;
+        MachineTwin = new MachineTwinViewModel(runtime);
         Dashboard = new DashboardViewModel(runtime);
         Manual = new ManualControlViewModel(runtime);
         IoMonitor = new IoMonitorViewModel(runtime);
@@ -37,6 +38,7 @@ public sealed class MainViewModel : ObservableObject
     }
 
     public DashboardViewModel Dashboard { get; }
+    public MachineTwinViewModel MachineTwin { get; }
     public ManualControlViewModel Manual { get; }
     public IoMonitorViewModel IoMonitor { get; }
     public AutoSequenceViewModel AutoSequence { get; }
@@ -55,6 +57,7 @@ public sealed class MainViewModel : ObservableObject
         {
             _isRefreshing = true;
             var status = await _runtime.BuildStatusAsync();
+            MachineTwin.Refresh(status);
             Dashboard.Refresh(status);
             Manual.Refresh();
             IoMonitor.Refresh(status);

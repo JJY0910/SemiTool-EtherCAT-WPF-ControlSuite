@@ -66,4 +66,63 @@ public sealed class DigitalTwinPhysicalModelTests
         Assert.Contains(recipes["B"].Steps, step => step.StepName == "Bulk Polish" && step.SlurryFlow == 80);
         Assert.Contains(recipes["C"].Steps, step => step.StepName == "Spin Dry");
     }
+
+    [Fact]
+    public void MachineTwinDemoPlan_MovesFromFoupAToFoupB()
+    {
+        var model = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load());
+        var steps = MachineTwinDemoPlan.CreateDefault(model);
+
+        Assert.Equal("FOUP A", steps[0].CurrentStation);
+        Assert.Contains(steps, step => step.CurrentStation == "Chamber A");
+        Assert.Contains(steps, step => step.CurrentStation == "Chamber B (CMP)");
+        Assert.Contains(steps, step => step.CurrentStation == "Chamber C");
+        Assert.Equal("FOUP B", steps[^2].CurrentStation);
+    }
+
+    [Fact]
+    public void MachineTwinDemoPlan_DoesNotRequireRealHardware()
+    {
+        var model = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load());
+        var steps = MachineTwinDemoPlan.CreateDefault(model);
+
+        Assert.All(steps, step => Assert.DoesNotContain("RealHardware", step.EventLogMessage, StringComparison.OrdinalIgnoreCase));
+        Assert.All(steps, step => Assert.DoesNotContain("IEG3268", step.EventLogMessage, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void MachineTwinDemoPlan_VisualAnglesStaySeparateFromEncoderValues()
+    {
+        var model = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load());
+        var steps = MachineTwinDemoPlan.CreateDefault(model);
+
+        Assert.All(steps, step => Assert.InRange(step.VisualThetaAngle, -150, 150));
+        Assert.DoesNotContain(steps, step => step.VisualThetaAngle == step.PreservedThetaEncoderValue);
+    }
+
+    [Fact]
+    public void RealEquipmentContextPhoto_IsPresentAsApprovedPortfolioContext()
+    {
+        var root = FindRepositoryRoot();
+        var photo = Path.Combine(root, "docs", "images", "real-equipment-context-top-view.jpg");
+
+        Assert.True(File.Exists(photo), "The approved real-equipment context photo should remain in docs/images.");
+        Assert.True(new FileInfo(photo).Length > 10_000);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "SemiTool.EtherCAT.WPF.ControlSuite.sln")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate repository root for test asset check.");
+    }
 }

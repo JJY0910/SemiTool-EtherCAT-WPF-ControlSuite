@@ -15,6 +15,8 @@ The capture mode uses WPF `RenderTargetBitmap` and existing `UserControl` views.
 - `docs/images/digital-twin-limited-theta-swing.png`
 - `docs/images/digital-twin-wafer-transfer-robot.png`
 - `docs/images/digital-twin-blade-mechanism.png`
+- `docs/images/machine-twin-runtime.png`
+- `docs/images/real-equipment-context-top-view.jpg`
 - `docs/images/dashboard.png`
 - `docs/images/manual-control.png`
 - `docs/images/io-monitor.png`
@@ -29,7 +31,7 @@ The capture mode uses WPF `RenderTargetBitmap` and existing `UserControl` views.
 
 ## Physical Model Context
 
-The Digital Twin images are generated simulator-mode abstractions. They represent a wafer transfer robot teaching setup with:
+The Digital Twin images are generated simulator-mode abstractions. `machine-twin-runtime.png` is captured from the actual runtime WPF `MachineTwinView`. They represent a wafer transfer robot teaching setup with:
 
 - a fixed aluminum-like base
 - a central limited-swing theta base
@@ -39,7 +41,7 @@ The Digital Twin images are generated simulator-mode abstractions. They represen
 - vacuum suction/exhaust
 - FOUP A, Chamber A, Chamber B, Chamber C, and FOUP B stations
 
-The reference photo is understanding-only material and is not committed to the public repository. The simulator visuals do not claim that the new WPF app has completed real-hardware verification.
+The real-equipment top-view photo is committed because the user approved it as public portfolio context. The simulator visuals and photo do not claim that the new WPF app has completed real-hardware verification.
 
 ## How To Regenerate
 
@@ -47,6 +49,22 @@ The reference photo is understanding-only material and is not committed to the p
 2. Run from the repository root.
 3. Execute the capture command above.
 4. Validate dimensions and file sizes before committing.
+
+## Runtime UI Evidence Pack
+
+The debug evidence pack is generated from the same runtime `MachineTwinView` and `MachineTwinViewModel` used by the app.
+
+```powershell
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
+```
+
+Outputs:
+
+- `docs/debug/latest/ui-runtime-verification.md`
+- `docs/debug/latest/machine-twin-state-trace.json`
+- `docs/debug/latest/machine-twin-state-trace.csv`
+- `docs/debug/latest/event-log.txt`
+- `docs/debug/latest/screenshots/*.png`
 
 ## Privacy Rule
 

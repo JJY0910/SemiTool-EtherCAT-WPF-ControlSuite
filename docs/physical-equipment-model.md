@@ -20,7 +20,9 @@ The Digital Twin uses an abstract, sanitized model of the physical layout:
 - FOUP/source/destination cassette positions on the lower side
 - tower lamp near the upper-right side
 
-The repository does not need to copy the real equipment photo. The visual representation is an abstract HMI model with no school, customer, serial, or private machine details.
+The repository includes one user-approved top-view context photo at `docs/images/real-equipment-context-top-view.jpg`.
+
+The live Digital Twin is still an abstract HMI model, not a photo clone. It avoids using the photo as proof that the new WPF app has already completed real-hardware verification.
 
 ## Robot / Blade Mechanism
 

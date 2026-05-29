@@ -7,8 +7,8 @@
         Width="1280"
         MinHeight="720"
         MinWidth="1080">
-    <DockPanel>
-        <Border DockPanel.Dock="Top" Background="#253238" Padding="16,10">
+    <DockPanel Background="{StaticResource HmiBackgroundBrush}">
+        <Border DockPanel.Dock="Top" Background="#101C23" Padding="16,10" BorderBrush="{StaticResource HmiStrokeBrush}" BorderThickness="0,0,0,1">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Left"
                            Text="SemiTool EtherCAT WPF Control Suite"
@@ -21,7 +21,10 @@
             </DockPanel>
         </Border>
 
-        <TabControl Margin="10">
+        <TabControl Margin="10" SelectedIndex="0">
+            <TabItem Header="Machine Twin">
+                <views:MachineTwinView DataContext="{Binding MachineTwin}" />
+            </TabItem>
             <TabItem Header="Dashboard">
                 <views:DashboardView DataContext="{Binding Dashboard}" />
             </TabItem>

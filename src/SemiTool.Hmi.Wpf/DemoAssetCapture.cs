@@ -1,5 +1,7 @@
 using System.IO;
 using IoPath = System.IO.Path;
+using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -26,6 +28,7 @@ internal static class DemoAssetCapture
 
         await PrepareSimulatorStateAsync(runtime);
         await viewModel.RefreshAsync();
+        await RenderMachineTwinAsync(viewModel.MachineTwin, "Machine Twin", "Actual runtime MachineTwinView / simulator mode", IoPath.Combine(outputDirectory, "machine-twin-runtime.png"));
         await RenderAsync(new DashboardView { DataContext = viewModel.Dashboard }, "Dashboard", "Simulator mode overview", IoPath.Combine(outputDirectory, "dashboard.png"));
         await RenderAsync(new ManualControlView { DataContext = viewModel.Manual }, "Manual Control", "Simulator-only manual operations", IoPath.Combine(outputDirectory, "manual-control.png"));
         await RenderAsync(new IoMonitorView { DataContext = viewModel.IoMonitor }, "I/O Monitor", "Named DO/DI points from EquipmentProfile", IoPath.Combine(outputDirectory, "io-monitor.png"));
@@ -34,30 +37,220 @@ internal static class DemoAssetCapture
         await RenderAsync(new AlarmEventLogView { DataContext = viewModel.AlarmEventLog }, "Alarm & Event Log", "Simulator alarm and event history", IoPath.Combine(outputDirectory, "alarm-log.png"));
         await RenderAsync(new SettingsView { DataContext = viewModel.Settings }, "Settings", "Simulator-first configuration", IoPath.Combine(outputDirectory, "settings.png"));
 
-        var physicalModel = DigitalTwinPhysicalModel.CreateDefault(runtime.Profile);
-        await RenderAsync(
-            CreateDigitalTwinLayout(physicalModel, DigitalTwinDemoState.LimitedSwingOverview),
-            "Digital Twin - Limited Theta Swing",
-            "Station-to-station simulator model / not 360-degree rotation",
-            IoPath.Combine(outputDirectory, "digital-twin-limited-theta-swing.png"));
-        await RenderAsync(
-            CreateDigitalTwinLayout(physicalModel, DigitalTwinDemoState.TransferRobotWithWafer),
-            "Digital Twin - Wafer Transfer Robot",
-            "Central theta base, telescopic blade, Z Safe/Work, cylinder, and vacuum",
-            IoPath.Combine(outputDirectory, "digital-twin-wafer-transfer-robot.png"));
-        await RenderAsync(
-            CreateBladeMechanismLayout(physicalModel),
-            "Digital Twin - Blade Mechanism",
-            "Two-stage/telescopic blade end-effector abstraction",
-            IoPath.Combine(outputDirectory, "digital-twin-blade-mechanism.png"));
-
-        // The demo frames visualize simulator-only station-to-station swing. They do not load the vendor DLL or
-        // claim that the new WPF app has already completed physical equipment verification.
-        await RenderAsync(CreateDigitalTwinLayout(physicalModel, DigitalTwinDemoState.PickFromFoupA), "Simulator Demo", "Frame 01 - Pick FOUP A Slot 1", IoPath.Combine(outputDirectory, "simulator-demo-frame-01.png"));
-        await RenderAsync(CreateDigitalTwinLayout(physicalModel, DigitalTwinDemoState.PlaceToChamberA), "Simulator Demo", "Frame 02 - Place to Chamber A / PreClean", IoPath.Combine(outputDirectory, "simulator-demo-frame-02.png"));
-        await RenderAsync(CreateDigitalTwinLayout(physicalModel, DigitalTwinDemoState.TransferToChamberC), "Simulator Demo", "Frame 03 - Chamber B CMP to Chamber C", IoPath.Combine(outputDirectory, "simulator-demo-frame-03.png"));
-        await RenderAsync(CreateDigitalTwinLayout(physicalModel, DigitalTwinDemoState.PlaceToFoupB), "Simulator Demo", "Frame 04 - Place to FOUP B Slot 1 / Complete", IoPath.Combine(outputDirectory, "simulator-demo-frame-04.png"));
+        // These portfolio assets now render the actual runtime MachineTwinView instead of a disconnected mock drawing.
+        await CaptureMachineTwinPortfolioFramesAsync(viewModel.MachineTwin, outputDirectory);
     }
+
+    public static async Task CaptureUiDebugReportAsync(RuntimeCoordinator runtime, MainViewModel viewModel)
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var debugDirectory = IoPath.Combine(repositoryRoot, "docs", "debug", "latest");
+        var screenshotDirectory = IoPath.Combine(debugDirectory, "screenshots");
+        if (Directory.Exists(debugDirectory))
+        {
+            Directory.Delete(debugDirectory, recursive: true);
+        }
+
+        Directory.CreateDirectory(screenshotDirectory);
+        await viewModel.RefreshAsync();
+
+        var trace = new List<MachineTwinStateTraceEntry>();
+        await viewModel.MachineTwin.RunSimulatorDemoForCaptureAsync(async step =>
+        {
+            var fileName = GetDebugScreenshotName(step.StepIndex);
+            var path = IoPath.Combine(screenshotDirectory, fileName);
+            await RenderMachineTwinAsync(viewModel.MachineTwin, "UI Debug", step.StepName, path);
+            var relativePath = $"docs/debug/latest/screenshots/{fileName}";
+            trace.Add(viewModel.MachineTwin.CreateTraceEntry(step, relativePath));
+        });
+
+        await WriteDebugReportAsync(debugDirectory, trace);
+    }
+
+    private static async Task CaptureMachineTwinPortfolioFramesAsync(MachineTwinViewModel machineTwin, string outputDirectory)
+    {
+        await machineTwin.RunSimulatorDemoForCaptureAsync(async step =>
+        {
+            var fileName = step.StepIndex switch
+            {
+                0 => "digital-twin-limited-theta-swing.png",
+                4 => "digital-twin-wafer-transfer-robot.png",
+                3 => "digital-twin-blade-mechanism.png",
+                1 => "simulator-demo-frame-01.png",
+                6 => "simulator-demo-frame-02.png",
+                8 => "simulator-demo-frame-03.png",
+                10 => "simulator-demo-frame-04.png",
+                _ => string.Empty
+            };
+
+            if (!string.IsNullOrWhiteSpace(fileName))
+            {
+                await RenderMachineTwinAsync(machineTwin, "Runtime Machine Twin", step.StepName, IoPath.Combine(outputDirectory, fileName));
+            }
+        });
+    }
+
+    private static Task RenderMachineTwinAsync(MachineTwinViewModel machineTwin, string title, string subtitle, string path) =>
+        RenderAsync(new MachineTwinView { DataContext = machineTwin }, title, subtitle, path);
+
+    private static async Task WriteDebugReportAsync(string debugDirectory, IReadOnlyList<MachineTwinStateTraceEntry> trace)
+    {
+        var json = JsonSerializer.Serialize(trace, new JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(IoPath.Combine(debugDirectory, "machine-twin-state-trace.json"), json, Encoding.UTF8);
+        await File.WriteAllTextAsync(IoPath.Combine(debugDirectory, "machine-twin-state-trace.csv"), BuildCsv(trace), Encoding.UTF8);
+        await File.WriteAllLinesAsync(
+            IoPath.Combine(debugDirectory, "event-log.txt"),
+            trace.Select(item => $"{item.Timestamp:O} | {item.EventLogMessage}"),
+            Encoding.UTF8);
+        await File.WriteAllTextAsync(IoPath.Combine(debugDirectory, "ui-runtime-verification.md"), BuildDebugReport(trace), Encoding.UTF8);
+    }
+
+    private static string BuildCsv(IReadOnlyList<MachineTwinStateTraceEntry> trace)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine(string.Join(",", new[]
+        {
+            "StepIndex",
+            "StepName",
+            "Timestamp",
+            "IsSimulatorMode",
+            "IsRealHardwareMode",
+            "IsConnected",
+            "MachineState",
+            "CurrentStation",
+            "PreviousStation",
+            "NextStation",
+            "CurrentStepName",
+            "ThetaTargetName",
+            "VisualThetaAngle",
+            "PreservedThetaEncoderValue",
+            "ZState",
+            "IsBladeExtended",
+            "IsCylinderForward",
+            "IsCylinderBackward",
+            "IsVacuumOn",
+            "IsWaferOnBlade",
+            "IsWaferInFoupA1",
+            "IsWaferInChamberA",
+            "IsWaferInChamberB",
+            "IsWaferInChamberC",
+            "IsWaferInFoupB1",
+            "ChamberADoorOpen",
+            "ChamberBDoorOpen",
+            "ChamberCDoorOpen",
+            "TowerRed",
+            "TowerYellow",
+            "TowerGreen",
+            "AlarmSummary",
+            "EventLogMessage",
+            "ScreenshotPath"
+        }));
+
+        foreach (var item in trace)
+        {
+            builder.AppendLine(string.Join(",", new[]
+            {
+                item.StepIndex.ToString(),
+                Csv(item.StepName),
+                Csv(item.Timestamp.ToString("O")),
+                item.IsSimulatorMode.ToString(),
+                item.IsRealHardwareMode.ToString(),
+                item.IsConnected.ToString(),
+                Csv(item.MachineState),
+                Csv(item.CurrentStation),
+                Csv(item.PreviousStation),
+                Csv(item.NextStation),
+                Csv(item.CurrentStepName),
+                Csv(item.ThetaTargetName),
+                item.VisualThetaAngle.ToString("F0"),
+                item.PreservedThetaEncoderValue.ToString(),
+                Csv(item.ZState),
+                item.IsBladeExtended.ToString(),
+                item.IsCylinderForward.ToString(),
+                item.IsCylinderBackward.ToString(),
+                item.IsVacuumOn.ToString(),
+                item.IsWaferOnBlade.ToString(),
+                item.IsWaferInFoupA1.ToString(),
+                item.IsWaferInChamberA.ToString(),
+                item.IsWaferInChamberB.ToString(),
+                item.IsWaferInChamberC.ToString(),
+                item.IsWaferInFoupB1.ToString(),
+                item.ChamberADoorOpen.ToString(),
+                item.ChamberBDoorOpen.ToString(),
+                item.ChamberCDoorOpen.ToString(),
+                item.TowerRed.ToString(),
+                item.TowerYellow.ToString(),
+                item.TowerGreen.ToString(),
+                Csv(item.AlarmSummary),
+                Csv(item.EventLogMessage),
+                Csv(item.ScreenshotPath)
+            }));
+        }
+
+        return builder.ToString();
+    }
+
+    private static string BuildDebugReport(IReadOnlyList<MachineTwinStateTraceEntry> trace)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("# Runtime UI Verification Report");
+        builder.AppendLine();
+        builder.AppendLine("## Purpose");
+        builder.AppendLine();
+        builder.AppendLine("This report proves how the actual WPF simulator UI moves during debug/capture mode. The screenshots are rendered from the same `MachineTwinView` and `MachineTwinViewModel` used by the running app.");
+        builder.AppendLine();
+        builder.AppendLine("## Execution Command");
+        builder.AppendLine();
+        builder.AppendLine("```powershell");
+        builder.AppendLine("dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report");
+        builder.AppendLine("```");
+        builder.AppendLine();
+        builder.AppendLine("## Verification Boundary");
+        builder.AppendLine();
+        builder.AppendLine("- Simulator mode only.");
+        builder.AppendLine("- No vendor DLL is loaded.");
+        builder.AppendLine("- No real hardware connection is attempted.");
+        builder.AppendLine("- Visual theta angle is for HMI rendering only.");
+        builder.AppendLine("- Preserved theta encoder values are machine/teaching values, not literal UI degrees.");
+        builder.AppendLine("- The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.");
+        builder.AppendLine();
+        builder.AppendLine("## Captured Steps");
+        builder.AppendLine();
+        builder.AppendLine("| Step | State | Station | Z | Blade | Vacuum | Wafer | Screenshot |");
+        builder.AppendLine("|---:|---|---|---|---|---|---|---|");
+
+        foreach (var item in trace)
+        {
+            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentStation} | {item.ZState} | {(item.IsBladeExtended ? "Extended" : "Retracted")} | {(item.IsVacuumOn ? "ON" : "OFF")} | {(item.IsWaferOnBlade ? "On blade" : item.CurrentStepName)} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("## Trace Files");
+        builder.AppendLine();
+        builder.AppendLine("- `machine-twin-state-trace.json`");
+        builder.AppendLine("- `machine-twin-state-trace.csv`");
+        builder.AppendLine("- `event-log.txt`");
+        return builder.ToString();
+    }
+
+    private static string GetDebugScreenshotName(int stepIndex) => stepIndex switch
+    {
+        0 => "00-startup-simulator.png",
+        1 => "01-initial-foup-a-slot1.png",
+        2 => "02-theta-to-foup-a.png",
+        3 => "03-z-work-blade-extend.png",
+        4 => "04-vacuum-suction-wafer-on-blade.png",
+        5 => "05-transfer-to-chamber-a.png",
+        6 => "06-place-chamber-a.png",
+        7 => "07-transfer-chamber-a-to-b.png",
+        8 => "08-transfer-chamber-b-to-c.png",
+        9 => "09-transfer-chamber-c-to-foup-b.png",
+        10 => "10-process-complete-green-blink.png",
+        11 => "11-reset-safe-state.png",
+        _ => $"{stepIndex:00}-machine-twin.png"
+    };
+
+    private static string Csv(string value) => $"\"{value.Replace("\"", "\"\"")}\"";
 
     private static async Task PrepareSimulatorStateAsync(RuntimeCoordinator runtime)
     {
@@ -92,13 +285,7 @@ internal static class DemoAssetCapture
         runtime.Scheduler.State.PmC.RemainingSeconds = 0;
         runtime.Scheduler.State.PmC.ProcessComplete = true;
 
-        runtime.Alarms.Raise(
-            AlarmCode.Timeout,
-            "Simulator demo alarm",
-            "Generated by capture mode to demonstrate alarm display.",
-            "Reset in simulator mode after review.");
         runtime.Events.Info(nameof(DemoAssetCapture), "Simulator capture mode started.");
-        runtime.Events.Warn(nameof(DemoAssetCapture), "Demo alarm is simulator-only.");
         runtime.Events.Info(nameof(DemoAssetCapture), "Real hardware mode was not selected or connected.");
     }
 

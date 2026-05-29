@@ -7,6 +7,8 @@ Portfolio screenshots in this folder are generated from the WPF app in Simulator
 - `digital-twin-limited-theta-swing.png` - exists
 - `digital-twin-wafer-transfer-robot.png` - exists
 - `digital-twin-blade-mechanism.png` - exists
+- `machine-twin-runtime.png` - exists, captured from the actual runtime `MachineTwinView`
+- `real-equipment-context-top-view.jpg` - exists, approved user-provided public context photo
 - `dashboard.png` - exists
 - `manual-control.png` - exists
 - `io-monitor.png` - exists
@@ -21,11 +23,13 @@ Portfolio screenshots in this folder are generated from the WPF app in Simulator
 
 ## Physical model note
 
-These are simulator-mode generated visuals.
+These are simulator-mode generated visuals, except `real-equipment-context-top-view.jpg`, which is a user-approved real equipment context reference photo.
 
 The visual model is based on the wafer transfer robot teaching equipment and the previous CMP HMI scenario. `CMP Cluster` is a simulator scenario name, while the physical model is explained as a limited-swing wafer transfer robot with a telescopic blade/end-effector.
 
 The theta axis is shown as a limited station-to-station swing, not a 360-degree continuous rotation.
+
+`machine-twin-runtime.png` and `docs/debug/latest/screenshots/*.png` are rendered from the actual WPF `MachineTwinView`, not from a disconnected mockup.
 
 ## Optional media
 
@@ -38,6 +42,12 @@ Do not commit huge videos directly. Use compressed GIFs, GitHub Releases, or an 
 
 ```powershell
 dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj -- --capture-demo-assets
+```
+
+Runtime UI evidence pack:
+
+```powershell
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
 ```
 
 ## Privacy rule

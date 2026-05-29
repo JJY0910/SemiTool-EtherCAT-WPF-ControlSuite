@@ -3,6 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              ShutdownMode="OnMainWindowClose">
     <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/EquipmentTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
         <SolidColorBrush x:Key="SurfaceBrush" Color="#F5F7F9" />
         <SolidColorBrush x:Key="PanelBrush" Color="#FFFFFF" />
         <SolidColorBrush x:Key="LineBrush" Color="#C7D0D9" />
@@ -37,5 +42,6 @@
             <Setter Property="IsReadOnly" Value="True" />
             <Setter Property="GridLinesVisibility" Value="Horizontal" />
         </Style>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
