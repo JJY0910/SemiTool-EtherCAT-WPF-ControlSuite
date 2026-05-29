@@ -42,7 +42,7 @@ Digital Twin은 웨이퍼 이송 로봇 Teaching 장비를 추상화해서 표�
 - tower lamp indicator
 - alarm summary와 runtime event trace
 
-`Run Simulator Demo` 버튼은 실제 Machine Twin 화면을 다음 순서로 움직입니다.
+`Run Teaching Demo` 버튼은 실제 Machine Twin 화면을 teaching sequence로 움직입니다.
 
 ```text
 FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
@@ -97,7 +97,33 @@ Scheduler priority는 downstream-first입니다.
 4. FOUP A waiting wafer -> Chamber A
 5. 이동이 불가능하면 chamber process countdown 진행
 
-일반 runtime demo 기본 속도는 `Realistic`입니다. 그래서 robot, blade, Z, vacuum, chamber processing 상태가 눈에 보이게 진행되며 즉시 완료로 점프하지 않습니다. `Fast`와 `Step` 옵션은 리뷰/캡처용으로 사용할 수 있지만 중간 상태는 유지합니다. 데모가 끝나도 실제 앱 창은 닫히지 않고 완료 상태를 유지합니다.
+일반 runtime demo 기본 속도는 `Teaching`입니다. 그래서 robot, chamber door, blade, Z, vacuum, chamber processing 상태가 눈에 보이게 진행되며 즉시 완료로 점프하지 않습니다. `Realistic`, `Fast`, `Step` 옵션은 리뷰/캡처용으로 사용할 수 있지만 중간 상태는 유지합니다. 데모가 끝나도 실제 앱 창은 닫히지 않고 완료 상태를 유지합니다.
+
+## Machine Twin Teaching Demo Update
+
+`Run Teaching Demo`는 실제 EtherCAT 동작이 아니라 WPF UI / simulator teaching visualization입니다.
+
+- Chamber door open 이후에만 blade가 chamber로 들어갑니다.
+- Vacuum suction이 켜진 뒤 wafer를 blade로 pick합니다.
+- Vacuum exhaust/release가 표시된 뒤 wafer를 chamber 또는 FOUP B에 place합니다.
+- Blade가 완전히 retract된 뒤 chamber door가 close됩니다.
+- Chamber process는 wafer가 stage에 있고 door가 closed인 상태에서만 시작됩니다.
+- Chamber unload는 process complete 이후에만 진행됩니다.
+- 일반 runtime demo 기본 속도는 `Teaching`이며 즉시 완료로 점프하지 않습니다.
+- Real EtherCAT adapter, vendor DLL loading, preserved theta value, I/O mapping은 이 UI 수정으로 변경하지 않습니다.
+- 새 WPF 앱의 실제 장비 검증 완료를 주장하지 않습니다.
+
+Debug evidence의 주요 teaching screenshot은 다음 파일명으로 갱신됩니다.
+
+- `01-foup-a-before-pickup.png`
+- `02-blade-holding-wafer-after-pickup.png`
+- `03-chamber-a-door-opening.png`
+- `04-blade-entering-chamber-a-door-open.png`
+- `05-wafer-placed-chamber-a-stage.png`
+- `06-blade-retracted-before-chamber-a-door-closes.png`
+- `07-chamber-a-processing-door-closed.png`
+- `08-chamber-a-unload-after-process-complete.png`
+- `09-final-foup-b-5-completed.png`
 
 ## Runtime UI Evidence Pack
 
@@ -113,16 +139,15 @@ Scheduler priority는 downstream-first입니다.
 
 debug evidence에는 다음 5-wafer pipeline milestone이 포함됩니다.
 
-- `01-foup-a-5-wafers.png`
-- `02-w01-pick-a1.png`
-- `03-w01-on-blade.png`
-- `04-w01-chamber-a-processing.png`
-- `05-w02-enters-chamber-a-while-w01-moves-to-b.png`
-- `06-pipeline-three-chambers-occupied.png`
-- `07-w01-chamber-c-complete.png`
-- `08-w01-placed-foup-b-b1.png`
-- `09-foup-a-empty-pipeline-finishing.png`
-- `10-foup-b-5-wafers-complete.png`
+- `01-foup-a-before-pickup.png`
+- `02-blade-holding-wafer-after-pickup.png`
+- `03-chamber-a-door-opening.png`
+- `04-blade-entering-chamber-a-door-open.png`
+- `05-wafer-placed-chamber-a-stage.png`
+- `06-blade-retracted-before-chamber-a-door-closes.png`
+- `07-chamber-a-processing-door-closed.png`
+- `08-chamber-a-unload-after-process-complete.png`
+- `09-final-foup-b-5-completed.png`
 
 재생성 명령:
 

@@ -23,6 +23,21 @@ public sealed record SimulatorTimingProfile(
     int ChamberCProcessSeconds,
     int TowerBlinkMs)
 {
+    public static SimulatorTimingProfile Teaching { get; } = new(
+        "Teaching",
+        1000,
+        750,
+        750,
+        1000,
+        1000,
+        750,
+        750,
+        1200,
+        4,
+        5,
+        4,
+        500);
+
     public static SimulatorTimingProfile Realistic { get; } = new(
         "Realistic",
         1800,
@@ -85,6 +100,40 @@ public enum WaferTransferPriority
     ChamberCToFoupB
 }
 
+public enum ChamberDoorTeachingState
+{
+    Closed,
+    Opening,
+    Open,
+    Closing,
+    Unknown,
+    Fault
+}
+
+public enum BladeTeachingState
+{
+    Retracted,
+    Extending,
+    Extended,
+    Retracting
+}
+
+public enum VacuumTeachingState
+{
+    Off,
+    SuctionOn,
+    ExhaustOrRelease
+}
+
+public enum RobotTeachingState
+{
+    Idle,
+    MovingTheta,
+    MovingZ,
+    Picking,
+    Placing
+}
+
 /// <summary>
 /// One FOUP cassette slot in the simulator pipeline.
 /// </summary>
@@ -128,7 +177,14 @@ public sealed record WaferPipelineSnapshot(
     string NextStation,
     string CurrentStepName,
     string CurrentTransferDescription,
+    string CurrentAction,
     string ActiveWaferId,
+    RobotTeachingState RobotState,
+    BladeTeachingState BladeState,
+    VacuumTeachingState VacuumTeachingState,
+    ChamberDoorTeachingState ChamberADoorState,
+    ChamberDoorTeachingState ChamberBDoorState,
+    ChamberDoorTeachingState ChamberCDoorState,
     bool IsMoving,
     string ZState,
     bool IsBladeExtended,
@@ -237,6 +293,9 @@ public static class WaferPipelineSimulator
             "Reset returns simulator to FOUP A loaded, FOUP B empty, blade retracted, vacuum off.")
     ];
 
+    public static IReadOnlyList<WaferPipelineSnapshot> CreateTeachingTimeline(SimulatorTimingProfile timing) =>
+        TeachingWaferPipelineSequence.Create(timing);
+
     public static WaferTransferPriority ChooseNextTransfer(WaferPipelineSnapshot state)
     {
         if (state.ChamberC.ProcessState == "Completed" && state.FoupBSlots.Any(slot => !slot.HasWafer))
@@ -304,7 +363,19 @@ public static class WaferPipelineSimulator
             next,
             stepName,
             transferDescription,
+            stepName,
             activeWafer,
+            moving ? RobotTeachingState.MovingTheta : RobotTeachingState.Idle,
+            bladeExtended ? BladeTeachingState.Extended : BladeTeachingState.Retracted,
+            vacuumState switch
+            {
+                "Suction" => VacuumTeachingState.SuctionOn,
+                "Exhaust" => VacuumTeachingState.ExhaustOrRelease,
+                _ => VacuumTeachingState.Off
+            },
+            chamberA.DoorOpen ? ChamberDoorTeachingState.Open : ChamberDoorTeachingState.Closed,
+            chamberB.DoorOpen ? ChamberDoorTeachingState.Open : ChamberDoorTeachingState.Closed,
+            chamberC.DoorOpen ? ChamberDoorTeachingState.Open : ChamberDoorTeachingState.Closed,
             moving,
             zState,
             bladeExtended,

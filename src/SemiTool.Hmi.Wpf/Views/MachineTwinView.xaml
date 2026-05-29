@@ -217,10 +217,37 @@
                             <TextBlock Text="Live Simulator Digital Twin" Style="{StaticResource HmiSectionHeader}" />
                             <TextBlock Text="{Binding FeedbackBoundary}" Foreground="{StaticResource HmiMutedTextBrush}" />
                         </StackPanel>
+                        <Border Background="#1B3540"
+                                BorderBrush="{StaticResource HmiAccentBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="12,8"
+                                Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Current Teaching Action"
+                                           Foreground="{StaticResource HmiMutedTextBrush}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding CurrentAction}"
+                                           Foreground="{StaticResource HmiTextBrush}"
+                                           FontSize="20"
+                                           FontWeight="SemiBold"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Button Content="Run Simulator Demo"
+                            <Button Content="Run Teaching Demo"
                                     Command="{Binding RunSimulatorDemoCommand}"
                                     Style="{StaticResource HmiPrimaryButton}" />
+                            <Button Content="Pause"
+                                    Command="{Binding PauseCommand}"
+                                    Style="{StaticResource HmiButton}" />
+                            <Button Content="Resume"
+                                    Command="{Binding ResumeCommand}"
+                                    Style="{StaticResource HmiButton}" />
+                            <Button Content="Step Once"
+                                    Command="{Binding StepOnceCommand}"
+                                    Style="{StaticResource HmiButton}" />
                             <Button Content="Stop"
                                     Command="{Binding StopCommand}"
                                     Style="{StaticResource HmiButton}" />
@@ -268,6 +295,7 @@
                                     <TextBlock Text="{Binding ChamberA.CurrentStep}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
                                     <ProgressBar Height="7" Minimum="0" Maximum="100" Value="{Binding ChamberA.ProgressPercent, Mode=OneWay}" Margin="0,3,0,0" />
                                     <TextBlock Text="{Binding ChamberA.RemainingTime, StringFormat=Remain {0}s}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
+                                    <TextBlock Text="{Binding ChamberADoorState, StringFormat=Door: {0}}" Foreground="{StaticResource HmiWarningBrush}" FontSize="11" FontWeight="SemiBold" />
                                     <TextBlock Text="Door open" Foreground="{StaticResource HmiGreenBrush}" FontSize="11"
                                                Visibility="{Binding ChamberADoorOpen, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>
@@ -280,6 +308,7 @@
                                     <TextBlock Text="{Binding ChamberB.CurrentStep}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
                                     <ProgressBar Height="7" Minimum="0" Maximum="100" Value="{Binding ChamberB.ProgressPercent, Mode=OneWay}" Margin="0,3,0,0" />
                                     <TextBlock Text="{Binding ChamberB.RemainingTime, StringFormat=Remain {0}s}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
+                                    <TextBlock Text="{Binding ChamberBDoorState, StringFormat=Door: {0}}" Foreground="{StaticResource HmiWarningBrush}" FontSize="11" FontWeight="SemiBold" />
                                     <TextBlock Text="Door open" Foreground="{StaticResource HmiGreenBrush}" FontSize="11"
                                                Visibility="{Binding ChamberBDoorOpen, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>
@@ -292,6 +321,7 @@
                                     <TextBlock Text="{Binding ChamberC.CurrentStep}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
                                     <ProgressBar Height="7" Minimum="0" Maximum="100" Value="{Binding ChamberC.ProgressPercent, Mode=OneWay}" Margin="0,3,0,0" />
                                     <TextBlock Text="{Binding ChamberC.RemainingTime, StringFormat=Remain {0}s}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
+                                    <TextBlock Text="{Binding ChamberCDoorState, StringFormat=Door: {0}}" Foreground="{StaticResource HmiWarningBrush}" FontSize="11" FontWeight="SemiBold" />
                                     <TextBlock Text="Door open" Foreground="{StaticResource HmiGreenBrush}" FontSize="11"
                                                Visibility="{Binding ChamberCDoorOpen, Converter={StaticResource BoolToVisibilityConverter}}" />
                                 </StackPanel>
@@ -393,6 +423,35 @@
                         <TextBlock Text="{Binding PipelineState, StringFormat=Pipeline: {0}}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding CurrentTransferDescription}" Foreground="{StaticResource HmiMutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,8" />
                         <TextBlock Text="{Binding CurrentStepName}" Foreground="{StaticResource HmiTextBrush}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <UniformGrid Columns="2" Margin="0,10,0,8">
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,6">
+                                <StackPanel>
+                                    <TextBlock Text="Robot" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding RobotTeachingState}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,0,6">
+                                <StackPanel>
+                                    <TextBlock Text="Blade" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding BladeTeachingState}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,6">
+                                <StackPanel>
+                                    <TextBlock Text="Vacuum" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding VacuumDisplayState}" Foreground="{StaticResource HmiWarningBrush}" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,0,6">
+                                <StackPanel>
+                                    <TextBlock Text="Demo" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding SelectedDemoSpeed}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                        <TextBlock Text="{Binding ChamberADoorState, StringFormat=Chamber A Door: {0}}" Foreground="{StaticResource HmiMutedTextBrush}" />
+                        <TextBlock Text="{Binding ChamberBDoorState, StringFormat=Chamber B Door: {0}}" Foreground="{StaticResource HmiMutedTextBrush}" />
+                        <TextBlock Text="{Binding ChamberCDoorState, StringFormat=Chamber C Door: {0}}" Foreground="{StaticResource HmiMutedTextBrush}" />
                         <TextBlock Text="{Binding CurrentStation, StringFormat=Current station: {0}}" Foreground="{StaticResource HmiMutedTextBrush}" Margin="0,8,0,0" />
                         <TextBlock Text="{Binding ThetaTargetName, StringFormat=Theta target: {0}}" Foreground="{StaticResource HmiMutedTextBrush}" />
                         <TextBlock Text="{Binding VisualThetaAngle, StringFormat=Visual angle: {0:F0} deg}" Foreground="{StaticResource HmiMutedTextBrush}" />

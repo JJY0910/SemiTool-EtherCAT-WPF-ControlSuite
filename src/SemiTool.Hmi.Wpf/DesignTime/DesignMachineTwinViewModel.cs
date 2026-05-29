@@ -22,7 +22,7 @@ public sealed class DesignMachineTwinViewModel
         FoupBSlots = DesignMachineTwinData.CreateFoupBSlots();
         Stations = DesignMachineTwinData.CreateStations();
         EventLogLines = DesignMachineTwinData.CreateEventLogLines();
-        DemoSpeedOptions = new ObservableCollection<string>(["Realistic", "Fast", "Step"]);
+        DemoSpeedOptions = new ObservableCollection<string>(["Teaching", "Realistic", "Fast", "Step"]);
 
         ChamberA = new DesignChamberPipelineViewModel(
             "Chamber A",
@@ -61,6 +61,9 @@ public sealed class DesignMachineTwinViewModel
             false);
 
         RunSimulatorDemoCommand = CreateNoOpCommand();
+        PauseCommand = CreateNoOpCommand();
+        ResumeCommand = CreateNoOpCommand();
+        StepOnceCommand = CreateNoOpCommand();
         StopCommand = CreateNoOpCommand();
         ResetCommand = CreateNoOpCommand();
         AutoStartCommand = CreateNoOpCommand();
@@ -91,6 +94,13 @@ public sealed class DesignMachineTwinViewModel
     public string PreviousStation => "Chamber B";
     public string NextStation => "FOUP B";
     public string CurrentStepName => "Designer sample: five unique wafers / pipeline mid-drain";
+    public string CurrentAction => "Blade is extended into Chamber C after the door-open interlock.";
+    public string RobotTeachingState => "Placing";
+    public string BladeTeachingState => "Extended";
+    public string VacuumDisplayState => "ExhaustOrRelease";
+    public string ChamberADoorState => "Closed";
+    public string ChamberBDoorState => "Closed";
+    public string ChamberCDoorState => "Open";
     public double VisualThetaAngle => 75;
     public string ThetaTargetName => "Chamber C";
     public long PreservedThetaEncoderValue => -322000;
@@ -107,12 +117,12 @@ public sealed class DesignMachineTwinViewModel
     public bool IsWaferInFoupB1 => true;
     public bool ChamberADoorOpen => false;
     public bool ChamberBDoorOpen => false;
-    public bool ChamberCDoorOpen => false;
+    public bool ChamberCDoorOpen => true;
     public bool TowerRed => false;
     public bool TowerYellow => false;
     public bool TowerGreen => true;
     public string AlarmSummary => "Designer preview: no active alarms";
-    public string SelectedDemoSpeed { get; set; } = "Realistic";
+    public string SelectedDemoSpeed { get; set; } = "Teaching";
     public string PipelineState => "Running";
     public int FoupACount => 1;
     public int FoupBCount => 1;
@@ -120,18 +130,21 @@ public sealed class DesignMachineTwinViewModel
     public string CurrentTransferDescription => "Static preview: W01 complete, W02-W04 in chambers, W05 waiting.";
     public string ActiveWaferId => "W02";
     public string WaferIdOnBlade => string.Empty;
-    public string TimingProfileName => "Realistic";
+    public string TimingProfileName => "Teaching";
     public string ModeLabel => "SIMULATOR";
     public string ConnectionLabel => "Designer";
     public double BladeLength => 245;
     public double BladeScaleY => 1.0;
-    public string CylinderState => "Forward / blade extended";
-    public string VacuumState => "Vacuum OFF / no wafer on blade";
+    public string CylinderState => "Extended / Cylinder forward";
+    public string VacuumState => "Exhaust / release active";
     public string WaferSummary => "5 unique wafers: W01 B1, W02 C, W03 B, W04 A, W05 FOUP A";
     public string FoupASummary => "FOUP A: 1/5 waiting";
     public string FoupBSummary => "FOUP B: 1/5 completed";
 
     public ICommand RunSimulatorDemoCommand { get; }
+    public ICommand PauseCommand { get; }
+    public ICommand ResumeCommand { get; }
+    public ICommand StepOnceCommand { get; }
     public ICommand StopCommand { get; }
     public ICommand ResetCommand { get; }
     public ICommand AutoStartCommand { get; }

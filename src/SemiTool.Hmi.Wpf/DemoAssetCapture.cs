@@ -57,6 +57,11 @@ internal static class DemoAssetCapture
         var trace = new List<MachineTwinStateTraceEntry>();
         await viewModel.MachineTwin.RunSimulatorDemoForCaptureAsync(async step =>
         {
+            if (!ShouldCaptureDebugStep(step))
+            {
+                return;
+            }
+
             var fileName = step.ScreenshotName;
             var path = IoPath.Combine(screenshotDirectory, fileName);
             if (step.StepIndex == 0)
@@ -79,15 +84,15 @@ internal static class DemoAssetCapture
     {
         await machineTwin.RunSimulatorDemoForCaptureAsync(async step =>
         {
-            var fileName = step.StepIndex switch
+            var fileName = step.ScreenshotName switch
             {
-                0 => "digital-twin-limited-theta-swing.png",
-                4 => "digital-twin-wafer-transfer-robot.png",
-                2 => "digital-twin-blade-mechanism.png",
-                1 => "simulator-demo-frame-01.png",
-                5 => "simulator-demo-frame-02.png",
-                8 => "simulator-demo-frame-03.png",
-                10 => "simulator-demo-frame-04.png",
+                "00-startup-simulator.png" => "digital-twin-limited-theta-swing.png",
+                "03-chamber-a-door-opening.png" => "digital-twin-wafer-transfer-robot.png",
+                "02-blade-holding-wafer-after-pickup.png" => "digital-twin-blade-mechanism.png",
+                "01-foup-a-before-pickup.png" => "simulator-demo-frame-01.png",
+                "04-blade-entering-chamber-a-door-open.png" => "simulator-demo-frame-02.png",
+                "07-chamber-a-processing-door-closed.png" => "simulator-demo-frame-03.png",
+                "09-final-foup-b-5-completed.png" => "simulator-demo-frame-04.png",
                 _ => string.Empty
             };
 
@@ -97,6 +102,20 @@ internal static class DemoAssetCapture
             }
         });
     }
+
+    private static bool ShouldCaptureDebugStep(MachineTwinDemoStep step) =>
+        step.StepIndex == 0 ||
+        step.ScreenshotName is
+            "01-foup-a-before-pickup.png" or
+            "02-blade-holding-wafer-after-pickup.png" or
+            "03-chamber-a-door-opening.png" or
+            "04-blade-entering-chamber-a-door-open.png" or
+            "05-wafer-placed-chamber-a-stage.png" or
+            "06-blade-retracted-before-chamber-a-door-closes.png" or
+            "07-chamber-a-processing-door-closed.png" or
+            "08-chamber-a-unload-after-process-complete.png" or
+            "09-final-foup-b-5-completed.png" or
+            "10-reset-safe-state.png";
 
     private static Task RenderMachineTwinAsync(MachineTwinViewModel machineTwin, string title, string subtitle, string path) =>
         RenderAsync(new MachineTwinView { DataContext = machineTwin }, title, subtitle, path);
@@ -166,6 +185,13 @@ internal static class DemoAssetCapture
             "PreviousStation",
             "NextStation",
             "CurrentStepName",
+            "CurrentAction",
+            "RobotTeachingState",
+            "BladeTeachingState",
+            "VacuumDisplayState",
+            "ChamberADoorState",
+            "ChamberBDoorState",
+            "ChamberCDoorState",
             "ThetaTargetName",
             "VisualThetaAngle",
             "PreservedThetaEncoderValue",
@@ -222,6 +248,13 @@ internal static class DemoAssetCapture
                 Csv(item.PreviousStation),
                 Csv(item.NextStation),
                 Csv(item.CurrentStepName),
+                Csv(item.CurrentAction),
+                Csv(item.RobotTeachingState),
+                Csv(item.BladeTeachingState),
+                Csv(item.VacuumDisplayState),
+                Csv(item.ChamberADoorState),
+                Csv(item.ChamberBDoorState),
+                Csv(item.ChamberCDoorState),
                 Csv(item.ThetaTargetName),
                 item.VisualThetaAngle.ToString("F0"),
                 item.PreservedThetaEncoderValue.ToString(),
@@ -290,26 +323,27 @@ internal static class DemoAssetCapture
         builder.AppendLine("- Visual theta angle is for HMI rendering only.");
         builder.AppendLine("- Preserved theta encoder values are machine/teaching values, not literal UI degrees.");
         builder.AppendLine("- The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.");
-        builder.AppendLine("- Normal runtime `Run Simulator Demo` remains open after completion; only explicit capture modes call application shutdown.");
+        builder.AppendLine("- Normal runtime `Run Teaching Demo` remains open after completion; only explicit capture modes call application shutdown.");
         builder.AppendLine();
         builder.AppendLine("## Runtime Integration Check");
         builder.AppendLine();
         builder.AppendLine("- MainWindow first tab is `Machine Twin`.");
         builder.AppendLine("- MainWindow uses `<views:MachineTwinView DataContext=\"{Binding MachineTwin}\" />`.");
         builder.AppendLine("- MainViewModel exposes `MachineTwinViewModel` through the `MachineTwin` property.");
-        builder.AppendLine("- `Run Simulator Demo` is a command on the actual `MachineTwinView` runtime screen.");
+        builder.AppendLine("- `Run Teaching Demo` is a command on the actual `MachineTwinView` runtime screen.");
         builder.AppendLine("- `00-startup-simulator.png` is captured from the actual `MainWindow`, so it shows the selected `Machine Twin` tab.");
         builder.AppendLine("- The remaining screenshots are captured from the same `MachineTwinView` and `MachineTwinViewModel` used by the running app.");
         builder.AppendLine();
         builder.AppendLine("## Captured Steps");
         builder.AppendLine();
-        builder.AppendLine("| Step | State | Station | FOUP A | FOUP B | Chambers | Z | Blade | Vacuum | Screenshot |");
-        builder.AppendLine("|---:|---|---|---:|---:|---|---|---|---|---|");
+        builder.AppendLine("| Step | State | Action | Station | FOUP A | FOUP B | Chambers | Door/Blade/Vacuum | Screenshot |");
+        builder.AppendLine("|---:|---|---|---|---:|---:|---|---|---|");
 
         foreach (var item in trace)
         {
             var chamberSummary = $"{item.ChamberAState}<br>{item.ChamberBState}<br>{item.ChamberCState}";
-            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentStation} | {item.FoupACount}/5 | {item.FoupBCount}/5 | {chamberSummary} | {item.ZState} | {(item.IsBladeExtended ? "Extended" : "Retracted")} | {item.VacuumState} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
+            var teachingState = $"A:{item.ChamberADoorState} B:{item.ChamberBDoorState} C:{item.ChamberCDoorState}<br>{item.BladeTeachingState}<br>{item.VacuumDisplayState}";
+            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentAction} | {item.CurrentStation} | {item.FoupACount}/5 | {item.FoupBCount}/5 | {chamberSummary} | {teachingState} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
         }
 
         builder.AppendLine();
@@ -321,16 +355,17 @@ internal static class DemoAssetCapture
         builder.AppendLine("| FOUP A starts with five wafers. | Steps 0 and 1 show `FoupACount=5` and `FoupBCount=0`. |");
         builder.AppendLine("| Theta target follows the limited station arc instead of a 360-degree dial. | The trace records station-to-station `ThetaTargetName` changes plus preserved encoder values. |");
         builder.AppendLine("| Z moves from Safe to Work only during pick/place visualization. | Pick/place steps show `ZState=Z Work`; processing and reset states return to `Z Safe`. |");
-        builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `IsCylinderForward=true` also show `IsBladeExtended=true`. |");
-        builder.AppendLine("| Vacuum suction attaches the wafer to the blade. | Step 3 shows `VacuumState=Suction`, `IsVacuumOn=true`, and `IsWaferOnBlade=true`. |");
-        builder.AppendLine("| Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps turn vacuum off and move the wafer flag to the target location. |");
-        builder.AppendLine("| Tower green indicates simulator sequence completion. | Step 10 shows `TowerGreen=true`. |");
-        builder.AppendLine("| Reset returns the visual to a safe simulator state. | Step 11 returns to FOUP A, blade retracted, vacuum off, and Z Safe. |");
+        builder.AppendLine("| Chamber doors gate blade entry. | Chamber-target blade-extension steps include `DoorState=Open`; close steps occur only after the blade retracts. |");
+        builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `BladeTeachingState=Extending/Extended` also show `IsCylinderForward=true`. |");
+        builder.AppendLine("| Vacuum suction attaches the wafer to the blade. | Pickup steps show `VacuumDisplayState=SuctionOn` before the wafer appears on the blade. |");
+        builder.AppendLine("| Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps show `VacuumDisplayState=ExhaustOrRelease` before the wafer moves to the target. |");
+        builder.AppendLine("| Tower green indicates simulator sequence completion. | The final complete state shows `TowerGreen=true` with FOUP B 5/5. |");
+        builder.AppendLine("| Reset returns the visual to a safe simulator state. | Reset returns to FOUP A loaded, blade retracted, vacuum off, all chamber doors closed, and Z Safe. |");
         builder.AppendLine("| FOUP A count decreases from 5 to 0. | Captured states show FOUP A 5/5 at startup, 4/5 after W01 pick, and 0/5 while the pipeline drains. |");
         builder.AppendLine("| FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |");
-        builder.AppendLine("| Chambers are used as a pipeline. | Step 6 shows Chamber A, Chamber B, and Chamber C occupied simultaneously. |");
-        builder.AppendLine("| Scheduler drains downstream first. | Step 7 shows Chamber C complete and ready for the highest-priority Chamber C -> FOUP B transfer. |");
-        builder.AppendLine("| Runtime demo does not auto-close. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Simulator Demo` leaves the window open. |");
+        builder.AppendLine("| Chambers are used as a pipeline. | The state trace records Chamber A/B/C wafer ownership and process state while the five-wafer scheduler drains downstream first. |");
+        builder.AppendLine("| Scheduler drains downstream first. | The timeline only unloads completed chambers and uses the priority C -> FOUP B, B -> C, A -> B, FOUP A -> A. |");
+        builder.AppendLine("| Runtime demo does not auto-close. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Teaching Demo` leaves the window open. |");
         builder.AppendLine();
         builder.AppendLine("## Screenshot Timeline");
         builder.AppendLine();

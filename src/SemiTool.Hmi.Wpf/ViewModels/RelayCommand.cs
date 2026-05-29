@@ -1,3 +1,5 @@
+using System.Windows;
+using System.Windows.Threading;
 using System.Windows.Input;
 
 namespace SemiTool.Hmi.Wpf.ViewModels;
@@ -19,7 +21,7 @@ public sealed class RelayCommand : ICommand
 
     public void Execute(object? parameter) => _execute(parameter);
 
-    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    public void RaiseCanExecuteChanged() => CommandEventDispatcher.Raise(CanExecuteChanged, this);
 }
 
 public sealed class AsyncRelayCommand : ICommand
@@ -49,7 +51,7 @@ public sealed class AsyncRelayCommand : ICommand
         {
             _isExecuting = true;
             RaiseCanExecuteChanged();
-            await _execute(parameter).ConfigureAwait(false);
+            await _execute(parameter);
         }
         finally
         {
@@ -69,7 +71,7 @@ public sealed class AsyncRelayCommand : ICommand
         {
             _isExecuting = true;
             RaiseCanExecuteChanged();
-            await _execute(parameter).ConfigureAwait(false);
+            await _execute(parameter);
         }
         finally
         {
@@ -78,5 +80,25 @@ public sealed class AsyncRelayCommand : ICommand
         }
     }
 
-    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    public void RaiseCanExecuteChanged() => CommandEventDispatcher.Raise(CanExecuteChanged, this);
+}
+
+internal static class CommandEventDispatcher
+{
+    public static void Raise(EventHandler? handler, object sender)
+    {
+        if (handler is null)
+        {
+            return;
+        }
+
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            handler(sender, EventArgs.Empty);
+            return;
+        }
+
+        dispatcher.BeginInvoke(DispatcherPriority.Normal, () => handler(sender, EventArgs.Empty));
+    }
 }

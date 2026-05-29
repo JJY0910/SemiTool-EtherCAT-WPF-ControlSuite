@@ -54,13 +54,13 @@ This is not a static documentation mockup. The `MachineTwinView` is bound to `Ma
 - tower lamp indicators
 - alarm summary and runtime event trace
 
-`Run Simulator Demo` animates the actual Machine Twin view through:
+`Run Teaching Demo` animates the actual Machine Twin view through readable simulator-only mechanical substeps:
 
 ```text
 FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 ```
 
-The demo runs in Simulator mode only. It does not load `IEG3268_Dll.dll`, does not connect to real equipment, and does not claim real-hardware verification.
+The teaching sequence makes the chamber-gated motion visible: chamber door open, blade extend, vacuum suction or exhaust, wafer pick/place, blade retract, chamber door close, process start, process complete, and unload. The demo runs in Simulator mode only. It does not load `IEG3268_Dll.dll`, does not connect to real equipment, and does not claim real-hardware verification. The real EtherCAT adapter, vendor DLL loading, preserved theta values, and I/O mapping are not changed by this UI teaching sequence.
 
 The first runtime debug screenshot captures the actual `MainWindow` with the `Machine Twin` tab selected. That tab contains `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`, and `MainViewModel.MachineTwin` shares the same `RuntimeCoordinator` used by the other HMI tabs.
 
@@ -109,7 +109,7 @@ Scheduler priority is downstream-first:
 4. FOUP A -> Chamber A when Chamber A is empty and FOUP A still has waiting wafers.
 5. If no transfer is possible, chamber process countdown advances.
 
-Normal runtime demo timing defaults to `Realistic`, so the robot, blade, Z, vacuum, and chamber processing states remain visible instead of instantly jumping to completion. `Fast` and `Step` speed options are available for review and capture workflows, but they still preserve intermediate states. The visible app remains open after the demo completes.
+Normal runtime demo timing defaults to `Teaching`, so the robot, chamber doors, blade, Z, vacuum, and chamber processing states remain visible instead of instantly jumping to completion. `Realistic`, `Fast`, and `Step` speed options are available for review and capture workflows, but they still preserve intermediate states. The visible app remains open after the demo completes.
 
 ## Runtime UI Evidence Pack
 
@@ -123,18 +123,17 @@ The repo includes a repeatable runtime UI evidence pack:
 
 The startup screenshot `docs/debug/latest/screenshots/00-startup-simulator.png` is the integration proof: it shows the actual running shell with Machine Twin selected as the first/default tab.
 
-The debug evidence now includes the five-wafer pipeline milestones:
+The debug evidence now includes the five-wafer pipeline and chamber-gated teaching milestones:
 
-- `01-foup-a-5-wafers.png`
-- `02-w01-pick-a1.png`
-- `03-w01-on-blade.png`
-- `04-w01-chamber-a-processing.png`
-- `05-w02-enters-chamber-a-while-w01-moves-to-b.png`
-- `06-pipeline-three-chambers-occupied.png`
-- `07-w01-chamber-c-complete.png`
-- `08-w01-placed-foup-b-b1.png`
-- `09-foup-a-empty-pipeline-finishing.png`
-- `10-foup-b-5-wafers-complete.png`
+- `01-foup-a-before-pickup.png`
+- `02-blade-holding-wafer-after-pickup.png`
+- `03-chamber-a-door-opening.png`
+- `04-blade-entering-chamber-a-door-open.png`
+- `05-wafer-placed-chamber-a-stage.png`
+- `06-blade-retracted-before-chamber-a-door-closes.png`
+- `07-chamber-a-processing-door-closed.png`
+- `08-chamber-a-unload-after-process-complete.png`
+- `09-final-foup-b-5-completed.png`
 
 Regenerate it with:
 
