@@ -1,5 +1,7 @@
 # SemiTool-EtherCAT-WPF-ControlSuite
 
+[![.NET CI](https://github.com/JJY0910/SemiTool-EtherCAT-WPF-ControlSuite/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/JJY0910/SemiTool-EtherCAT-WPF-ControlSuite/actions/workflows/dotnet-ci.yml)
+
 ## Summary
 
 SemiTool-EtherCAT-WPF-ControlSuite is a WPF/MVVM semiconductor equipment-control HMI and sequence platform rebuilt from a legacy WinForms EtherCAT project that successfully controlled real hardware.
@@ -30,6 +32,12 @@ The original WinForms project controlled real EtherCAT hardware. This new WPF pr
 - GitHub Actions: enabled for Windows .NET build/test
 - Simulator mode: ready for developer PC verification
 - Real hardware mode: prepared for verification with local `IEG3268_Dll.dll` and school equipment
+
+## Verification Documents
+
+- [Simulator verification](docs/simulator-verification.md)
+- [Quality gates](docs/quality-gates.md)
+- [Real hardware commissioning checklist](.github/ISSUE_TEMPLATE/real-hardware-commissioning.md)
 
 ## Demo Plan
 

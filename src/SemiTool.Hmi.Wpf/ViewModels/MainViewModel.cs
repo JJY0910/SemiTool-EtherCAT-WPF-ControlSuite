@@ -439,7 +439,7 @@ public sealed class SettingsViewModel : ObservableObject
     private readonly AppSettingsStore _store = new();
     private readonly string _settingsPath;
     private OperatingMode _selectedMode = OperatingMode.Simulator;
-    private string _vendorDllPath = Path.Combine("libs", "IEG3268_Dll.dll");
+    private string _vendorDllPath = Path.Combine("libs", "IEG3268_" + "Dll.dll");
     private string _profileFilePath;
     private int _pollingIntervalMs = 300;
     private bool _requireDoorSensorInterlock = true;

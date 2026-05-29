@@ -8,6 +8,19 @@ namespace SemiTool.Tests;
 public sealed class SimulatorAndApplicationTests
 {
     [Fact]
+    public async Task Simulator_StartsDisconnectedWithOutputsOffAndAxesAtHome()
+    {
+        var controller = new SimulatedEthercatController(TestProfile.Load());
+
+        Assert.False(controller.IsConnected);
+        Assert.All(await controller.ReadAllOutputsAsync(), output => Assert.False(output.Value));
+        Assert.Equal(0, await controller.ReadAxisPositionAsync(AxisId.Z));
+        Assert.Equal(0, await controller.ReadAxisPositionAsync(AxisId.Theta));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => controller.MoveAxisAbsoluteAsync(AxisId.Z, 100));
+    }
+
+    [Fact]
     public async Task Simulator_CanConnectAndDisconnect()
     {
         var controller = new SimulatedEthercatController(TestProfile.Load());
@@ -32,6 +45,21 @@ public sealed class SimulatorAndApplicationTests
     }
 
     [Fact]
+    public async Task Simulator_DisconnectTurnsOutputsOffAndBlocksOutputWrites()
+    {
+        var controller = new SimulatedEthercatController(TestProfile.Load());
+        await controller.ConnectAsync();
+        await controller.WriteDigitalOutputAsync(IoPoint.CylinderForward, true);
+
+        await controller.DisconnectAsync();
+
+        Assert.False(controller.IsConnected);
+        Assert.All(await controller.ReadAllOutputsAsync(), output => Assert.False(output.Value));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => controller.WriteDigitalOutputAsync(IoPoint.CylinderForward, true));
+    }
+
+    [Fact]
     public async Task Simulator_CanToggleAndReadInputs()
     {
         var controller = new SimulatedEthercatController(TestProfile.Load());
@@ -40,6 +68,22 @@ public sealed class SimulatorAndApplicationTests
         await controller.SetInputAsync(IoPoint.ChamberADoorOpenSensor, true);
 
         Assert.True(await controller.ReadDigitalInputAsync(IoPoint.ChamberADoorOpenSensor));
+    }
+
+    [Fact]
+    public async Task Simulator_EmergencyStopTurnsRiskyOutputsOffAndDropsServo()
+    {
+        var controller = new SimulatedEthercatController(TestProfile.Load());
+        await controller.ConnectAsync();
+        await controller.ServoOnAsync();
+        await controller.WriteDigitalOutputAsync(IoPoint.CylinderForward, true);
+        await controller.WriteDigitalOutputAsync(IoPoint.VacuumSuction, true);
+
+        await controller.EmergencyStopAsync();
+
+        Assert.All(await controller.ReadAllOutputsAsync(), output => Assert.False(output.Value));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => controller.MoveAxisAbsoluteAsync(AxisId.Z, 100));
     }
 
     [Fact]
@@ -57,6 +101,54 @@ public sealed class SimulatorAndApplicationTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => services.Sequence.SetOutputAsync(IoPoint.TowerRed, true));
+    }
+
+    [Fact]
+    public void AutoStart_IsBlockedWhenControllerIsDisconnected()
+    {
+        var controller = new SimulatedEthercatController(TestProfile.Load());
+        var alarms = new AlarmService();
+        var safety = new SafetyInterlockService(alarms, new EventLogService());
+        safety.MarkHomed(AxisId.Z);
+        safety.MarkHomed(AxisId.Theta);
+
+        Assert.Throws<InvalidOperationException>(() => safety.BeginAuto(controller));
+        Assert.Contains(alarms.ActiveAlarms, alarm => alarm.Code == AlarmCode.NotConnected);
+        Assert.False(safety.IsAutoRunning);
+    }
+
+    [Fact]
+    public async Task AutoStart_IsBlockedUntilBothAxesAreHomed()
+    {
+        var controller = new SimulatedEthercatController(TestProfile.Load());
+        var alarms = new AlarmService();
+        var safety = new SafetyInterlockService(alarms, new EventLogService());
+        await controller.ConnectAsync();
+        safety.MarkConnected();
+        safety.MarkHomed(AxisId.Z);
+
+        Assert.Throws<InvalidOperationException>(() => safety.BeginAuto(controller));
+        Assert.Contains(alarms.ActiveAlarms, alarm => alarm.Code == AlarmCode.HomingRequired);
+        Assert.False(safety.IsAutoRunning);
+    }
+
+    [Fact]
+    public async Task SequenceEmergencyStop_SetsEmergencyStateAndRaisesAlarm()
+    {
+        var profile = TestProfile.Load();
+        var controller = new SimulatedEthercatController(profile);
+        var alarms = new AlarmService();
+        var events = new EventLogService();
+        var safety = new SafetyInterlockService(alarms, events);
+        var sequence = new EquipmentSequenceService(controller, profile, safety, alarms, events);
+        await controller.ConnectAsync();
+        await controller.WriteDigitalOutputAsync(IoPoint.VacuumSuction, true);
+
+        await sequence.EmergencyStopAsync();
+
+        Assert.Equal(MachineState.Emergency, safety.MachineState);
+        Assert.Contains(alarms.ActiveAlarms, alarm => alarm.Code == AlarmCode.EmergencyStop);
+        Assert.All(await controller.ReadAllOutputsAsync(), output => Assert.False(output.Value));
     }
 
     [Fact]

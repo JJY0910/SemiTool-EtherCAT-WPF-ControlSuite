@@ -92,6 +92,36 @@ public sealed class EquipmentProfileTests
         Assert.Equal(3000, timing.AutoSimTickMs);
     }
 
+    [Fact]
+    public void DigitalOutputChannels_AreUniqueAndComplete()
+    {
+        var outputs = TestProfile.Load().Io.DigitalOutputs;
+
+        Assert.Equal(16, outputs.Count);
+        Assert.Equal(Enumerable.Range(0, 16), outputs.Keys.Order());
+        Assert.Equal(outputs.Count, outputs.Values.Distinct().Count());
+    }
+
+    [Fact]
+    public void DigitalInputChannels_AreUniqueAndContainCylinderSensors()
+    {
+        var inputs = TestProfile.Load().Io.DigitalInputs;
+
+        Assert.Equal(inputs.Count, inputs.Keys.Distinct().Count());
+        Assert.Equal(inputs.Count, inputs.Values.Distinct().Count());
+        Assert.Equal(IoPoint.CylinderRearSensor, inputs[12]);
+        Assert.Equal(IoPoint.CylinderFrontSensor, inputs[13]);
+    }
+
+    [Fact]
+    public void CriticalThetaDirections_ArePreserved()
+    {
+        var profile = TestProfile.Load();
+
+        Assert.True(profile.GetPose("FoupB").Theta < 0);
+        Assert.Equal(-322000, profile.GetPose("ChamberC").Theta);
+    }
+
     private static void AssertPose(RobotPose pose, long zSafe, long zWork, long theta)
     {
         Assert.Equal(zSafe, pose.ZSafe);

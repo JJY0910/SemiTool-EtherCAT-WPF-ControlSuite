@@ -32,3 +32,8 @@ migration_inputs/
 TestResults/
 coverage/
 *.trx
+
+# Temporary repair scripts
+remote-format-hardfix.ps1
+semtool-final-hardfix.ps1
+semtool-force-fix/

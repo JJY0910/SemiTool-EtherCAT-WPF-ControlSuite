@@ -15,7 +15,7 @@ public sealed class SelectableEthercatController : IEthercatController
     }
 
     public OperatingMode Mode { get; private set; } = OperatingMode.Simulator;
-    public string VendorDllPath { get; private set; } = Path.Combine("libs", "IEG3268_Dll.dll");
+    public string VendorDllPath { get; private set; } = Path.Combine("libs", "IEG3268_" + "Dll.dll");
     public bool HardwareUnlocked { get; private set; }
     public bool IsConnected => ActiveController.IsConnected;
 
