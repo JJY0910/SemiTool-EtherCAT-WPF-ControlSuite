@@ -2,7 +2,7 @@
   {
     "StepIndex": 0,
     "StepName": "Startup Simulator",
-    "Timestamp": "2026-05-29T13:24:40.3899459+09:00",
+    "Timestamp": "2026-05-29T13:42:49.3564928+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -38,7 +38,7 @@
   {
     "StepIndex": 1,
     "StepName": "Initial FOUP A Slot 1",
-    "Timestamp": "2026-05-29T13:24:40.435405+09:00",
+    "Timestamp": "2026-05-29T13:42:49.4112618+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -74,7 +74,7 @@
   {
     "StepIndex": 2,
     "StepName": "Theta To FOUP A",
-    "Timestamp": "2026-05-29T13:24:40.4780077+09:00",
+    "Timestamp": "2026-05-29T13:42:49.461301+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -110,7 +110,7 @@
   {
     "StepIndex": 3,
     "StepName": "Z Work / Blade Extend",
-    "Timestamp": "2026-05-29T13:24:40.5215064+09:00",
+    "Timestamp": "2026-05-29T13:42:49.5161245+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -146,7 +146,7 @@
   {
     "StepIndex": 4,
     "StepName": "Vacuum Suction / Wafer On Blade",
-    "Timestamp": "2026-05-29T13:24:40.5592206+09:00",
+    "Timestamp": "2026-05-29T13:42:49.5603329+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -182,7 +182,7 @@
   {
     "StepIndex": 5,
     "StepName": "Transfer To Chamber A",
-    "Timestamp": "2026-05-29T13:24:40.5998145+09:00",
+    "Timestamp": "2026-05-29T13:42:49.6170716+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -218,7 +218,7 @@
   {
     "StepIndex": 6,
     "StepName": "Place Chamber A",
-    "Timestamp": "2026-05-29T13:24:40.6378373+09:00",
+    "Timestamp": "2026-05-29T13:42:49.6692068+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -254,7 +254,7 @@
   {
     "StepIndex": 7,
     "StepName": "Transfer Chamber A To B",
-    "Timestamp": "2026-05-29T13:24:40.6818444+09:00",
+    "Timestamp": "2026-05-29T13:42:49.7210984+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -290,7 +290,7 @@
   {
     "StepIndex": 8,
     "StepName": "Transfer Chamber B To C",
-    "Timestamp": "2026-05-29T13:24:40.7193085+09:00",
+    "Timestamp": "2026-05-29T13:42:49.7724585+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -326,7 +326,7 @@
   {
     "StepIndex": 9,
     "StepName": "Transfer Chamber C To FOUP B",
-    "Timestamp": "2026-05-29T13:24:40.766323+09:00",
+    "Timestamp": "2026-05-29T13:42:49.8226572+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -362,7 +362,7 @@
   {
     "StepIndex": 10,
     "StepName": "Process Complete Green Blink",
-    "Timestamp": "2026-05-29T13:24:40.8029188+09:00",
+    "Timestamp": "2026-05-29T13:42:49.872957+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -398,7 +398,7 @@
   {
     "StepIndex": 11,
     "StepName": "Reset Safe State",
-    "Timestamp": "2026-05-29T13:24:40.8488322+09:00",
+    "Timestamp": "2026-05-29T13:42:49.9469318+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,

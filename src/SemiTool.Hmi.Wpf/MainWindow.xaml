@@ -7,8 +7,17 @@
         Width="1280"
         MinHeight="720"
         MinWidth="1080">
+    <!--
+        MainWindow keeps the existing tabbed WPF/MVVM shell, but the first tab is
+        now Machine Twin so the app opens directly into the simulator equipment
+        view instead of a plain dashboard. Real hardware still never auto-connects.
+    -->
     <DockPanel Background="{StaticResource HmiBackgroundBrush}">
-        <Border DockPanel.Dock="Top" Background="#101C23" Padding="16,10" BorderBrush="{StaticResource HmiStrokeBrush}" BorderThickness="0,0,0,1">
+        <Border DockPanel.Dock="Top"
+                Background="#101C23"
+                Padding="16,10"
+                BorderBrush="{StaticResource HmiStrokeBrush}"
+                BorderThickness="0,0,0,1">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Left"
                            Text="SemiTool EtherCAT WPF Control Suite"
@@ -21,28 +30,49 @@
             </DockPanel>
         </Border>
 
+        <!--
+            SelectedIndex 0 is intentional: reviewers and operators should see
+            the runtime Machine Twin first. The remaining tabs preserve the
+            original control surfaces for dashboard, manual, I/O, sequence,
+            recipe flow, alarms, and settings.
+        -->
         <TabControl Margin="10" SelectedIndex="0">
+            <!-- Live simulator Digital Twin backed by MachineTwinViewModel. -->
             <TabItem Header="Machine Twin">
                 <views:MachineTwinView DataContext="{Binding MachineTwin}" />
             </TabItem>
+
+            <!-- High-level machine state summary. -->
             <TabItem Header="Dashboard">
                 <views:DashboardView DataContext="{Binding Dashboard}" />
             </TabItem>
+
+            <!-- Operator manual commands remain separate from the visual twin. -->
             <TabItem Header="Manual Control">
                 <views:ManualControlView DataContext="{Binding Manual}" />
             </TabItem>
+
+            <!-- Named I/O monitor; HMI code avoids raw DO/DI magic numbers. -->
             <TabItem Header="I/O Monitor">
                 <views:IoMonitorView DataContext="{Binding IoMonitor}" />
             </TabItem>
+
+            <!-- Auto sequence status and simulator transfer flow controls. -->
             <TabItem Header="Auto Sequence">
                 <views:AutoSequenceView DataContext="{Binding AutoSequence}" />
             </TabItem>
+
+            <!-- FOUP/chamber wafer and recipe state. -->
             <TabItem Header="Wafer / Recipe Flow">
                 <views:WaferRecipeFlowView DataContext="{Binding WaferRecipeFlow}" />
             </TabItem>
+
+            <!-- Alarm and event history for debugging simulator and hardware readiness. -->
             <TabItem Header="Alarm &amp; Event Log">
                 <views:AlarmEventLogView DataContext="{Binding AlarmEventLog}" />
             </TabItem>
+
+            <!-- Simulator/RealHardware selection and vendor DLL path settings. -->
             <TabItem Header="Settings">
                 <views:SettingsView DataContext="{Binding Settings}" />
             </TabItem>

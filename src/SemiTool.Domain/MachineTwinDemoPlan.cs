@@ -10,10 +10,24 @@ namespace SemiTool.Domain;
 /// </remarks>
 public static class MachineTwinDemoPlan
 {
+    /// <summary>
+    /// Builds the repeatable simulator timeline used by the runtime Machine Twin,
+    /// portfolio captures, and debug evidence report.
+    /// </summary>
+    /// <remarks>
+    /// The station order deliberately follows the teaching scenario:
+    /// FOUP A -&gt; Chamber A -&gt; Chamber B -&gt; Chamber C -&gt; FOUP B.
+    /// The theta encoder values are copied from the physical profile through
+    /// <see cref="DigitalTwinPhysicalModel"/> and are never interpreted as
+    /// display degrees. The visual angle is a separate HMI-only arc position.
+    /// </remarks>
     public static IReadOnlyList<MachineTwinDemoStep> CreateDefault(DigitalTwinPhysicalModel model)
     {
         var stationByKey = model.ThetaSwing.Stations.ToDictionary(station => station.PoseKey, StringComparer.OrdinalIgnoreCase);
 
+        // This local factory keeps each demo step explicit while ensuring every
+        // trace row carries both the preserved machine encoder value and the
+        // separate limited-swing visual angle used by the WPF Canvas.
         MachineTwinDemoStep Step(
             int index,
             string name,
@@ -67,6 +81,9 @@ public static class MachineTwinDemoPlan
                 eventMessage);
         }
 
+        // The list intentionally includes the capture/report milestones, not
+        // every possible low-level motion command. The WPF view interpolates
+        // these safe simulator states without touching real hardware.
         return
         [
             Step(0, "Startup Simulator", "FoupA", "-", "FOUP A", "Simulator startup / safe state", "Z Safe", false, false, true, false, false, true, false, false, false, false, false, false, false, false, "Startup simulator state. No real hardware connected."),

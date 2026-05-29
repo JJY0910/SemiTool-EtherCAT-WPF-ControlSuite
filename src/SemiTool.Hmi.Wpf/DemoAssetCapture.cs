@@ -225,6 +225,53 @@ internal static class DemoAssetCapture
         }
 
         builder.AppendLine();
+        builder.AppendLine("## Expected vs Actual Movement");
+        builder.AppendLine();
+        builder.AppendLine("| Expected simulator movement | Evidence in this report |");
+        builder.AppendLine("|---|---|");
+        builder.AppendLine("| Machine Twin starts in Simulator mode and does not connect to real hardware. | Step 0 shows `IsSimulatorMode=true`, `IsRealHardwareMode=false`, and `IsConnected=false` in the JSON/CSV trace. |");
+        builder.AppendLine("| FOUP A Slot 1 starts with a wafer. | Step 1 keeps `IsWaferInFoupA1=true` and no wafer on the blade. |");
+        builder.AppendLine("| Theta target follows the limited station arc instead of a 360-degree dial. | Steps 2, 5, 7, 8, and 9 show station-to-station `ThetaTargetName` changes plus preserved encoder values. |");
+        builder.AppendLine("| Z moves from Safe to Work only during pick/place visualization. | Steps 3, 4, 6, 7, 8, and 9 show `ZState=Z Work`; reset returns to `Z Safe`. |");
+        builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `IsCylinderForward=true` also show `IsBladeExtended=true`. |");
+        builder.AppendLine("| Vacuum suction attaches the wafer to the blade. | Step 4 shows `IsVacuumOn=true` and `IsWaferOnBlade=true`. |");
+        builder.AppendLine("| Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps turn vacuum off and move the wafer flag to the target location. |");
+        builder.AppendLine("| Tower green indicates simulator sequence completion. | Step 10 shows `TowerGreen=true`. |");
+        builder.AppendLine("| Reset returns the visual to a safe simulator state. | Step 11 returns to FOUP A, blade retracted, vacuum off, and Z Safe. |");
+        builder.AppendLine();
+        builder.AppendLine("## Screenshot Timeline");
+        builder.AppendLine();
+        builder.AppendLine("| Screenshot | What to check visually |");
+        builder.AppendLine("|---|---|");
+
+        foreach (var item in trace)
+        {
+            var screenshotName = IoPath.GetFileName(item.ScreenshotPath);
+            builder.AppendLine($"| [{screenshotName}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) | {item.EventLogMessage} |");
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("## Known Limitations");
+        builder.AppendLine();
+        builder.AppendLine("- This evidence pack is simulator-mode only.");
+        builder.AppendLine("- It does not prove that the new WPF app has been verified on physical equipment.");
+        builder.AppendLine("- Real hardware feedback depends on the local vendor DLL, EtherCAT wiring, E-stop path, and supervised commissioning.");
+        builder.AppendLine("- If the real adapter exposes only commanded state, the UI must label it as commanded or last-known state.");
+        builder.AppendLine("- The approved real-equipment photo is portfolio context, not proof of WPF real-hardware commissioning.");
+        builder.AppendLine();
+        builder.AppendLine("## Generated Files");
+        builder.AppendLine();
+        builder.AppendLine("- `ui-runtime-verification.md`");
+        builder.AppendLine("- `machine-twin-state-trace.json`");
+        builder.AppendLine("- `machine-twin-state-trace.csv`");
+        builder.AppendLine("- `event-log.txt`");
+
+        foreach (var item in trace)
+        {
+            builder.AppendLine($"- `{item.ScreenshotPath}`");
+        }
+
+        builder.AppendLine();
         builder.AppendLine("## Trace Files");
         builder.AppendLine();
         builder.AppendLine("- `machine-twin-state-trace.json`");
