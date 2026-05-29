@@ -12,6 +12,9 @@ The capture mode uses WPF `RenderTargetBitmap` and existing `UserControl` views.
 
 ## Generated Simulator-Mode Assets
 
+- `docs/images/digital-twin-limited-theta-swing.png`
+- `docs/images/digital-twin-wafer-transfer-robot.png`
+- `docs/images/digital-twin-blade-mechanism.png`
 - `docs/images/dashboard.png`
 - `docs/images/manual-control.png`
 - `docs/images/io-monitor.png`
@@ -24,11 +27,19 @@ The capture mode uses WPF `RenderTargetBitmap` and existing `UserControl` views.
 - `docs/images/simulator-demo-frame-03.png`
 - `docs/images/simulator-demo-frame-04.png`
 
-## Real Equipment Context Asset
+## Physical Model Context
 
-- `docs/images/real-equipment-context-top-view.jpg`
+The Digital Twin images are generated simulator-mode abstractions. They represent a wafer transfer robot teaching setup with:
 
-This photo is a real-equipment context reference for the original WinForms EtherCAT control experience. It supports the portfolio explanation by showing the physical three-chamber layout and central transfer mechanism, but it does not claim that the new WPF app has completed real-hardware verification.
+- a fixed aluminum-like base
+- a central limited-swing theta base
+- a two-stage/telescopic blade/end-effector
+- Z Safe/Work movement
+- cylinder extend/retract
+- vacuum suction/exhaust
+- FOUP A, Chamber A, Chamber B, Chamber C, and FOUP B stations
+
+The reference photo is understanding-only material and is not committed to the public repository. The simulator visuals do not claim that the new WPF app has completed real-hardware verification.
 
 ## How To Regenerate
 

@@ -4,6 +4,9 @@ Portfolio screenshots in this folder are generated from the WPF app in Simulator
 
 ## Current simulator-mode files
 
+- `digital-twin-limited-theta-swing.png` - exists
+- `digital-twin-wafer-transfer-robot.png` - exists
+- `digital-twin-blade-mechanism.png` - exists
 - `dashboard.png` - exists
 - `manual-control.png` - exists
 - `io-monitor.png` - exists
@@ -16,11 +19,13 @@ Portfolio screenshots in this folder are generated from the WPF app in Simulator
 - `simulator-demo-frame-03.png` - exists
 - `simulator-demo-frame-04.png` - exists
 
-## Current real-equipment context file
+## Physical model note
 
-- `real-equipment-context-top-view.jpg` - exists
+These are simulator-mode generated visuals.
 
-This is a top-view reference photo used to explain the physical equipment context behind the original WinForms EtherCAT control project. It is not a claim that the new WPF implementation has already been verified on real hardware.
+The visual model is based on the wafer transfer robot teaching equipment and the previous CMP HMI scenario. `CMP Cluster` is a simulator scenario name, while the physical model is explained as a limited-swing wafer transfer robot with a telescopic blade/end-effector.
+
+The theta axis is shown as a limited station-to-station swing, not a 360-degree continuous rotation.
 
 ## Optional media
 
@@ -38,3 +43,5 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj -- --capture-d
 ## Privacy rule
 
 Do not add real equipment photos or videos that expose private school, customer, or machine details unless they are approved for public portfolio use.
+
+Do not commit large real-hardware videos, reference spreadsheets, reference documents, or vendor DLLs.

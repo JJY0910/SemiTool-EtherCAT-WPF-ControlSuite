@@ -18,13 +18,19 @@ These screenshots are simulator-mode visuals generated from the WPF UI. The orig
 
 Simulator demo frames: [01](docs/images/simulator-demo-frame-01.png), [02](docs/images/simulator-demo-frame-02.png), [03](docs/images/simulator-demo-frame-03.png), [04](docs/images/simulator-demo-frame-04.png)
 
-## Real Equipment Context
+## Digital Twin Equipment Context
 
-![Real equipment top-view context](docs/images/real-equipment-context-top-view.jpg)
+| Digital Twin Visual | Preview |
+|---|---|
+| Limited theta swing | ![Limited theta swing](docs/images/digital-twin-limited-theta-swing.png) |
+| Wafer transfer robot | ![Wafer transfer robot](docs/images/digital-twin-wafer-transfer-robot.png) |
+| Blade mechanism | ![Blade mechanism](docs/images/digital-twin-blade-mechanism.png) |
 
-Reference top-view photo of the semiconductor equipment layout related to the original WinForms EtherCAT control project. The image shows the three-chamber arrangement, central transfer mechanism, actuator wiring, and tower lamp context that shaped the WPF/MVVM redesign.
+The Digital Twin now uses an abstract wafer transfer robot teaching-equipment model: fixed aluminum-like base, central limited-swing theta base, two-stage/telescopic blade/end-effector, Z Safe/Work movement, cylinder extend/retract, vacuum hold/release, FOUP A, Chamber A/B/C, FOUP B, and tower lamp context.
 
-This is included as equipment-context evidence for the portfolio. The new WPF implementation is prepared for supervised real-hardware verification, but this repository does not claim that the new WPF app has already been verified on the physical machine.
+`CMP Cluster` is treated as a previous-year simulator/HMI scenario name. The physical teaching setup is explained as a wafer transfer robot. The theta axis is displayed as a limited station-to-station swing, not a 360-degree continuous rotation. Preserved theta values remain encoder positions, not literal UI degrees.
+
+The visuals are simulator-mode/generated abstractions. The repository does not include the user reference photo and does not claim that the new WPF app has already been verified on the physical machine.
 
 ## Summary
 
@@ -52,7 +58,7 @@ The original WinForms project controlled real EtherCAT hardware. This new WPF pr
 ## Current Verification Status
 
 - Build: passed locally
-- Tests: 31 passed locally
+- Tests: 37 passed locally
 - GitHub Actions: enabled for Windows .NET build/test
 - Simulator mode: ready for developer PC verification
 - Real hardware mode: prepared for verification with local `IEG3268_Dll.dll` and school equipment
@@ -61,6 +67,9 @@ The original WinForms project controlled real EtherCAT hardware. This new WPF pr
 
 - [Simulator verification](docs/simulator-verification.md)
 - [Quality gates](docs/quality-gates.md)
+- [Physical equipment model](docs/physical-equipment-model.md)
+- [Blade transfer mechanism](docs/blade-transfer-mechanism.md)
+- [Theta limited swing model](docs/theta-limited-swing.md)
 - [Real hardware DLL notes](docs/real-hardware-dll-notes.md)
 - [Real hardware commissioning checklist](.github/ISSUE_TEMPLATE/real-hardware-commissioning.md)
 

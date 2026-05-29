@@ -2,11 +2,17 @@
 
 [English README](README.md)
 
-## 실제 장비 참고 사진
+## Digital Twin 장비 맥락
 
-![실제 장비 상부 평면 참고 사진](docs/images/real-equipment-context-top-view.jpg)
+| Digital Twin Visual | Preview |
+|---|---|
+| 제한 θ 스윙 | ![Limited theta swing](docs/images/digital-twin-limited-theta-swing.png) |
+| 웨이퍼 이송 로봇 | ![Wafer transfer robot](docs/images/digital-twin-wafer-transfer-robot.png) |
+| 블레이드 메커니즘 | ![Blade mechanism](docs/images/digital-twin-blade-mechanism.png) |
 
-이 사진은 기존 WinForms EtherCAT 제어 프로젝트와 연결된 반도체 장비 구조를 설명하기 위한 상부 평면 참고 이미지입니다. Chamber A/B/C 배치, 중앙 이송 메커니즘, 액추에이터 배선, tower lamp 맥락을 보여주며, WPF/MVVM 재설계가 단순 화면 데모가 아니라 실제 장비 제어 경험을 기반으로 했다는 점을 설명하는 용도입니다.
+Digital Twin은 실제 사진을 복사하지 않고, 웨이퍼 이송 로봇 Teaching 장비를 추상화해서 표현합니다. 고정 알루미늄 베이스, 중앙 θ축 제한 스윙 베이스, 2단/텔레스코픽 블레이드, Z Safe/Work, 실린더 전진/후진, 진공 흡착/배기, FOUP A, Chamber A/B/C, FOUP B, 타워램프 맥락을 보여줍니다.
+
+`CMP Cluster`는 이전 HMI simulator scenario 이름으로 유지합니다. 실제 물리 장비는 웨이퍼 이송 로봇 Teaching 장비로 설명하며, θ축은 360도 무한회전이 아니라 station-to-station 제한 스윙으로 시각화합니다. 보존된 theta 숫자는 encoder position 값이지 literal degree 값이 아닙니다.
 
 단, 새 WPF 앱이 실제 장비에서 검증 완료되었다고 주장하지 않습니다. 현재 저장소는 supervised real-hardware verification을 준비한 상태입니다.
 
@@ -79,6 +85,8 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj -- --capture-d
 
 자세한 DLL 배치와 아키텍처 주의사항은 [Real hardware DLL notes](docs/real-hardware-dll-notes.md)를 참고하면 됩니다.
 
+Digital Twin 물리 모델과 블레이드/θ축 설명은 [Physical equipment model](docs/physical-equipment-model.md), [Blade transfer mechanism](docs/blade-transfer-mechanism.md), [Theta limited swing model](docs/theta-limited-swing.md)에 정리했습니다.
+
 공개 GitHub 저장소에는 vendor DLL을 포함하지 않습니다. 실제 장비 PC 또는 Visual Studio 로컬 환경에서는 `libs/IEG3268_Dll.dll`에 DLL을 두거나 Settings에서 절대경로를 지정할 수 있습니다.
 
 DLL은 RealHardware mode를 선택하고 hardware unlock 후 Connect를 눌렀을 때만 로드됩니다. Simulator mode와 simulator visual asset은 DLL 없이 동작합니다.
@@ -87,7 +95,7 @@ DLL은 RealHardware mode를 선택하고 hardware unlock 후 Connect를 눌렀�
 
 - GitHub Actions `.NET CI`: 통과
 - Local Release build: 통과
-- Unit tests: 31 passed / 0 failed
+- Unit tests: 37 passed / 0 failed
 - Safety audit: vendor DLL, exe, pdb, bin, obj, legacy zip 추적 없음
 
 ## 면접 설명
