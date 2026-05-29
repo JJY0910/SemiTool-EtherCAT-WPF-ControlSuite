@@ -52,6 +52,29 @@ FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 
 첫 번째 runtime debug screenshot은 실제 `MainWindow`에서 `Machine Twin` 탭이 선택된 상태를 캡처합니다. 이 탭은 `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`를 사용하며, `MainViewModel.MachineTwin`은 다른 HMI 탭과 같은 `RuntimeCoordinator`를 공유합니다.
 
+## Visual Studio Designer Preview
+
+Visual Studio XAML Designer에서도 Machine Twin 화면을 바로 이해할 수 있도록 design-time sample data를 추가했습니다.
+
+Designer에서 열 파일:
+
+- `src/SemiTool.Hmi.Wpf/MainWindow.xaml`
+- `src/SemiTool.Hmi.Wpf/Views/MachineTwinView.xaml`
+
+Designer preview에는 다음이 보입니다.
+
+- 첫 번째/default `Machine Twin` 탭
+- 승인된 실제 장비 context photo panel
+- W01~W05가 들어 있는 FOUP A 5-slot cassette
+- completed/empty sample 상태가 보이는 FOUP B 5-slot cassette
+- Chamber A/B/C sample recipe, wafer, step, progress 상태
+- 제한 θ swing arc, telescopic blade, wafer-on-blade, Z, cylinder, vacuum, tower lamp indicator
+- event log sample rows
+
+이 preview는 `src/SemiTool.Hmi.Wpf/DesignTime`의 정적 sample data만 사용합니다. 실제 장비에 연결하지 않고, `IEG3268_Dll.dll`도 로드하지 않으며, runtime MVVM binding을 대체하지 않습니다.
+
+자세한 내용: [Visual Studio Designer Preview](docs/visual-studio-designer-preview.md).
+
 ## 5-wafer Pipeline Simulator
 
 런타임 simulator는 이제 단일 wafer 장난감 시퀀스가 아니라 5장 cassette pipeline을 모델링합니다.

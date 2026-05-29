@@ -1,7 +1,14 @@
 <UserControl x:Class="SemiTool.Hmi.Wpf.Views.MachineTwinView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:SemiTool.Hmi.Wpf.ViewModels">
+             xmlns:vm="clr-namespace:SemiTool.Hmi.Wpf.ViewModels"
+             xmlns:design="clr-namespace:SemiTool.Hmi.Wpf.DesignTime"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=design:DesignMachineTwinViewModel, IsDesignTimeCreatable=True}"
+             d:DesignHeight="820"
+             d:DesignWidth="1280"
+             mc:Ignorable="d">
     <UserControl.Resources>
         <Style x:Key="SlotChipStyle" TargetType="Border">
             <Setter Property="CornerRadius" Value="4" />

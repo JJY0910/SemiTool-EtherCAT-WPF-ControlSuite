@@ -64,6 +64,29 @@ The demo runs in Simulator mode only. It does not load `IEG3268_Dll.dll`, does n
 
 The first runtime debug screenshot captures the actual `MainWindow` with the `Machine Twin` tab selected. That tab contains `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`, and `MainViewModel.MachineTwin` shares the same `RuntimeCoordinator` used by the other HMI tabs.
 
+## Visual Studio Designer Preview
+
+The XAML designer now has static sample data for the main shell and Machine Twin view.
+
+Open these files in Visual Studio Designer:
+
+- `src/SemiTool.Hmi.Wpf/MainWindow.xaml`
+- `src/SemiTool.Hmi.Wpf/Views/MachineTwinView.xaml`
+
+The preview should show:
+
+- `Machine Twin` as the first/default tab.
+- The approved real-equipment context photo panel.
+- FOUP A as a 5-slot cassette loaded with W01-W05.
+- FOUP B as a 5-slot cassette with sample completed/empty states.
+- Chamber A/B/C sample wafer, recipe, step, and progress states.
+- Limited theta swing arc, telescopic blade, wafer-on-blade, Z, cylinder, vacuum, and tower indicators.
+- Event log sample rows.
+
+Designer data comes from `src/SemiTool.Hmi.Wpf/DesignTime`. It does not connect to real hardware, does not load `IEG3268_Dll.dll`, and does not replace runtime MVVM bindings.
+
+More detail: [Visual Studio Designer Preview](docs/visual-studio-designer-preview.md).
+
 ## Five-Wafer Pipeline Simulator
 
 The runtime simulator now models a five-wafer cassette pipeline instead of a single-wafer toy sequence.

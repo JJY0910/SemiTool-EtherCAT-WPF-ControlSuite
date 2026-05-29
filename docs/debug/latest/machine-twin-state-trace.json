@@ -2,7 +2,7 @@
   {
     "StepIndex": 0,
     "StepName": "Startup Simulator",
-    "Timestamp": "2026-05-29T18:43:15.9628595+09:00",
+    "Timestamp": "2026-05-29T19:04:39.5653088+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -54,7 +54,7 @@
   {
     "StepIndex": 1,
     "StepName": "FOUP A 5 Wafers",
-    "Timestamp": "2026-05-29T18:43:16.0302387+09:00",
+    "Timestamp": "2026-05-29T19:04:39.620577+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -106,7 +106,7 @@
   {
     "StepIndex": 2,
     "StepName": "W01 Pick A1",
-    "Timestamp": "2026-05-29T18:43:16.0902879+09:00",
+    "Timestamp": "2026-05-29T19:04:39.6948908+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -158,7 +158,7 @@
   {
     "StepIndex": 3,
     "StepName": "W01 On Blade",
-    "Timestamp": "2026-05-29T18:43:16.1430293+09:00",
+    "Timestamp": "2026-05-29T19:04:39.7408655+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -210,7 +210,7 @@
   {
     "StepIndex": 4,
     "StepName": "W01 Chamber A Processing",
-    "Timestamp": "2026-05-29T18:43:16.1842759+09:00",
+    "Timestamp": "2026-05-29T19:04:39.78175+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -262,7 +262,7 @@
   {
     "StepIndex": 5,
     "StepName": "W02 Feeds While W01 Moves To B",
-    "Timestamp": "2026-05-29T18:43:16.2390029+09:00",
+    "Timestamp": "2026-05-29T19:04:39.8314104+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -314,7 +314,7 @@
   {
     "StepIndex": 6,
     "StepName": "Three Chambers Occupied",
-    "Timestamp": "2026-05-29T18:43:16.2868819+09:00",
+    "Timestamp": "2026-05-29T19:04:39.8721572+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -366,7 +366,7 @@
   {
     "StepIndex": 7,
     "StepName": "W01 Chamber C Complete",
-    "Timestamp": "2026-05-29T18:43:16.3307348+09:00",
+    "Timestamp": "2026-05-29T19:04:39.9135276+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -418,7 +418,7 @@
   {
     "StepIndex": 8,
     "StepName": "W01 Placed FOUP B B1",
-    "Timestamp": "2026-05-29T18:43:16.3808073+09:00",
+    "Timestamp": "2026-05-29T19:04:39.9559647+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -470,7 +470,7 @@
   {
     "StepIndex": 9,
     "StepName": "FOUP A Empty Pipeline Finishing",
-    "Timestamp": "2026-05-29T18:43:16.4450911+09:00",
+    "Timestamp": "2026-05-29T19:04:40.0122778+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -522,7 +522,7 @@
   {
     "StepIndex": 10,
     "StepName": "FOUP B 5 Wafers Complete",
-    "Timestamp": "2026-05-29T18:43:16.4903295+09:00",
+    "Timestamp": "2026-05-29T19:04:40.0539252+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -574,7 +574,7 @@
   {
     "StepIndex": 11,
     "StepName": "Reset Safe State",
-    "Timestamp": "2026-05-29T18:43:16.5387802+09:00",
+    "Timestamp": "2026-05-29T19:04:40.1013359+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,

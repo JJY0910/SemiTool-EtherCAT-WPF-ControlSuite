@@ -65,3 +65,11 @@ Do not commit:
 - Keep comments accurate and avoid misleading claims about real hardware verification.
 - Do not change behavior just to add comments or formatting.
 - Do not change preserved equipment values.
+
+## XAML Designer Preview Rules
+
+- Any XAML UI change must keep the Visual Studio Designer preview meaningful.
+- `MainWindow.xaml` should continue to show the `Machine Twin` tab as the first/default design-time view.
+- `MachineTwinView.xaml` should continue to render FOUP slots, chamber states, limited theta swing, blade, vacuum, tower lamp, and event log sample rows in the Designer.
+- Design-time data must stay under `src/SemiTool.Hmi.Wpf/DesignTime` and must not connect to real hardware or load vendor DLLs.
+- Runtime `DataContext` creation must remain in the normal MVVM startup path; `d:DataContext` is for Designer preview only.
