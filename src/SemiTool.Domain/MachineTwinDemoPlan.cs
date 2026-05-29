@@ -138,4 +138,13 @@ public sealed record MachineTwinDemoStep(
     IReadOnlyList<WaferPipelineSlot> FoupBSlots,
     ChamberPipelineSnapshot ChamberA,
     ChamberPipelineSnapshot ChamberB,
-    ChamberPipelineSnapshot ChamberC);
+    ChamberPipelineSnapshot ChamberC)
+{
+    public bool IsZWorkPosition => ZState.StartsWith("Z Work", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsVacuumSuctionOutputOn =>
+        string.Equals(VacuumTeachingState, nameof(SemiTool.Domain.VacuumTeachingState.SuctionOn), StringComparison.Ordinal);
+
+    public bool IsVacuumExhaustOutputOn =>
+        string.Equals(VacuumTeachingState, nameof(SemiTool.Domain.VacuumTeachingState.ExhaustOrRelease), StringComparison.Ordinal);
+}

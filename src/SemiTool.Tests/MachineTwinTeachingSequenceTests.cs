@@ -111,6 +111,42 @@ public sealed class MachineTwinTeachingSequenceTests
     }
 
     [Fact]
+    public void TeachingZWorkSubstepsCommandWorkPositionThroughTypedFlag()
+    {
+        var steps = CreateTeachingSteps();
+        var zWorkSubsteps = steps.Where(step => step.ZState.StartsWith("Z Work /", StringComparison.Ordinal)).ToArray();
+
+        Assert.NotEmpty(zWorkSubsteps);
+        Assert.All(zWorkSubsteps, step => Assert.True(step.IsZWorkPosition, $"{step.StepName} should command Z Work."));
+        Assert.False(steps.Single(step => step.StepName == "Reset Safe State").IsZWorkPosition);
+
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "ViewModels", "MachineTwinViewModel.cs");
+        Assert.Contains("step.IsZWorkPosition ? pose.ZWork : pose.ZSafe", source);
+        Assert.DoesNotContain("string.Equals(step.ZState, \"Z Work\"", source);
+    }
+
+    [Fact]
+    public void TeachingVacuumOutputsFollowExplicitVacuumTeachingState()
+    {
+        var steps = CreateTeachingSteps();
+        var off = steps.First(step => step.VacuumTeachingState == nameof(VacuumTeachingState.Off));
+        var suction = steps.First(step => step.VacuumTeachingState == nameof(VacuumTeachingState.SuctionOn));
+        var exhaust = steps.First(step => step.VacuumTeachingState == nameof(VacuumTeachingState.ExhaustOrRelease));
+
+        Assert.False(off.IsVacuumSuctionOutputOn);
+        Assert.False(off.IsVacuumExhaustOutputOn);
+        Assert.True(suction.IsVacuumSuctionOutputOn);
+        Assert.False(suction.IsVacuumExhaustOutputOn);
+        Assert.False(exhaust.IsVacuumSuctionOutputOn);
+        Assert.True(exhaust.IsVacuumExhaustOutputOn);
+
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "ViewModels", "MachineTwinViewModel.cs");
+        Assert.Contains("step.IsVacuumSuctionOutputOn", source);
+        Assert.Contains("step.IsVacuumExhaustOutputOn", source);
+        Assert.DoesNotContain("!step.IsVacuumOn && !step.IsWaferOnBlade", source);
+    }
+
+    [Fact]
     public void EveryTeachingSnapshotContainsExactlyFiveUniqueWaferIds()
     {
         var expected = new[] { "W01", "W02", "W03", "W04", "W05" };

@@ -514,15 +514,15 @@ public sealed class MachineTwinViewModel : ObservableObject
         // Keep the running Digital Twin and I/O Monitor aligned through named IoPoint writes, never raw DO numbers.
         await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.CylinderForward, step.IsCylinderForward, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.CylinderBackward, step.IsCylinderBackward, cancellationToken).ConfigureAwait(true);
-        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.VacuumSuction, step.IsVacuumOn, cancellationToken).ConfigureAwait(true);
-        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.VacuumExhaust, !step.IsVacuumOn && !step.IsWaferOnBlade, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.VacuumSuction, step.IsVacuumSuctionOutputOn, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.VacuumExhaust, step.IsVacuumExhaustOutputOn, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.TowerGreen, step.TowerGreen, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberADoorOpenSensor, step.ChamberADoorOpen, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberBDoorOpenSensor, step.ChamberBDoorOpen, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberCDoorOpenSensor, step.ChamberCDoorOpen, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.MoveAxisAbsoluteAsync(AxisId.Theta, step.PreservedThetaEncoderValue, cancellationToken).ConfigureAwait(true);
         var pose = _runtime.Profile.GetPose(step.StationKey);
-        var z = string.Equals(step.ZState, "Z Work", StringComparison.OrdinalIgnoreCase) ? pose.ZWork : pose.ZSafe;
+        var z = step.IsZWorkPosition ? pose.ZWork : pose.ZSafe;
         await _runtime.Controller.MoveAxisAbsoluteAsync(AxisId.Z, z, cancellationToken).ConfigureAwait(true);
     }
 
