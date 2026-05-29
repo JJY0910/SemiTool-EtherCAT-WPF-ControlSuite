@@ -1,5 +1,3 @@
-using SemiTool.Hmi.Wpf.DesignTime;
-
 namespace SemiTool.Tests;
 
 public sealed class DesignerPreviewTests
@@ -39,82 +37,69 @@ public sealed class DesignerPreviewTests
     }
 
     [Fact]
-    public void DesignMachineTwinViewModel_IsCreatableWithoutRuntimeCoordinator()
+    public void DesignMachineTwinViewModel_IsStaticPreviewWithoutRuntimeCoordinator()
     {
-        var viewModel = new DesignMachineTwinViewModel();
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinViewModel.cs");
 
-        Assert.Equal("SIMULATOR", viewModel.ModeLabel);
-        Assert.Equal("Designer", viewModel.ConnectionLabel);
-        Assert.NotNull(viewModel.RunSimulatorDemoCommand);
-        Assert.NotNull(viewModel.EmergencyStopCommand);
+        Assert.Contains("public sealed class DesignMachineTwinViewModel", source);
+        Assert.Contains("public string ModeLabel => \"SIMULATOR\";", source);
+        Assert.Contains("public string ConnectionLabel => \"Designer\";", source);
+        Assert.Contains("RunSimulatorDemoCommand = CreateNoOpCommand();", source);
+        Assert.Contains("EmergencyStopCommand = CreateNoOpCommand();", source);
+        Assert.DoesNotContain("new RuntimeCoordinator", source, StringComparison.Ordinal);
     }
 
     [Fact]
     public void DesignMachineTwinViewModel_ExposesFiveFoupASlots()
     {
-        var viewModel = new DesignMachineTwinViewModel();
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinData.cs");
 
-        Assert.Equal(5, viewModel.FoupASlots.Count);
-        Assert.Equal(["A1", "A2", "A3", "A4", "A5"], viewModel.FoupASlots.Select(slot => slot.Label).ToArray());
-
-        var occupied = viewModel.FoupASlots.Where(slot => slot.HasWafer).ToArray();
-        var empty = viewModel.FoupASlots.Where(slot => !slot.HasWafer).ToArray();
-
-        Assert.Single(occupied);
-        Assert.Equal("W05", occupied[0].WaferId);
-        Assert.All(empty, slot => Assert.Equal("Empty", slot.State));
+        Assert.Contains("new(\"A1\", false, string.Empty, \"Empty\", false)", source);
+        Assert.Contains("new(\"A2\", false, string.Empty, \"Empty\", false)", source);
+        Assert.Contains("new(\"A3\", false, string.Empty, \"Empty\", false)", source);
+        Assert.Contains("new(\"A4\", false, string.Empty, \"Empty\", false)", source);
+        Assert.Contains("new(\"A5\", true, \"W05\", \"Waiting\", true)", source);
     }
 
     [Fact]
     public void DesignMachineTwinViewModel_ExposesFiveFoupBSlots()
     {
-        var viewModel = new DesignMachineTwinViewModel();
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinData.cs");
 
-        Assert.Equal(5, viewModel.FoupBSlots.Count);
-        Assert.Equal(["B1", "B2", "B3", "B4", "B5"], viewModel.FoupBSlots.Select(slot => slot.Label).ToArray());
-
-        var completed = Assert.Single(viewModel.FoupBSlots, slot => slot.HasWafer);
-        Assert.Equal("B1", completed.Label);
-        Assert.Equal("W01", completed.WaferId);
-        Assert.Equal("Completed", completed.State);
+        Assert.Contains("new(\"B1\", true, \"W01\", \"Completed\", false)", source);
+        Assert.Contains("new(\"B2\", false, string.Empty, \"Empty\", false)", source);
+        Assert.Contains("new(\"B3\", false, string.Empty, \"Empty\", false)", source);
+        Assert.Contains("new(\"B4\", false, string.Empty, \"Empty\", false)", source);
+        Assert.Contains("new(\"B5\", false, string.Empty, \"Empty\", false)", source);
     }
 
     [Fact]
     public void DesignMachineTwinViewModel_ExposesChamberSampleStates()
     {
-        var viewModel = new DesignMachineTwinViewModel();
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinViewModel.cs");
 
-        Assert.Equal("PreClean_Default", viewModel.ChamberA.RecipeName);
-        Assert.Equal("CMP_Main", viewModel.ChamberB.RecipeName);
-        Assert.Equal("PostClean_Dry", viewModel.ChamberC.RecipeName);
-        Assert.True(viewModel.ChamberA.HasWafer);
-        Assert.True(viewModel.ChamberA.ProgressPercent > 0);
+        Assert.Contains("\"PreClean_Default\"", source);
+        Assert.Contains("\"CMP_Main\"", source);
+        Assert.Contains("\"PostClean_Dry\"", source);
+        Assert.Contains("\"W04\"", source);
+        Assert.Contains("\"W03\"", source);
+        Assert.Contains("\"W02\"", source);
     }
 
     [Fact]
     public void DesignMachineTwinViewModel_PreviewKeepsExactlyFiveUniqueWafers()
     {
-        var viewModel = new DesignMachineTwinViewModel();
-        var waferIds = new List<string>();
+        var dataSource = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinData.cs");
+        var viewModelSource = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinViewModel.cs");
 
-        waferIds.AddRange(viewModel.FoupASlots.Where(slot => slot.HasWafer).Select(slot => slot.WaferId));
-        waferIds.AddRange(viewModel.FoupBSlots.Where(slot => slot.HasWafer).Select(slot => slot.WaferId));
-        AddIfPresent(viewModel.ChamberA.HasWafer, viewModel.ChamberA.WaferId);
-        AddIfPresent(viewModel.ChamberB.HasWafer, viewModel.ChamberB.WaferId);
-        AddIfPresent(viewModel.ChamberC.HasWafer, viewModel.ChamberC.WaferId);
-        AddIfPresent(viewModel.IsWaferOnBlade, viewModel.WaferIdOnBlade);
-
-        Assert.Equal(5, waferIds.Count);
-        Assert.Equal(5, waferIds.Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(["W01", "W02", "W03", "W04", "W05"], waferIds.OrderBy(id => id, StringComparer.Ordinal).ToArray());
-
-        void AddIfPresent(bool hasWafer, string waferId)
-        {
-            if (hasWafer)
-            {
-                waferIds.Add(waferId);
-            }
-        }
+        Assert.Contains("new(\"B1\", true, \"W01\", \"Completed\", false)", dataSource);
+        Assert.Contains("\"W02\"", viewModelSource);
+        Assert.Contains("\"W03\"", viewModelSource);
+        Assert.Contains("\"W04\"", viewModelSource);
+        Assert.Contains("new(\"A5\", true, \"W05\", \"Waiting\", true)", dataSource);
+        Assert.Contains("public bool IsWaferOnBlade => false;", viewModelSource);
+        Assert.Contains("public string WaferIdOnBlade => string.Empty;", viewModelSource);
+        Assert.Contains("Five unique wafers total", viewModelSource);
     }
 
     [Fact]

@@ -1,6 +1,4 @@
-using SemiTool.Domain;
-
-namespace SemiTool.Hardware;
+namespace SemiTool.Domain;
 
 /// <summary>
 /// Hardware-free EtherCAT simulator used for development, CI, screenshots, and sequence testing.

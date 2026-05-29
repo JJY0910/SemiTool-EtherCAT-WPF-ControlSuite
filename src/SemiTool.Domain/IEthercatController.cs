@@ -1,7 +1,13 @@
-using SemiTool.Domain;
+namespace SemiTool.Domain;
 
-namespace SemiTool.Hardware;
-
+/// <summary>
+/// Shared EtherCAT controller contract used by the application layer, simulator, and real hardware adapter.
+/// </summary>
+/// <remarks>
+/// Keeping this abstraction in the domain project lets simulator, designer, and capture paths run without loading the
+/// real hardware assembly. The IEG3268-backed implementation still lives in <c>SemiTool.Hardware</c> and is loaded only
+/// by the explicit RealHardware startup path.
+/// </remarks>
 public interface IEthercatController
 {
     bool IsConnected { get; }

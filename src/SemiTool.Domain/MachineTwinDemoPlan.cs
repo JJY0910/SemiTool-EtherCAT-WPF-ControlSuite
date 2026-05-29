@@ -10,6 +10,9 @@ namespace SemiTool.Domain;
 /// </remarks>
 public static class MachineTwinDemoPlan
 {
+    public const string CompletedStepName = "FOUP B 5 Wafers Complete";
+    public const string ResetStepName = "Reset Safe State";
+
     /// <summary>
     /// Builds the repeatable simulator timeline used by the runtime Machine Twin,
     /// portfolio captures, and debug evidence report.
@@ -22,13 +25,25 @@ public static class MachineTwinDemoPlan
     /// display degrees. The visual angle is a separate HMI-only arc position.
     /// </remarks>
     public static IReadOnlyList<MachineTwinDemoStep> CreateDefault(DigitalTwinPhysicalModel model) =>
-        Create(model, SimulatorTimingProfile.Realistic);
+        Create(model, SimulatorTimingProfile.Teaching);
 
-    public static IReadOnlyList<MachineTwinDemoStep> Create(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing)
+    public static IReadOnlyList<MachineTwinDemoStep> Create(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing) =>
+        CreateWithReset(model, timing)
+            .Where(step => !string.Equals(step.StepName, ResetStepName, StringComparison.Ordinal))
+            .ToArray();
+
+    public static MachineTwinDemoStep CreateResetStep(DigitalTwinPhysicalModel model) =>
+        CreateResetStep(model, SimulatorTimingProfile.Teaching);
+
+    public static MachineTwinDemoStep CreateResetStep(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing) =>
+        CreateWithReset(model, timing)
+            .Single(step => string.Equals(step.StepName, ResetStepName, StringComparison.Ordinal));
+
+    public static IReadOnlyList<MachineTwinDemoStep> CreateWithReset(DigitalTwinPhysicalModel model, SimulatorTimingProfile timing)
     {
         var stationByKey = model.ThetaSwing.Stations.ToDictionary(station => station.PoseKey, StringComparer.OrdinalIgnoreCase);
 
-        return WaferPipelineSimulator.CreateDebugTimeline(timing)
+        return WaferPipelineSimulator.CreateTeachingTimeline(timing)
             .Select(snapshot =>
             {
                 var station = stationByKey[snapshot.CurrentStationKey];
@@ -42,6 +57,13 @@ public static class MachineTwinDemoPlan
                     snapshot.CurrentStepName,
                     station.ThetaEncoderPosition,
                     station.VisualArcPositionDegrees,
+                    snapshot.CurrentAction,
+                    snapshot.RobotState.ToString(),
+                    snapshot.BladeState.ToString(),
+                    snapshot.VacuumTeachingState.ToString(),
+                    snapshot.ChamberADoorState.ToString(),
+                    snapshot.ChamberBDoorState.ToString(),
+                    snapshot.ChamberCDoorState.ToString(),
                     snapshot.ZState,
                     snapshot.IsBladeExtended,
                     snapshot.IsCylinderForward,
@@ -91,6 +113,13 @@ public sealed record MachineTwinDemoStep(
     string CurrentStepName,
     long PreservedThetaEncoderValue,
     double VisualThetaAngle,
+    string CurrentAction,
+    string RobotState,
+    string BladeState,
+    string VacuumTeachingState,
+    string ChamberADoorState,
+    string ChamberBDoorState,
+    string ChamberCDoorState,
     string ZState,
     bool IsBladeExtended,
     bool IsCylinderForward,
@@ -124,4 +153,13 @@ public sealed record MachineTwinDemoStep(
     IReadOnlyList<WaferPipelineSlot> FoupBSlots,
     ChamberPipelineSnapshot ChamberA,
     ChamberPipelineSnapshot ChamberB,
-    ChamberPipelineSnapshot ChamberC);
+    ChamberPipelineSnapshot ChamberC)
+{
+    public bool IsZWorkPosition => ZState.StartsWith("Z Work", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsVacuumSuctionOutputOn =>
+        string.Equals(VacuumTeachingState, nameof(SemiTool.Domain.VacuumTeachingState.SuctionOn), StringComparison.Ordinal);
+
+    public bool IsVacuumExhaustOutputOn =>
+        string.Equals(VacuumTeachingState, nameof(SemiTool.Domain.VacuumTeachingState.ExhaustOrRelease), StringComparison.Ordinal);
+}

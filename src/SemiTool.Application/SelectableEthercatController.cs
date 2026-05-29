@@ -1,24 +1,33 @@
+using System.Reflection;
 using SemiTool.Domain;
 
-namespace SemiTool.Hardware;
+namespace SemiTool.Application;
 
 /// <summary>
-/// Chooses between the simulator and the real IEG3268 adapter while exposing one IEthercatController to the HMI.
+/// Selects the simulator controller by default and lazy-loads the real hardware adapter only for explicit RealHardware use.
 /// </summary>
 /// <remarks>
-/// Startup stays in Simulator mode so a developer PC cannot accidentally connect to equipment. Real Hardware mode
-/// requires both an explicit mode change and a hardware unlock before Connect is allowed.
+/// This type intentionally lives outside <c>SemiTool.Hardware</c> so normal WPF startup, Visual Studio Designer preview,
+/// and screenshot/debug capture can run without loading the hardware assembly. Real hardware behavior remains delegated
+/// to <c>SemiTool.Hardware.Ieg3268EthercatController</c>, which is created only after the operator selects RealHardware,
+/// unlocks hardware, and clicks Connect.
 /// </remarks>
 public sealed class SelectableEthercatController : IEthercatController
 {
+    private const string HardwareAssemblyName = "SemiTool.Hardware";
+    private const string Ieg3268ControllerTypeName = "SemiTool.Hardware.Ieg3268EthercatController";
     private readonly EquipmentProfile _profile;
     private readonly SimulatedEthercatController _simulator;
-    private Ieg3268EthercatController? _realController;
+    private readonly Func<EquipmentProfile, string, IEthercatController> _realControllerFactory;
+    private IEthercatController? _realController;
 
-    public SelectableEthercatController(EquipmentProfile profile)
+    public SelectableEthercatController(
+        EquipmentProfile profile,
+        Func<EquipmentProfile, string, IEthercatController>? realControllerFactory = null)
     {
         _profile = profile;
         _simulator = new SimulatedEthercatController(profile);
+        _realControllerFactory = realControllerFactory ?? CreateRealHardwareController;
     }
 
     public OperatingMode Mode { get; private set; } = OperatingMode.Simulator;
@@ -32,7 +41,7 @@ public sealed class SelectableEthercatController : IEthercatController
     public SimulatedEthercatController Simulator => _simulator;
 
     /// <summary>
-    /// Stores Real Hardware settings from the Settings screen without loading the vendor DLL.
+    /// Stores Real Hardware settings from the Settings screen without loading the hardware assembly or vendor DLL.
     /// </summary>
     public void ConfigureRealHardware(string vendorDllPath, bool hardwareUnlocked)
     {
@@ -133,5 +142,17 @@ public sealed class SelectableEthercatController : IEthercatController
                 "Real hardware controller is not connected. Click Connect before issuing commands.");
 
     private IEthercatController GetRealControllerForConnect() =>
-        _realController ??= new Ieg3268EthercatController(_profile, VendorDllPath);
+        _realController ??= _realControllerFactory(_profile, VendorDllPath);
+
+    private static IEthercatController CreateRealHardwareController(EquipmentProfile profile, string vendorDllPath)
+    {
+        // Loading by name keeps simulator/capture/designer paths free of a hard reference to SemiTool.Hardware.
+        var assembly = Assembly.Load(HardwareAssemblyName);
+        var adapterType = assembly.GetType(Ieg3268ControllerTypeName, throwOnError: true)
+            ?? throw new InvalidOperationException($"Could not find {Ieg3268ControllerTypeName} in {HardwareAssemblyName}.");
+
+        var instance = Activator.CreateInstance(adapterType, profile, vendorDllPath);
+        return instance as IEthercatController
+            ?? throw new InvalidOperationException($"{Ieg3268ControllerTypeName} does not implement {nameof(IEthercatController)}.");
+    }
 }

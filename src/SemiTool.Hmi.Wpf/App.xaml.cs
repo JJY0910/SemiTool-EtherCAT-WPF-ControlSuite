@@ -1,7 +1,6 @@
 using System.Windows;
 using System.IO;
 using SemiTool.Application;
-using SemiTool.Hardware;
 using SemiTool.Hmi.Wpf.ViewModels;
 using SemiTool.Infrastructure;
 
