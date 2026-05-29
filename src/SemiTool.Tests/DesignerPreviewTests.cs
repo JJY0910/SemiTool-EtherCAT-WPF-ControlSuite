@@ -46,7 +46,12 @@ public sealed class DesignerPreviewTests
         Assert.Contains("public string ConnectionLabel => \"Designer\";", source);
         Assert.Contains("RunSimulatorDemoCommand = CreateNoOpCommand();", source);
         Assert.Contains("EmergencyStopCommand = CreateNoOpCommand();", source);
+        Assert.Contains("SelectedDemoSpeed { get; set; } = \"Normal\";", source);
+        Assert.Contains("OperationWafer", source);
+        Assert.Contains("OperationSource", source);
+        Assert.Contains("OperationDestination", source);
         Assert.DoesNotContain("new RuntimeCoordinator", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Run " + "Teaching " + "Demo", source, StringComparison.Ordinal);
     }
 
     [Fact]

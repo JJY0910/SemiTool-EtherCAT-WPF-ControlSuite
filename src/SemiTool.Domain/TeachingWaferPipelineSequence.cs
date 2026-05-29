@@ -1,12 +1,12 @@
 namespace SemiTool.Domain;
 
 /// <summary>
-/// Builds the slow, readable Machine Twin teaching sequence used by the WPF runtime demo.
+/// Builds the slow, readable Machine Twin transfer sequence used by the WPF runtime.
 /// </summary>
 /// <remarks>
 /// This is a simulator presentation model only. It preserves the five wafer
 /// invariant while making the door, blade, vacuum, and process-gating rules
-/// visible to students and interview reviewers. It does not touch EtherCAT
+/// visible to operators and reviewers. It does not touch EtherCAT
 /// axis targets, I/O mapping, vendor DLL loading, or real-hardware adapter
 /// behavior.
 /// </remarks>
@@ -62,7 +62,7 @@ internal static class TeachingWaferPipelineSequence
                 guard++;
                 if (guard > 100)
                 {
-                    throw new InvalidOperationException("Teaching sequence guard exceeded before all wafers reached FOUP B.");
+                    throw new InvalidOperationException("Transfer sequence guard exceeded before all wafers reached FOUP B.");
                 }
 
                 var transfer = ChooseNextTransfer();
@@ -84,7 +84,7 @@ internal static class TeachingWaferPipelineSequence
             _robotState = RobotTeachingState.Idle;
             _towerGreen = true;
             Add(
-                "FOUP B 5 Wafers Complete",
+                MachineTwinDemoPlan.CompletedStepName,
                 "09-final-foup-b-5-completed.png",
                 PipelineStateKind.Completed,
                 "All 5 wafers complete in FOUP B",
@@ -410,7 +410,7 @@ internal static class TeachingWaferPipelineSequence
 
             if (chamber is null)
             {
-                throw new InvalidOperationException("No transfer or process countdown was available in the teaching sequence.");
+                throw new InvalidOperationException("No transfer or process countdown was available in the sequence run.");
             }
 
             chamber.ProgressPercent = 100;
@@ -613,7 +613,7 @@ internal static class TeachingWaferPipelineSequence
             var expected = Enumerable.Range(1, TotalWafers).Select(index => $"W{index:00}").ToArray();
             if (!waferIds.SequenceEqual(expected))
             {
-                throw new InvalidOperationException($"Teaching snapshot '{snapshot.StepName}' violated the five-wafer invariant: {string.Join(", ", waferIds)}");
+                throw new InvalidOperationException($"Sequence snapshot '{snapshot.StepName}' violated the five-wafer invariant: {string.Join(", ", waferIds)}");
             }
         }
     }

@@ -1,7 +1,7 @@
 namespace SemiTool.Domain;
 
 /// <summary>
-/// Simulator-only timing profile for the Machine Twin pipeline demo.
+/// Simulator-only timing profile for the Machine Twin transfer sequence.
 /// </summary>
 /// <remarks>
 /// These values are not hardware constants. They only control how quickly the
@@ -24,7 +24,7 @@ public sealed record SimulatorTimingProfile(
     int TowerBlinkMs)
 {
     public static SimulatorTimingProfile Teaching { get; } = new(
-        "Teaching",
+        "Normal",
         1000,
         750,
         750,

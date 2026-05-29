@@ -230,16 +230,53 @@ public sealed class MachineTwinTeachingSequenceTests
     }
 
     [Fact]
-    public void MachineTwinView_UsesTeachingDemoControls()
+    public void MachineTwinView_UsesFieldHmiSequenceControls()
     {
         var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "Views", "MachineTwinView.xaml");
 
-        Assert.Contains("Run Teaching Demo", source);
+        Assert.Contains("Run Transfer Sequence", source);
+        Assert.Contains("Wafer Transfer Sequence Monitor", source);
+        Assert.Contains("Current Sequence Step", source);
+        Assert.Contains("Sequence Speed", source);
+        Assert.Contains("OperationWafer", source);
+        Assert.Contains("OperationSource", source);
+        Assert.Contains("OperationDestination", source);
         Assert.Contains("PauseCommand", source);
         Assert.Contains("ResumeCommand", source);
         Assert.Contains("StepOnceCommand", source);
         Assert.Contains("CurrentAction", source);
+        Assert.DoesNotContain("Run " + "Teaching " + "Demo", source);
         Assert.DoesNotContain("Run Simulator Demo", source);
+    }
+
+    [Fact]
+    public void SequenceStepsPopulateCurrentActionAndTransferFields()
+    {
+        var representativeSteps = CreateTeachingSteps()
+            .Where(step => !string.IsNullOrWhiteSpace(step.ActiveWaferId))
+            .Take(10)
+            .ToArray();
+
+        Assert.NotEmpty(representativeSteps);
+        Assert.All(representativeSteps, step =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(step.CurrentAction));
+            Assert.False(string.IsNullOrWhiteSpace(step.ActiveWaferId));
+            Assert.True(
+                step.CurrentTransferDescription.Contains("->", StringComparison.Ordinal) ||
+                step.CurrentTransferDescription.Contains("process", StringComparison.OrdinalIgnoreCase) ||
+                step.CurrentTransferDescription.Contains("Complete", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
+    [Fact]
+    public void CompletedStateUsesSequenceCompleteTerminology()
+    {
+        var complete = CreateTeachingSteps().Single(step => step.PipelineState == PipelineStateKind.Completed.ToString());
+
+        Assert.Contains("Sequence Complete", complete.StepName, StringComparison.Ordinal);
+        Assert.Equal(5, complete.FoupBCount);
+        Assert.Contains("FOUP B", complete.StepName, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -186,8 +186,8 @@ internal static class DemoAssetCapture
             "NextStation",
             "CurrentStepName",
             "CurrentAction",
-            "RobotTeachingState",
-            "BladeTeachingState",
+            "RobotState",
+            "BladeState",
             "VacuumDisplayState",
             "ChamberADoorState",
             "ChamberBDoorState",
@@ -249,8 +249,8 @@ internal static class DemoAssetCapture
                 Csv(item.NextStation),
                 Csv(item.CurrentStepName),
                 Csv(item.CurrentAction),
-                Csv(item.RobotTeachingState),
-                Csv(item.BladeTeachingState),
+                Csv(item.RobotState),
+                Csv(item.BladeState),
                 Csv(item.VacuumDisplayState),
                 Csv(item.ChamberADoorState),
                 Csv(item.ChamberBDoorState),
@@ -321,16 +321,16 @@ internal static class DemoAssetCapture
         builder.AppendLine("- No vendor DLL is loaded.");
         builder.AppendLine("- No real hardware connection is attempted.");
         builder.AppendLine("- Visual theta angle is for HMI rendering only.");
-        builder.AppendLine("- Preserved theta encoder values are machine/teaching values, not literal UI degrees.");
+        builder.AppendLine("- Preserved theta encoder values are machine position values, not literal UI degrees.");
         builder.AppendLine("- The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.");
-        builder.AppendLine("- Normal runtime `Run Teaching Demo` holds at FOUP B 5/5 completed until the user presses Reset; only explicit capture modes call application shutdown.");
+        builder.AppendLine("- Normal runtime `Run Transfer Sequence` holds at FOUP B 5/5 completed until the user presses Reset; only explicit capture modes call application shutdown.");
         builder.AppendLine();
         builder.AppendLine("## Runtime Integration Check");
         builder.AppendLine();
         builder.AppendLine("- MainWindow first tab is `Machine Twin`.");
         builder.AppendLine("- MainWindow uses `<views:MachineTwinView DataContext=\"{Binding MachineTwin}\" />`.");
         builder.AppendLine("- MainViewModel exposes `MachineTwinViewModel` through the `MachineTwin` property.");
-        builder.AppendLine("- `Run Teaching Demo` is a command on the actual `MachineTwinView` runtime screen.");
+        builder.AppendLine("- `Run Transfer Sequence` is a command on the actual `MachineTwinView` runtime screen.");
         builder.AppendLine("- `00-startup-simulator.png` is captured from the actual `MainWindow`, so it shows the selected `Machine Twin` tab.");
         builder.AppendLine("- The remaining screenshots are captured from the same `MachineTwinView` and `MachineTwinViewModel` used by the running app.");
         builder.AppendLine();
@@ -342,8 +342,8 @@ internal static class DemoAssetCapture
         foreach (var item in trace)
         {
             var chamberSummary = $"{item.ChamberAState}<br>{item.ChamberBState}<br>{item.ChamberCState}";
-            var teachingState = $"A:{item.ChamberADoorState} B:{item.ChamberBDoorState} C:{item.ChamberCDoorState}<br>{item.BladeTeachingState}<br>{item.VacuumDisplayState}";
-            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentAction} | {item.CurrentStation} | {item.FoupACount}/5 | {item.FoupBCount}/5 | {chamberSummary} | {teachingState} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
+            var sequenceState = $"A:{item.ChamberADoorState} B:{item.ChamberBDoorState} C:{item.ChamberCDoorState}<br>{item.BladeState}<br>{item.VacuumDisplayState}";
+            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentAction} | {item.CurrentStation} | {item.FoupACount}/5 | {item.FoupBCount}/5 | {chamberSummary} | {sequenceState} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
         }
 
         builder.AppendLine();
@@ -356,7 +356,7 @@ internal static class DemoAssetCapture
         builder.AppendLine("| Theta target follows the limited station arc instead of a 360-degree dial. | The trace records station-to-station `ThetaTargetName` changes plus preserved encoder values. |");
         builder.AppendLine("| Z moves from Safe to Work only during pick/place visualization. | Pick/place steps show `ZState=Z Work`; processing and reset states return to `Z Safe`. |");
         builder.AppendLine("| Chamber doors gate blade entry. | Chamber-target blade-extension steps include `DoorState=Open`; close steps occur only after the blade retracts. |");
-        builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `BladeTeachingState=Extending/Extended` also show `IsCylinderForward=true`. |");
+        builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `BladeState=Extending/Extended` also show `IsCylinderForward=true`. |");
         builder.AppendLine("| Vacuum suction attaches the wafer to the blade. | Pickup steps show `VacuumDisplayState=SuctionOn` before the wafer appears on the blade. |");
         builder.AppendLine("| Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps show `VacuumDisplayState=ExhaustOrRelease` before the wafer moves to the target. |");
         builder.AppendLine("| Tower green indicates simulator sequence completion. | The final complete state shows `TowerGreen=true` with FOUP B 5/5. |");
@@ -365,7 +365,7 @@ internal static class DemoAssetCapture
         builder.AppendLine("| FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |");
         builder.AppendLine("| Chambers are used as a pipeline. | The state trace records Chamber A/B/C wafer ownership and process state while the five-wafer scheduler drains downstream first. |");
         builder.AppendLine("| Scheduler drains downstream first. | The timeline only unloads completed chambers and uses the priority C -> FOUP B, B -> C, A -> B, FOUP A -> A. |");
-        builder.AppendLine("| Runtime demo does not auto-close or auto-reset. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Teaching Demo` leaves the window open at FOUP B 5/5 completed until Reset is pressed. |");
+        builder.AppendLine("| Runtime sequence does not auto-close or auto-reset. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Transfer Sequence` leaves the window open at FOUP B 5/5 completed until Reset is pressed. |");
         builder.AppendLine();
         builder.AppendLine("## Screenshot Timeline");
         builder.AppendLine();

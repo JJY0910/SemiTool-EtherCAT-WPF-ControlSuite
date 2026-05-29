@@ -1,4 +1,4 @@
-# Demo Images
+# Simulator Images
 
 Portfolio screenshots in this folder are generated from the WPF app in Simulator mode.
 
@@ -25,7 +25,7 @@ Portfolio screenshots in this folder are generated from the WPF app in Simulator
 
 These are simulator-mode generated visuals, except `real-equipment-context-top-view.jpg`, which is a user-approved real equipment context reference photo.
 
-The visual model is based on the wafer transfer robot teaching equipment and the previous CMP HMI scenario. `CMP Cluster` is a simulator scenario name, while the physical model is explained as a limited-swing wafer transfer robot with a telescopic blade/end-effector.
+The visual model is based on the wafer transfer robot sequence monitor and the previous CMP HMI scenario. `CMP Cluster` is a simulator scenario name, while the physical model is explained as a limited-swing wafer transfer robot with a telescopic blade/end-effector.
 
 The theta axis is shown as a limited station-to-station swing, not a 360-degree continuous rotation.
 

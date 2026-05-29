@@ -78,9 +78,9 @@ The designer is static. To verify motion, run:
 dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release
 ```
 
-Then open the `Machine Twin` tab and click `Run Teaching Demo`.
+Then open the `Machine Twin` tab and click `Run Transfer Sequence`.
 
-The runtime button is labeled `Run Teaching Demo` in the current UI. It is a simulator-only teaching sequence that shows chamber door open/close, blade extend/retract, vacuum suction/release, wafer pick/place, process hold, and unload substeps. It does not change or validate real EtherCAT hardware behavior.
+The runtime button is labeled `Run Transfer Sequence` in the current UI. It is a simulator-only transfer sequence that shows chamber door open/close, blade extend/retract, vacuum suction/release, wafer pick/place, process hold, and unload substeps. It does not change or validate real EtherCAT hardware behavior.
 
 For repeatable evidence generation, run:
 

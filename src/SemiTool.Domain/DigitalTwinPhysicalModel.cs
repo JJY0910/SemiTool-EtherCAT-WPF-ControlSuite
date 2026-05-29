@@ -1,7 +1,7 @@
 namespace SemiTool.Domain;
 
 /// <summary>
-/// Display-only physical model for the wafer transfer robot teaching equipment.
+/// Display-only physical model for the wafer transfer robot sequence monitor.
 /// </summary>
 /// <remarks>
 /// This model is intentionally separate from <see cref="EquipmentProfile"/>.
@@ -11,10 +11,10 @@ namespace SemiTool.Domain;
 /// </remarks>
 public sealed class DigitalTwinPhysicalModel
 {
-    public string EquipmentKind { get; init; } = "Wafer transfer robot teaching/training setup";
+    public string EquipmentKind { get; init; } = "Wafer transfer robot HMI / sequence monitor";
     public string ScenarioName { get; init; } = "CMP Cluster";
     public string ScenarioMeaning { get; init; } =
-        "Previous-year HMI simulator scenario name; not an official claim that the teaching equipment is a production CMP cluster tool.";
+        "Previous-year HMI simulator scenario name; not an official claim that the physical equipment is a production CMP cluster tool.";
     public string PhysicalSummary { get; init; } =
         "Fixed aluminum base, central limited-swing theta base, telescopic blade/end-effector, three logical chambers, FOUP A/B, and tower lamp.";
     public ThetaSwingLayout ThetaSwing { get; init; } = new();
@@ -47,9 +47,9 @@ public sealed class ThetaSwingLayout
         Stations =
         [
             new RobotSwingStation(1, "FoupA", "FOUP A", "Source cassette / lower-left station", profile.GetPose("FoupA").Theta, -150),
-            new RobotSwingStation(2, "ChamberA", "Chamber A", "Pre-Clean teaching station / left side", profile.GetPose("ChamberA").Theta, -75),
+            new RobotSwingStation(2, "ChamberA", "Chamber A", "Pre-Clean station / left side", profile.GetPose("ChamberA").Theta, -75),
             new RobotSwingStation(3, "ChamberB", "Chamber B (CMP)", "CMP_Main simulator station / top side", profile.GetPose("ChamberB").Theta, 0),
-            new RobotSwingStation(4, "ChamberC", "Chamber C", "Post-Clean & Dry teaching station / right side", profile.GetPose("ChamberC").Theta, 75),
+            new RobotSwingStation(4, "ChamberC", "Chamber C", "Post-Clean & Dry station / right side", profile.GetPose("ChamberC").Theta, 75),
             new RobotSwingStation(5, "FoupB", "FOUP B", "Destination cassette / lower-right station", profile.GetPose("FoupB").Theta, 150)
         ]
     };

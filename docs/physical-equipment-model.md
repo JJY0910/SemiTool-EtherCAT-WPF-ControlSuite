@@ -2,9 +2,9 @@
 
 ## Summary
 
-The actual school equipment should be described as a wafer transfer robot teaching/training setup.
+The actual school equipment should be described as a wafer transfer robot setup represented by a field-facing HMI sequence monitor.
 
-`CMP Cluster` is kept as a previous-year HMI simulator scenario name. It is useful for recipe and flow explanation, but it is not used here as a claim that the physical teaching setup is an official production CMP cluster tool.
+`CMP Cluster` is kept as a previous-year HMI simulator scenario name. It is useful for recipe and flow explanation, but it is not used here as a claim that the physical wafer transfer setup is an official production CMP cluster tool.
 
 ## Visible Structure From Reference Understanding
 

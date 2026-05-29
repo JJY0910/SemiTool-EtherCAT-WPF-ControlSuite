@@ -10,7 +10,7 @@ namespace SemiTool.Domain;
 /// </remarks>
 public static class MachineTwinDemoPlan
 {
-    public const string CompletedStepName = "FOUP B 5 Wafers Complete";
+    public const string CompletedStepName = "Sequence Complete - FOUP B 5/5";
     public const string ResetStepName = "Reset Safe State";
 
     /// <summary>
@@ -18,7 +18,7 @@ public static class MachineTwinDemoPlan
     /// portfolio captures, and debug evidence report.
     /// </summary>
     /// <remarks>
-    /// The station order deliberately follows the teaching scenario:
+    /// The station order deliberately follows the wafer transfer scenario:
     /// FOUP A -&gt; Chamber A -&gt; Chamber B -&gt; Chamber C -&gt; FOUP B.
     /// The theta encoder values are copied from the physical profile through
     /// <see cref="DigitalTwinPhysicalModel"/> and are never interpreted as

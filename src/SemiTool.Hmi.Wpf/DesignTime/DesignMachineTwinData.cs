@@ -47,7 +47,7 @@ public static class DesignMachineTwinData
         "[designer] Exactly five unique wafers are shown: W01-W05.",
         "[designer] W01 is completed in FOUP B; W02/W03/W04 are in Chamber C/B/A.",
         "[designer] W05 remains waiting in FOUP A; blade is shown without duplicating a wafer.",
-        "[designer] Runtime motion is verified by Run Teaching Demo, not by the static designer."
+        "[designer] Runtime motion is verified by Run Transfer Sequence, not by the static designer."
     ];
 
     public static string ResolveReferencePhotoPath()

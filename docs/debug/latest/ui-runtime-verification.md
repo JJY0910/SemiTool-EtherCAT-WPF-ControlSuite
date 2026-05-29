@@ -16,16 +16,16 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 - No vendor DLL is loaded.
 - No real hardware connection is attempted.
 - Visual theta angle is for HMI rendering only.
-- Preserved theta encoder values are machine/teaching values, not literal UI degrees.
+- Preserved theta encoder values are machine position values, not literal UI degrees.
 - The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.
-- Normal runtime `Run Teaching Demo` holds at FOUP B 5/5 completed until the user presses Reset; only explicit capture modes call application shutdown.
+- Normal runtime `Run Transfer Sequence` holds at FOUP B 5/5 completed until the user presses Reset; only explicit capture modes call application shutdown.
 
 ## Runtime Integration Check
 
 - MainWindow first tab is `Machine Twin`.
 - MainWindow uses `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`.
 - MainViewModel exposes `MachineTwinViewModel` through the `MachineTwin` property.
-- `Run Teaching Demo` is a command on the actual `MachineTwinView` runtime screen.
+- `Run Transfer Sequence` is a command on the actual `MachineTwinView` runtime screen.
 - `00-startup-simulator.png` is captured from the actual `MainWindow`, so it shows the selected `Machine Twin` tab.
 - The remaining screenshots are captured from the same `MachineTwinView` and `MachineTwinViewModel` used by the running app.
 
@@ -42,7 +42,7 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 | 13 | Blade Retracting Empty From Chamber A | Blade retracting empty from Chamber A | Chamber A | 4/5 | 0/5 | Chamber A:Loaded:W01:PreClean_Default:Chem Clean:0s:0%<br>Chamber B:Empty::CMP_Main:-:0s:0%<br>Chamber C:Empty::PostClean_Dry:-:0s:0% | A:Open B:Closed C:Closed<br>Retracting<br>Off | [06-blade-retracted-before-chamber-a-door-closes.png](screenshots/06-blade-retracted-before-chamber-a-door-closes.png) |
 | 17 | Chamber A Processing W01 | Chamber A processing W01 | Chamber A | 4/5 | 0/5 | Chamber A:Processing:W01:PreClean_Default:Chem Clean:4s:10%<br>Chamber B:Empty::CMP_Main:-:0s:0%<br>Chamber C:Empty::PostClean_Dry:-:0s:0% | A:Closed B:Closed C:Closed<br>Retracted<br>Off | [07-chamber-a-processing-door-closed.png](screenshots/07-chamber-a-processing-door-closed.png) |
 | 22 | Blade Extending Into Chamber A | Blade extending into Chamber A | Chamber A | 4/5 | 0/5 | Chamber A:Completed:W01:PreClean_Default:Chem Clean:0s:100%<br>Chamber B:Empty::CMP_Main:-:0s:0%<br>Chamber C:Empty::PostClean_Dry:-:0s:0% | A:Open B:Closed C:Closed<br>Extending<br>Off | [08-chamber-a-unload-after-process-complete.png](screenshots/08-chamber-a-unload-after-process-complete.png) |
-| 391 | FOUP B 5 Wafers Complete | All 5 wafers complete in FOUP B | FOUP B | 0/5 | 5/5 | Chamber A:Empty::PreClean_Default:-:0s:0%<br>Chamber B:Empty::CMP_Main:-:0s:0%<br>Chamber C:Empty::PostClean_Dry:-:0s:0% | A:Closed B:Closed C:Closed<br>Retracted<br>Off | [09-final-foup-b-5-completed.png](screenshots/09-final-foup-b-5-completed.png) |
+| 391 | Sequence Complete - FOUP B 5/5 | All 5 wafers complete in FOUP B | FOUP B | 0/5 | 5/5 | Chamber A:Empty::PreClean_Default:-:0s:0%<br>Chamber B:Empty::CMP_Main:-:0s:0%<br>Chamber C:Empty::PostClean_Dry:-:0s:0% | A:Closed B:Closed C:Closed<br>Retracted<br>Off | [09-final-foup-b-5-completed.png](screenshots/09-final-foup-b-5-completed.png) |
 | 392 | Reset Safe State | Reset to safe simulator state | FOUP A | 5/5 | 0/5 | Chamber A:Empty::PreClean_Default:-:0s:0%<br>Chamber B:Empty::CMP_Main:-:0s:0%<br>Chamber C:Empty::PostClean_Dry:-:0s:0% | A:Closed B:Closed C:Closed<br>Retracted<br>Off | [10-reset-safe-state.png](screenshots/10-reset-safe-state.png) |
 
 ## Expected vs Actual Movement
@@ -54,7 +54,7 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 | Theta target follows the limited station arc instead of a 360-degree dial. | The trace records station-to-station `ThetaTargetName` changes plus preserved encoder values. |
 | Z moves from Safe to Work only during pick/place visualization. | Pick/place steps show `ZState=Z Work`; processing and reset states return to `Z Safe`. |
 | Chamber doors gate blade entry. | Chamber-target blade-extension steps include `DoorState=Open`; close steps occur only after the blade retracts. |
-| Cylinder forward extends the telescopic blade. | Steps with `BladeTeachingState=Extending/Extended` also show `IsCylinderForward=true`. |
+| Cylinder forward extends the telescopic blade. | Steps with `BladeState=Extending/Extended` also show `IsCylinderForward=true`. |
 | Vacuum suction attaches the wafer to the blade. | Pickup steps show `VacuumDisplayState=SuctionOn` before the wafer appears on the blade. |
 | Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps show `VacuumDisplayState=ExhaustOrRelease` before the wafer moves to the target. |
 | Tower green indicates simulator sequence completion. | The final complete state shows `TowerGreen=true` with FOUP B 5/5. |
@@ -63,7 +63,7 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 | FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |
 | Chambers are used as a pipeline. | The state trace records Chamber A/B/C wafer ownership and process state while the five-wafer scheduler drains downstream first. |
 | Scheduler drains downstream first. | The timeline only unloads completed chambers and uses the priority C -> FOUP B, B -> C, A -> B, FOUP A -> A. |
-| Runtime demo does not auto-close or auto-reset. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Teaching Demo` leaves the window open at FOUP B 5/5 completed until Reset is pressed. |
+| Runtime sequence does not auto-close or auto-reset. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Transfer Sequence` leaves the window open at FOUP B 5/5 completed until Reset is pressed. |
 
 ## Screenshot Timeline
 
