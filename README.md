@@ -44,7 +44,7 @@ The original WinForms project controlled real EtherCAT hardware. This new WPF pr
 ## Current Verification Status
 
 - Build: passed locally
-- Tests: 25 passed locally
+- Tests: 31 passed locally
 - GitHub Actions: enabled for Windows .NET build/test
 - Simulator mode: ready for developer PC verification
 - Real hardware mode: prepared for verification with local `IEG3268_Dll.dll` and school equipment
@@ -151,6 +151,8 @@ Simulator input states can be toggled in the I/O Monitor.
 If the DLL is missing, Real Hardware mode reports a clear connection error and Simulator mode remains usable.
 
 If `libs/IEG3268_Dll.dll` exists locally, the WPF project conditionally copies it to the output folder without committing it. Absolute DLL paths are also supported in Settings.
+
+The real hardware adapter resolves and loads the DLL only after Real Hardware mode is selected, hardware unlock is enabled, and Connect is clicked.
 
 ## Safety Warning
 

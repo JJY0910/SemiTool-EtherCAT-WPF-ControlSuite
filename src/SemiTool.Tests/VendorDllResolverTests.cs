@@ -2,6 +2,13 @@ using SemiTool.Hardware;
 
 namespace SemiTool.Tests;
 
+/// <summary>
+/// Tests the local equipment-PC DLL workflow without requiring the real vendor DLL in public CI.
+/// </summary>
+/// <remarks>
+/// Fake files are enough for resolver tests because Assembly.LoadFrom behavior is covered separately by the
+/// BadImageFormatException test. This protects the Visual Studio path setup while keeping GitHub clean.
+/// </remarks>
 public sealed class VendorDllResolverTests
 {
     [Fact]
@@ -38,6 +45,7 @@ public sealed class VendorDllResolverTests
     {
         using var directory = new TemporaryDirectory();
 
+        // Missing DLL is the normal public-repo and CI case; the result must guide the operator instead of crashing.
         var result = VendorDllResolver.Resolve(
             VendorDllResolver.DefaultRelativePath,
             currentDirectory: directory.Path,
@@ -82,6 +90,7 @@ public sealed class VendorDllResolverTests
         var fakeDll = CreateFakeDllFile(directory.Path);
         var controller = new Ieg3268EthercatController(TestProfile.Load(), fakeDll);
 
+        // A text file has the same observable load failure shape as a wrong-bitness DLL for this adapter boundary.
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => controller.ConnectAsync());
 
         Assert.IsType<BadImageFormatException>(exception.InnerException);

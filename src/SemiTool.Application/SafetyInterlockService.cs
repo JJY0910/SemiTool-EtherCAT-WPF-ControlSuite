@@ -3,6 +3,13 @@ using SemiTool.Hardware;
 
 namespace SemiTool.Application;
 
+/// <summary>
+/// Centralizes HMI and sequence interlocks that protect manual, auto, alarm, and emergency transitions.
+/// </summary>
+/// <remarks>
+/// This service does not touch hardware directly. It records the allowed machine state and raises alarms before the
+/// application calls into IEthercatController, keeping safety decisions visible to both simulator and real modes.
+/// </remarks>
 public sealed class SafetyInterlockService
 {
     private readonly AlarmService _alarms;
@@ -48,6 +55,7 @@ public sealed class SafetyInterlockService
             return;
         }
 
+        // Manual jogs/outputs during Auto can conflict with an in-flight sequence, so block and raise a visible alarm.
         _alarms.Raise(
             AlarmCode.ManualBlockedDuringAuto,
             "Manual command blocked",
@@ -60,6 +68,7 @@ public sealed class SafetyInterlockService
     {
         if (!controller.IsConnected)
         {
+            // Auto must be a deliberate connected state; simulator and real hardware follow the same gate.
             _alarms.Raise(
                 AlarmCode.NotConnected,
                 "Auto start blocked",
@@ -70,6 +79,7 @@ public sealed class SafetyInterlockService
 
         if (!IsHomedZ || !IsHomedTheta)
         {
+            // The equipment has no safe transfer reference until both axes have been homed.
             _alarms.Raise(
                 AlarmCode.HomingRequired,
                 "Homing required",

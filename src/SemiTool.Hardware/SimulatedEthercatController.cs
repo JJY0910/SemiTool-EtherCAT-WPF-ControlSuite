@@ -2,6 +2,13 @@ using SemiTool.Domain;
 
 namespace SemiTool.Hardware;
 
+/// <summary>
+/// Hardware-free EtherCAT simulator used for development, CI, screenshots, and sequence testing.
+/// </summary>
+/// <remarks>
+/// The simulator mirrors the named I/O surface of the real controller but starts with every output OFF. It never loads
+/// vendor DLLs and never talks to equipment, which keeps the default startup mode safe on any developer PC.
+/// </remarks>
 public sealed class SimulatedEthercatController : IEthercatController
 {
     private readonly EquipmentProfile _profile;
@@ -38,6 +45,7 @@ public sealed class SimulatedEthercatController : IEthercatController
     public Task ConnectAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        // Keep simulator semantics aligned with the real safety default: connecting must not leave outputs energized.
         TurnOffAllOutputs();
         IsConnected = true;
         return Task.CompletedTask;
@@ -134,6 +142,7 @@ public sealed class SimulatedEthercatController : IEthercatController
     public async Task EmergencyStopAsync(CancellationToken cancellationToken = default)
     {
         await StopMotionAsync(cancellationToken).ConfigureAwait(false);
+        // Emergency behavior is intentionally conservative even in simulation: outputs and servo state are cleared.
         TurnOffAllOutputs();
         _servoOn = false;
     }
@@ -156,6 +165,7 @@ public sealed class SimulatedEthercatController : IEthercatController
 
     private void ApplySimulatedFeedback(IoPoint output, bool value)
     {
+        // Auto-complete actuator feedback so sequence timeout/alarm logic can be tested without real I/O.
         switch (output)
         {
             case IoPoint.CylinderForward when value:

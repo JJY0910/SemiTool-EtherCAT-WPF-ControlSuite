@@ -2,6 +2,13 @@ using SemiTool.Domain;
 
 namespace SemiTool.Hardware;
 
+/// <summary>
+/// Chooses between the simulator and the real IEG3268 adapter while exposing one IEthercatController to the HMI.
+/// </summary>
+/// <remarks>
+/// Startup stays in Simulator mode so a developer PC cannot accidentally connect to equipment. Real Hardware mode
+/// requires both an explicit mode change and a hardware unlock before Connect is allowed.
+/// </remarks>
 public sealed class SelectableEthercatController : IEthercatController
 {
     private readonly EquipmentProfile _profile;
@@ -21,13 +28,20 @@ public sealed class SelectableEthercatController : IEthercatController
 
     public SimulatedEthercatController Simulator => _simulator;
 
+    /// <summary>
+    /// Stores Real Hardware settings from the Settings screen without loading the vendor DLL.
+    /// </summary>
     public void ConfigureRealHardware(string vendorDllPath, bool hardwareUnlocked)
     {
         VendorDllPath = vendorDllPath;
         HardwareUnlocked = hardwareUnlocked;
+        // Recreate the real adapter on next Connect so path/unlock changes are applied deterministically.
         _realController = null;
     }
 
+    /// <summary>
+    /// Switches simulator/real mode only while disconnected.
+    /// </summary>
     public void SetMode(OperatingMode mode)
     {
         if (IsConnected)
@@ -42,6 +56,7 @@ public sealed class SelectableEthercatController : IEthercatController
     {
         if (Mode == OperatingMode.RealHardware && !HardwareUnlocked)
         {
+            // Real hardware must never auto-connect from persisted settings alone.
             throw new InvalidOperationException("Real hardware control must be explicitly unlocked before connection.");
         }
 
@@ -100,5 +115,6 @@ public sealed class SelectableEthercatController : IEthercatController
     private IEthercatController ActiveController =>
         Mode == OperatingMode.Simulator
             ? _simulator
+            // The DLL-backed adapter is lazy-created so Simulator mode remains available when IEG3268_Dll.dll is absent.
             : _realController ??= new Ieg3268EthercatController(_profile, VendorDllPath);
 }

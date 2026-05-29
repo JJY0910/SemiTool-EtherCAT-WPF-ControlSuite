@@ -56,3 +56,12 @@ Do not commit:
 - `.exe`, `.pdb`
 - private local settings
 - migration input ZIPs or extracted legacy files
+
+## Commenting and Maintainability Rules
+
+- Comment why a block exists, not just what each statement does.
+- Add explanatory comments around hardware, safety, DLL loading, reflection, sequence, timeout, and interlock logic.
+- Use XML documentation for important public APIs and adapter boundaries.
+- Keep comments accurate and avoid misleading claims about real hardware verification.
+- Do not change behavior just to add comments or formatting.
+- Do not change preserved equipment values.

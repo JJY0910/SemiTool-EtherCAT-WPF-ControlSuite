@@ -16,6 +16,16 @@ libs/IEG3268_Dll.dll
 
 You can also configure an absolute DLL path in the WPF Settings screen.
 
+## Resolution Order
+
+Real Hardware mode resolves the DLL in this order:
+
+1. Absolute path configured in Settings.
+2. Relative path from the current working directory.
+3. Relative path from the application output directory.
+4. Repository-root `libs/IEG3268_Dll.dll`.
+5. Output-local `libs/IEG3268_Dll.dll`.
+
 ## Load Timing
 
 The DLL is loaded only when Real Hardware mode is selected, hardware control is unlocked, and Connect is clicked.

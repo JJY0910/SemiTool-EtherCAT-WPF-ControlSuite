@@ -3,6 +3,14 @@ using SemiTool.Domain;
 
 namespace SemiTool.Hardware;
 
+/// <summary>
+/// Real-hardware EtherCAT adapter for the IEG3268 vendor driver.
+/// </summary>
+/// <remarks>
+/// This class is the only place where the public project attempts to load the vendor DLL. Runtime reflection keeps
+/// the default build usable on PCs that do not have the DLL, while still preserving the path for supervised equipment
+/// commissioning. Simulator mode never creates this adapter unless Real Hardware mode is selected and connected.
+/// </remarks>
 public sealed class Ieg3268EthercatController : IEthercatController
 {
     private readonly EquipmentProfile _profile;
@@ -19,6 +27,12 @@ public sealed class Ieg3268EthercatController : IEthercatController
 
     public bool IsConnected { get; private set; }
 
+    /// <summary>
+    /// Loads the local vendor DLL, creates the configured driver type, and starts the vendor read timers.
+    /// </summary>
+    /// <remarks>
+    /// Connect is intentionally explicit. The HMI must never load or connect real hardware on startup.
+    /// </remarks>
     public Task ConnectAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -37,6 +51,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
         }
         catch (BadImageFormatException ex)
         {
+            // Common on equipment PCs when a 32-bit vendor DLL is loaded by a 64-bit WPF process.
             throw new InvalidOperationException(
                 "Failed to load IEG3268_Dll.dll because of a process/DLL architecture mismatch. " +
                 "The vendor DLL may be 32-bit. Run Real Hardware mode using x86, or provide a matching x64 vendor DLL. " +
@@ -62,6 +77,9 @@ public sealed class Ieg3268EthercatController : IEthercatController
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Disconnects the real controller if it is currently connected.
+    /// </summary>
     public Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -78,6 +96,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
     {
         cancellationToken.ThrowIfCancellationRequested();
         EnsureConnected();
+        // Application code passes named IoPoint values; the preserved EquipmentProfile owns the real DI channel map.
         var channel = _profile.GetInputChannel(point);
         return Task.FromResult(Invoke<bool>("Digital_Input", channel));
     }
@@ -86,6 +105,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
     {
         cancellationToken.ThrowIfCancellationRequested();
         EnsureConnected();
+        // Keep raw DO numbers out of HMI/application logic. Only the adapter turns IoPoint into the vendor channel.
         var channel = _profile.GetOutputChannel(point);
         Invoke("Digital_Output", channel, value);
         return Task.CompletedTask;
@@ -113,6 +133,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
     {
         cancellationToken.ThrowIfCancellationRequested();
         EnsureConnected();
+        // Reapply motion parameters before servo enable so Real Hardware mode follows the preserved profile values.
         TryInvoke("Axis1_OFF");
         TryInvoke("Axis2_OFF");
         TryInvoke("Axis1_UD_Config_Update", _profile.Motion.Velocity, _profile.Motion.MaxVelocity, _profile.Motion.Deceleration, _profile.Motion.Acceleration);
@@ -176,6 +197,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
     public async Task EmergencyStopAsync(CancellationToken cancellationToken = default)
     {
         await StopMotionAsync(cancellationToken).ConfigureAwait(false);
+        // Motion stop alone is not enough; clear actuator outputs that can keep pushing, vacuuming, or moving doors.
         foreach (var output in RiskyOutputs)
         {
             await WriteDigitalOutputAsync(output, false, cancellationToken).ConfigureAwait(false);
@@ -191,6 +213,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
 
     private static readonly IoPoint[] RiskyOutputs =
     [
+        // These named points are intentionally profile-backed instead of raw DO numbers.
         IoPoint.CylinderForward,
         IoPoint.CylinderBackward,
         IoPoint.VacuumSuction,
@@ -207,6 +230,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
     {
         if (!IsConnected)
         {
+            // Prevent accidental hardware calls before the operator explicitly connects Real Hardware mode.
             throw new InvalidOperationException("The real EtherCAT controller is not connected.");
         }
     }
@@ -250,6 +274,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
         var method = _driverType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
         if (method is null && throwOnError)
         {
+            // Include adapter type and DLL path so vendor DLL version mismatches are diagnosable from logs.
             throw new InvalidOperationException(
                 $"Vendor method '{methodName}' was not found on adapter type '{_driverType.FullName}' from DLL '{_resolvedDllPath}'.",
                 new MissingMethodException(_driverType.FullName, methodName));

@@ -4,6 +4,13 @@ using SemiTool.Hardware;
 
 namespace SemiTool.Application;
 
+/// <summary>
+/// Coordinates named equipment operations into cancellable async wafer-transfer sequences.
+/// </summary>
+/// <remarks>
+/// Sequence code intentionally talks through named IoPoint and AxisId values. The preserved EquipmentProfile owns the
+/// real channel numbers, which prevents legacy raw DO/DI number defects from leaking into application logic.
+/// </remarks>
 public sealed class EquipmentSequenceService
 {
     private readonly IEthercatController _ethercat;
@@ -210,6 +217,7 @@ public sealed class EquipmentSequenceService
 
         try
         {
+            // The body receives the caller token so Stop/Pause/E-stop paths can cancel long-running moves or waits.
             await body(cancellationToken).ConfigureAwait(false);
             StepDescription = "Completed";
             _events.Info(nameof(EquipmentSequenceService), $"{name} completed.");
@@ -240,6 +248,7 @@ public sealed class EquipmentSequenceService
 
     private async Task MoveToFoupSlotCoreAsync(long theta, FoupSlotPose slotPose, CancellationToken cancellationToken)
     {
+        // Always approach through Z safe before rotating or descending to the slot work height.
         await MoveAxisCoreAsync(AxisId.Z, slotPose.ZSafe, cancellationToken).ConfigureAwait(false);
         await MoveAxisCoreAsync(AxisId.Theta, theta, cancellationToken).ConfigureAwait(false);
         await MoveAxisCoreAsync(AxisId.Z, slotPose.ZWork, cancellationToken).ConfigureAwait(false);
@@ -247,6 +256,7 @@ public sealed class EquipmentSequenceService
 
     private async Task MoveToPoseCoreAsync(RobotPose pose, bool includeWorkPosition, CancellationToken cancellationToken)
     {
+        // Safe Z first, then theta, then optional work Z mirrors the legacy equipment motion intent.
         await MoveAxisCoreAsync(AxisId.Z, pose.ZSafe, cancellationToken).ConfigureAwait(false);
         await MoveAxisCoreAsync(AxisId.Theta, pose.Theta, cancellationToken).ConfigureAwait(false);
         if (includeWorkPosition)
@@ -371,11 +381,13 @@ public sealed class EquipmentSequenceService
             await Task.Delay(50, cancellationToken).ConfigureAwait(false);
         }
 
+        // Sensor confirmation is the boundary between a normal sequence step and a recoverable equipment alarm.
         _safety.SetAlarmState();
         _alarms.Raise(alarmCode, alarmName, cause, "Check sensor wiring/status, recover actuator, then Reset.");
         throw new TimeoutException(alarmName);
     }
 
+    // Door outputs and sensors stay grouped here so chamber-specific logic never uses raw DI/DO channels.
     private static DoorIoMap DoorMap(ChamberId chamber) => chamber switch
     {
         ChamberId.A => new DoorIoMap(

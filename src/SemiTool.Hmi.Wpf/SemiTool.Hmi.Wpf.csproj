@@ -17,6 +17,11 @@
 
   <ItemGroup>
     <None Include="..\..\config\EquipmentProfile.finaltest.json" Link="config\EquipmentProfile.finaltest.json" CopyToOutputDirectory="PreserveNewest" />
+    <!--
+      Local-only vendor DLL support for real equipment PCs.
+      The DLL is intentionally ignored by git and is copied only when it exists,
+      so public CI and Simulator mode builds never require IEG3268_Dll.dll.
+    -->
     <None Include="..\..\libs\IEG3268_Dll.dll" Condition="Exists('..\..\libs\IEG3268_Dll.dll')" CopyToOutputDirectory="PreserveNewest" Link="libs\IEG3268_Dll.dll" />
   </ItemGroup>
 

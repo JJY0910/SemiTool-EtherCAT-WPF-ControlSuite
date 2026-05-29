@@ -79,7 +79,7 @@ DLL은 RealHardware mode를 선택하고 hardware unlock 후 Connect를 눌렀�
 
 - GitHub Actions `.NET CI`: 통과
 - Local Release build: 통과
-- Unit tests: 25 passed / 0 failed
+- Unit tests: 31 passed / 0 failed
 - Safety audit: vendor DLL, exe, pdb, bin, obj, legacy zip 추적 없음
 
 ## 면접 설명
