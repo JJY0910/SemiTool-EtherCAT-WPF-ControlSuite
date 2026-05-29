@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using SemiTool.Application;
 using SemiTool.Domain;
-using SemiTool.Hardware;
 
 namespace SemiTool.Tests;
 

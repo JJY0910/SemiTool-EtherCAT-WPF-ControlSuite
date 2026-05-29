@@ -1,11 +1,11 @@
-﻿2026-05-29T22:32:54.9870398+09:00 | FOUP A starts with W01-W05 waiting. Blade retracted, vacuum off, all chamber doors closed.
-2026-05-29T22:32:55.0664105+09:00 | Theta target FOUP A Slot A1; preparing to pick W01.
-2026-05-29T22:32:55.1217343+09:00 | W01 is now held on the blade; source slot/stage is empty.
-2026-05-29T22:32:55.1906563+09:00 | Chamber A door opening; blade remains retracted.
-2026-05-29T22:32:55.2698826+09:00 | Blade enters Chamber A only while the chamber door is open.
-2026-05-29T22:32:55.3247657+09:00 | W01 moved from blade to Chamber A; blade is now empty.
-2026-05-29T22:32:55.3814419+09:00 | Door close is blocked until the blade is fully retracted.
-2026-05-29T22:32:55.4571017+09:00 | Chamber A process starts only after wafer is on the stage and door is closed.
-2026-05-29T22:32:55.5305622+09:00 | Blade enters Chamber A only after the target path is safe.
-2026-05-29T22:32:55.6743997+09:00 | All 5 wafers completed in FOUP B. Tower green blink enabled.
-2026-05-29T22:32:55.7384200+09:00 | Reset returns FOUP A to W01-W05 waiting, FOUP B empty, blade retracted, vacuum off, all doors closed.
+﻿2026-05-30T07:05:17.9278207+09:00 | FOUP A starts with W01-W05 waiting. Blade retracted, vacuum off, all chamber doors closed.
+2026-05-30T07:05:17.9937024+09:00 | Theta target FOUP A Slot A1; preparing to pick W01.
+2026-05-30T07:05:18.0732495+09:00 | W01 is now held on the blade; source slot/stage is empty.
+2026-05-30T07:05:18.1279433+09:00 | Chamber A door opening; blade remains retracted.
+2026-05-30T07:05:18.1791561+09:00 | Blade enters Chamber A only while the chamber door is open.
+2026-05-30T07:05:18.2440269+09:00 | W01 moved from blade to Chamber A; blade is now empty.
+2026-05-30T07:05:18.3012671+09:00 | Door close is blocked until the blade is fully retracted.
+2026-05-30T07:05:18.3731442+09:00 | Chamber A process starts only after wafer is on the stage and door is closed.
+2026-05-30T07:05:18.4442174+09:00 | Blade enters Chamber A only after the target path is safe.
+2026-05-30T07:05:18.5910909+09:00 | All 5 wafers completed in FOUP B. Tower green blink enabled.
+2026-05-30T07:05:18.6548005+09:00 | Reset returns FOUP A to W01-W05 waiting, FOUP B empty, blade retracted, vacuum off, all doors closed.

@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SemiTool.Domain\SemiTool.Domain.csproj" />
-    <ProjectReference Include="..\SemiTool.Hardware\SemiTool.Hardware.csproj" />
   </ItemGroup>
 
 </Project>

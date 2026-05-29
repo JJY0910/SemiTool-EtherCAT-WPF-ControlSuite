@@ -1,5 +1,4 @@
 using SemiTool.Domain;
-using SemiTool.Hardware;
 
 namespace SemiTool.Application;
 

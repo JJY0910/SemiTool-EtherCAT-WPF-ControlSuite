@@ -1,6 +1,5 @@
 using SemiTool.Application;
 using SemiTool.Domain;
-using SemiTool.Hardware;
 using SemiTool.Infrastructure;
 
 namespace SemiTool.Tests;
