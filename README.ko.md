@@ -69,6 +69,12 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj -- --capture-d
 
 실제 장비 검증에는 local `IEG3268_Dll.dll`, 장비 전원, EtherCAT 연결, E-stop, wiring, operator supervision, 학교 장비 환경에서의 commissioning이 필요합니다.
 
+자세한 DLL 배치와 아키텍처 주의사항은 [Real hardware DLL notes](docs/real-hardware-dll-notes.md)를 참고하면 됩니다.
+
+공개 GitHub 저장소에는 vendor DLL을 포함하지 않습니다. 실제 장비 PC 또는 Visual Studio 로컬 환경에서는 `libs/IEG3268_Dll.dll`에 DLL을 두거나 Settings에서 절대경로를 지정할 수 있습니다.
+
+DLL은 RealHardware mode를 선택하고 hardware unlock 후 Connect를 눌렀을 때만 로드됩니다. Simulator mode와 simulator visual asset은 DLL 없이 동작합니다.
+
 ## Build / Test / CI 상태
 
 - GitHub Actions `.NET CI`: 통과

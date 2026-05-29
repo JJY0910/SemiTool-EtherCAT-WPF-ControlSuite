@@ -7,6 +7,7 @@ public sealed class Ieg3268EthercatController : IEthercatController
 {
     private readonly EquipmentProfile _profile;
     private readonly string _dllPath;
+    private string? _resolvedDllPath;
     private object? _driver;
     private Type? _driverType;
 
@@ -22,18 +23,30 @@ public sealed class Ieg3268EthercatController : IEthercatController
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (string.IsNullOrWhiteSpace(_dllPath))
+        var resolution = VendorDllResolver.Resolve(_dllPath);
+        if (!resolution.Success || string.IsNullOrWhiteSpace(resolution.ResolvedPath))
         {
-            throw new InvalidOperationException("Real hardware mode requires a vendor DLL path.");
+            throw new InvalidOperationException(resolution.ErrorMessage);
         }
 
-        if (!File.Exists(_dllPath))
+        _resolvedDllPath = resolution.ResolvedPath;
+        Assembly assembly;
+        try
         {
-            throw new FileNotFoundException("IEG3268 vendor DLL was not found. Place it locally under libs/IEG3268_Dll.dll or set the Settings path.", _dllPath);
+            assembly = Assembly.LoadFrom(_resolvedDllPath);
+        }
+        catch (BadImageFormatException ex)
+        {
+            throw new InvalidOperationException(
+                "Failed to load IEG3268_Dll.dll because of a process/DLL architecture mismatch. " +
+                "The vendor DLL may be 32-bit. Run Real Hardware mode using x86, or provide a matching x64 vendor DLL. " +
+                "Simulator mode is still available.",
+                ex);
         }
 
-        var assembly = Assembly.LoadFrom(_dllPath);
-        _driverType = assembly.GetType(_profile.Hardware.Adapter, throwOnError: true);
+        _driverType = assembly.GetType(_profile.Hardware.Adapter, throwOnError: false)
+            ?? throw new InvalidOperationException(
+                $"Vendor adapter type '{_profile.Hardware.Adapter}' was not found in DLL '{_resolvedDllPath}'.");
         _driver = Activator.CreateInstance(_driverType!)
             ?? throw new InvalidOperationException($"Could not create vendor driver '{_profile.Hardware.Adapter}'.");
 
@@ -237,7 +250,9 @@ public sealed class Ieg3268EthercatController : IEthercatController
         var method = _driverType.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
         if (method is null && throwOnError)
         {
-            throw new MissingMethodException(_driverType.FullName, methodName);
+            throw new InvalidOperationException(
+                $"Vendor method '{methodName}' was not found on adapter type '{_driverType.FullName}' from DLL '{_resolvedDllPath}'.",
+                new MissingMethodException(_driverType.FullName, methodName));
         }
 
         return method;

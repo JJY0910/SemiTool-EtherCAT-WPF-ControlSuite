@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <None Include="..\..\config\EquipmentProfile.finaltest.json" Link="config\EquipmentProfile.finaltest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\libs\IEG3268_Dll.dll" Condition="Exists('..\..\libs\IEG3268_Dll.dll')" CopyToOutputDirectory="PreserveNewest" Link="libs\IEG3268_Dll.dll" />
   </ItemGroup>
 
 </Project>
