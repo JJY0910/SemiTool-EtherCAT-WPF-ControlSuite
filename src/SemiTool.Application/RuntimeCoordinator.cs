@@ -1,7 +1,7 @@
 using SemiTool.Application;
 using SemiTool.Domain;
 
-namespace SemiTool.Hmi.Wpf.ViewModels;
+namespace SemiTool.Application;
 
 public sealed class RuntimeCoordinator
 {

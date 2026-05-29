@@ -22,7 +22,6 @@
     <ProjectReference Include="..\SemiTool.Application\SemiTool.Application.csproj" />
     <ProjectReference Include="..\SemiTool.Domain\SemiTool.Domain.csproj" />
     <ProjectReference Include="..\SemiTool.Hardware\SemiTool.Hardware.csproj" />
-    <ProjectReference Include="..\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj" />
     <ProjectReference Include="..\SemiTool.Infrastructure\SemiTool.Infrastructure.csproj" />
   </ItemGroup>
 

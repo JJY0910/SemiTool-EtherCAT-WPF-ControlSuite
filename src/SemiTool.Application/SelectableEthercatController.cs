@@ -33,7 +33,10 @@ public sealed class SelectableEthercatController : IEthercatController
     public OperatingMode Mode { get; private set; } = OperatingMode.Simulator;
     public string VendorDllPath { get; private set; } = Path.Combine("libs", "IEG3268_" + "Dll.dll");
     public bool HardwareUnlocked { get; private set; }
-    public bool IsConnected => ActiveController.IsConnected;
+    public bool IsConnected =>
+        Mode == OperatingMode.Simulator
+            ? _simulator.IsConnected
+            : _realController?.IsConnected ?? false;
 
     public SimulatedEthercatController Simulator => _simulator;
 
@@ -69,47 +72,58 @@ public sealed class SelectableEthercatController : IEthercatController
             throw new InvalidOperationException("Real hardware control must be explicitly unlocked before connection.");
         }
 
-        await ActiveController.ConnectAsync(cancellationToken).ConfigureAwait(false);
+        var controller = Mode == OperatingMode.Simulator
+            ? _simulator
+            : GetRealControllerForConnect();
+
+        await controller.ConnectAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task DisconnectAsync(CancellationToken cancellationToken = default) =>
-        ActiveController.DisconnectAsync(cancellationToken);
+    public Task DisconnectAsync(CancellationToken cancellationToken = default)
+    {
+        if (Mode == OperatingMode.Simulator)
+        {
+            return _simulator.DisconnectAsync(cancellationToken);
+        }
+
+        return _realController?.DisconnectAsync(cancellationToken) ?? Task.CompletedTask;
+    }
 
     public Task<bool> ReadDigitalInputAsync(IoPoint point, CancellationToken cancellationToken = default) =>
-        ActiveController.ReadDigitalInputAsync(point, cancellationToken);
+        GetControllerForCommand().ReadDigitalInputAsync(point, cancellationToken);
 
     public Task WriteDigitalOutputAsync(IoPoint point, bool value, CancellationToken cancellationToken = default) =>
-        ActiveController.WriteDigitalOutputAsync(point, value, cancellationToken);
+        GetControllerForCommand().WriteDigitalOutputAsync(point, value, cancellationToken);
 
     public Task<IReadOnlyDictionary<IoPoint, bool>> ReadAllInputsAsync(CancellationToken cancellationToken = default) =>
-        ActiveController.ReadAllInputsAsync(cancellationToken);
+        GetControllerForCommand().ReadAllInputsAsync(cancellationToken);
 
     public Task<IReadOnlyDictionary<IoPoint, bool>> ReadAllOutputsAsync(CancellationToken cancellationToken = default) =>
-        ActiveController.ReadAllOutputsAsync(cancellationToken);
+        GetControllerForCommand().ReadAllOutputsAsync(cancellationToken);
 
     public Task ServoOnAsync(CancellationToken cancellationToken = default) =>
-        ActiveController.ServoOnAsync(cancellationToken);
+        GetControllerForCommand().ServoOnAsync(cancellationToken);
 
     public Task ServoOffAsync(CancellationToken cancellationToken = default) =>
-        ActiveController.ServoOffAsync(cancellationToken);
+        GetControllerForCommand().ServoOffAsync(cancellationToken);
 
     public Task HomeAxisAsync(AxisId axis, CancellationToken cancellationToken = default) =>
-        ActiveController.HomeAxisAsync(axis, cancellationToken);
+        GetControllerForCommand().HomeAxisAsync(axis, cancellationToken);
 
     public Task MoveAxisAbsoluteAsync(AxisId axis, long targetPosition, CancellationToken cancellationToken = default) =>
-        ActiveController.MoveAxisAbsoluteAsync(axis, targetPosition, cancellationToken);
+        GetControllerForCommand().MoveAxisAbsoluteAsync(axis, targetPosition, cancellationToken);
 
     public Task<long> ReadAxisPositionAsync(AxisId axis, CancellationToken cancellationToken = default) =>
-        ActiveController.ReadAxisPositionAsync(axis, cancellationToken);
+        GetControllerForCommand().ReadAxisPositionAsync(axis, cancellationToken);
 
     public Task StopMotionAsync(CancellationToken cancellationToken = default) =>
-        ActiveController.StopMotionAsync(cancellationToken);
+        GetControllerForCommand().StopMotionAsync(cancellationToken);
 
     public Task EmergencyStopAsync(CancellationToken cancellationToken = default) =>
-        ActiveController.EmergencyStopAsync(cancellationToken);
+        GetControllerForCommand().EmergencyStopAsync(cancellationToken);
 
     public Task ResetAlarmAsync(CancellationToken cancellationToken = default) =>
-        ActiveController.ResetAlarmAsync(cancellationToken);
+        GetControllerForCommand().ResetAlarmAsync(cancellationToken);
 
     public Task SetSimulatorInputAsync(IoPoint point, bool value, CancellationToken cancellationToken = default)
     {
@@ -121,10 +135,14 @@ public sealed class SelectableEthercatController : IEthercatController
         return _simulator.SetInputAsync(point, value, cancellationToken);
     }
 
-    private IEthercatController ActiveController =>
+    private IEthercatController GetControllerForCommand() =>
         Mode == OperatingMode.Simulator
             ? _simulator
-            : _realController ??= _realControllerFactory(_profile, VendorDllPath);
+            : _realController ?? throw new InvalidOperationException(
+                "Real hardware controller is not connected. Click Connect before issuing commands.");
+
+    private IEthercatController GetRealControllerForConnect() =>
+        _realController ??= _realControllerFactory(_profile, VendorDllPath);
 
     private static IEthercatController CreateRealHardwareController(EquipmentProfile profile, string vendorDllPath)
     {
