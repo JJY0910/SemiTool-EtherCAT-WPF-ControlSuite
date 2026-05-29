@@ -18,6 +18,14 @@ These screenshots are simulator-mode visuals generated from the WPF UI. The orig
 
 Simulator demo frames: [01](docs/images/simulator-demo-frame-01.png), [02](docs/images/simulator-demo-frame-02.png), [03](docs/images/simulator-demo-frame-03.png), [04](docs/images/simulator-demo-frame-04.png)
 
+## Real Equipment Context
+
+![Real equipment top-view context](docs/images/real-equipment-context-top-view.jpg)
+
+Reference top-view photo of the semiconductor equipment layout related to the original WinForms EtherCAT control project. The image shows the three-chamber arrangement, central transfer mechanism, actuator wiring, and tower lamp context that shaped the WPF/MVVM redesign.
+
+This is included as equipment-context evidence for the portfolio. The new WPF implementation is prepared for supervised real-hardware verification, but this repository does not claim that the new WPF app has already been verified on the physical machine.
+
 ## Summary
 
 SemiTool-EtherCAT-WPF-ControlSuite is a WPF/MVVM semiconductor equipment-control HMI and sequence platform rebuilt from a legacy WinForms EtherCAT project that successfully controlled real hardware.

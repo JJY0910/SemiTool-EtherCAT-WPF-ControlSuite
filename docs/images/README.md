@@ -16,6 +16,12 @@ Portfolio screenshots in this folder are generated from the WPF app in Simulator
 - `simulator-demo-frame-03.png` - exists
 - `simulator-demo-frame-04.png` - exists
 
+## Current real-equipment context file
+
+- `real-equipment-context-top-view.jpg` - exists
+
+This is a top-view reference photo used to explain the physical equipment context behind the original WinForms EtherCAT control project. It is not a claim that the new WPF implementation has already been verified on real hardware.
+
 ## Optional media
 
 - `real-hardware-short-test.mp4`

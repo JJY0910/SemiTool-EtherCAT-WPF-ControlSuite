@@ -2,6 +2,14 @@
 
 [English README](README.md)
 
+## 실제 장비 참고 사진
+
+![실제 장비 상부 평면 참고 사진](docs/images/real-equipment-context-top-view.jpg)
+
+이 사진은 기존 WinForms EtherCAT 제어 프로젝트와 연결된 반도체 장비 구조를 설명하기 위한 상부 평면 참고 이미지입니다. Chamber A/B/C 배치, 중앙 이송 메커니즘, 액추에이터 배선, tower lamp 맥락을 보여주며, WPF/MVVM 재설계가 단순 화면 데모가 아니라 실제 장비 제어 경험을 기반으로 했다는 점을 설명하는 용도입니다.
+
+단, 새 WPF 앱이 실제 장비에서 검증 완료되었다고 주장하지 않습니다. 현재 저장소는 supervised real-hardware verification을 준비한 상태입니다.
+
 ## 프로젝트 요약
 
 SemiTool-EtherCAT-WPF-ControlSuite는 실제 EtherCAT 장비를 제어했던 기존 WinForms 프로젝트 경험을 바탕으로 새로 설계한 WPF/MVVM 기반 반도체 장비 제어 HMI 및 시퀀스 플랫폼입니다.

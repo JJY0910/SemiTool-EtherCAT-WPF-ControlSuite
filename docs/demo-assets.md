@@ -24,6 +24,12 @@ The capture mode uses WPF `RenderTargetBitmap` and existing `UserControl` views.
 - `docs/images/simulator-demo-frame-03.png`
 - `docs/images/simulator-demo-frame-04.png`
 
+## Real Equipment Context Asset
+
+- `docs/images/real-equipment-context-top-view.jpg`
+
+This photo is a real-equipment context reference for the original WinForms EtherCAT control experience. It supports the portfolio explanation by showing the physical three-chamber layout and central transfer mechanism, but it does not claim that the new WPF app has completed real-hardware verification.
+
 ## How To Regenerate
 
 1. Open Windows Native PowerShell.
