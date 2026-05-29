@@ -77,11 +77,13 @@ The preview should show:
 
 - `Machine Twin` as the first/default tab.
 - The approved real-equipment context photo panel.
-- FOUP A as a 5-slot cassette loaded with W01-W05.
-- FOUP B as a 5-slot cassette with sample completed/empty states.
+- FOUP A as a 5-slot cassette with remaining waiting sample wafer state.
+- FOUP B as a 5-slot cassette with completed/empty sample states.
 - Chamber A/B/C sample wafer, recipe, step, and progress states.
-- Limited theta swing arc, telescopic blade, wafer-on-blade, Z, cylinder, vacuum, and tower indicators.
+- Limited theta swing arc, telescopic blade state, Z, cylinder, vacuum, and tower indicators.
 - Event log sample rows.
+
+The static designer preview keeps exactly five unique sample wafers total across FOUP A, Chamber A/B/C, FOUP B, and the blade. It must not duplicate a wafer ID just to make more UI regions look occupied.
 
 Designer data comes from `src/SemiTool.Hmi.Wpf/DesignTime`. It does not connect to real hardware, does not load `IEG3268_Dll.dll`, and does not replace runtime MVVM bindings.
 

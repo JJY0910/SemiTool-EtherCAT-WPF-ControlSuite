@@ -24,18 +24,20 @@ src/SemiTool.Hmi.Wpf/Views/MachineTwinView.xaml
 The designer preview should show:
 
 - Real equipment context reference photo panel.
-- FOUP A 5-slot cassette with W01-W05 sample wafers.
-- FOUP B 5-slot cassette with sample completed/empty states.
-- Chamber A processing sample wafer W01 with `PreClean_Default`.
-- Chamber B sample `CMP_Main` completed state.
-- Chamber C sample `PostClean_Dry` empty state.
+- FOUP A 5-slot cassette with remaining waiting sample wafer state.
+- FOUP B 5-slot cassette with W01 completed and empty destination slots.
+- Chamber A processing sample wafer W04 with `PreClean_Default`.
+- Chamber B processing sample wafer W03 with `CMP_Main`.
+- Chamber C processing sample wafer W02 with `PostClean_Dry`.
 - Limited theta swing arc with station detents.
 - Telescopic blade extended toward a station.
-- Wafer on blade with vacuum suction on.
+- Blade/vacuum state without duplicating a wafer ID.
 - Z Work sample state.
 - Cylinder forward / blade extended indicator.
 - Tower green indicator.
 - Event log sample rows.
+
+The preview is a static mid-pipeline snapshot with exactly five unique wafers total: W01 in FOUP B, W02 in Chamber C, W03 in Chamber B, W04 in Chamber A, and W05 waiting in FOUP A. Do not add a sixth visual wafer or reuse an existing wafer ID on the blade.
 
 ## Design-Time Data
 

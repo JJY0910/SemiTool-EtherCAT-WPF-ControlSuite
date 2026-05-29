@@ -65,11 +65,13 @@ Designer preview에는 다음이 보입니다.
 
 - 첫 번째/default `Machine Twin` 탭
 - 승인된 실제 장비 context photo panel
-- W01~W05가 들어 있는 FOUP A 5-slot cassette
+- 남은 대기 wafer 상태가 보이는 FOUP A 5-slot cassette
 - completed/empty sample 상태가 보이는 FOUP B 5-slot cassette
 - Chamber A/B/C sample recipe, wafer, step, progress 상태
-- 제한 θ swing arc, telescopic blade, wafer-on-blade, Z, cylinder, vacuum, tower lamp indicator
+- 제한 θ swing arc, telescopic blade 상태, Z, cylinder, vacuum, tower lamp indicator
 - event log sample rows
+
+정적 designer preview는 FOUP A, Chamber A/B/C, FOUP B, blade 전체에서 sample wafer ID가 정확히 5개만 보이도록 유지합니다. UI 영역을 채우기 위해 같은 wafer ID를 중복 표시하지 않습니다.
 
 이 preview는 `src/SemiTool.Hmi.Wpf/DesignTime`의 정적 sample data만 사용합니다. 실제 장비에 연결하지 않고, `IEG3268_Dll.dll`도 로드하지 않으며, runtime MVVM binding을 대체하지 않습니다.
 

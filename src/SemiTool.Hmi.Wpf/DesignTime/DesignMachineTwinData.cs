@@ -16,16 +16,16 @@ public static class DesignMachineTwinData
 {
     public static ObservableCollection<DesignFoupSlotChipViewModel> CreateFoupASlots() =>
     [
-        new("A1", true, "W01", "Waiting", false),
-        new("A2", true, "W02", "Waiting", false),
-        new("A3", true, "W03", "Waiting", false),
-        new("A4", true, "W04", "Waiting", false),
-        new("A5", true, "W05", "Waiting", false)
+        new("A1", false, string.Empty, "Empty", false),
+        new("A2", false, string.Empty, "Empty", false),
+        new("A3", false, string.Empty, "Empty", false),
+        new("A4", false, string.Empty, "Empty", false),
+        new("A5", true, "W05", "Waiting", true)
     ];
 
     public static ObservableCollection<DesignFoupSlotChipViewModel> CreateFoupBSlots() =>
     [
-        new("B1", true, "W00", "Completed", false),
+        new("B1", true, "W01", "Completed", false),
         new("B2", false, string.Empty, "Empty", false),
         new("B3", false, string.Empty, "Empty", false),
         new("B4", false, string.Empty, "Empty", false),
@@ -43,10 +43,10 @@ public static class DesignMachineTwinData
 
     public static ObservableCollection<string> CreateEventLogLines() =>
     [
-        "[designer] Simulator preview loaded. No real hardware connection.",
-        "[designer] FOUP A A1-A5 loaded with W01-W05 sample wafers.",
-        "[designer] Chamber A processing W01 / PreClean_Default.",
-        "[designer] Blade extended, vacuum suction ON, wafer visible on blade.",
+        "[designer] Static five-wafer preview loaded. No real hardware connection.",
+        "[designer] Exactly five unique wafers are shown: W01-W05.",
+        "[designer] W01 is completed in FOUP B; W02/W03/W04 are in Chamber C/B/A.",
+        "[designer] W05 remains waiting in FOUP A; blade is shown without duplicating a wafer.",
         "[designer] Runtime motion is verified by Run Simulator Demo, not by the static designer."
     ];
 

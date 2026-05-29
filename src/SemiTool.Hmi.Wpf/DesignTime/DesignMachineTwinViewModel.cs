@@ -28,36 +28,36 @@ public sealed class DesignMachineTwinViewModel
             "Chamber A",
             "Pre-Clean",
             true,
-            "W01",
+            "W04",
             "Processing",
             "PreClean_Default",
             "Chem Clean",
             6,
             55,
-            true);
+            false);
 
         ChamberB = new DesignChamberPipelineViewModel(
             "Chamber B",
             "CMP Main",
             true,
-            "W00",
-            "Completed",
+            "W03",
+            "Processing",
             "CMP_Main",
-            "Bulk Polish complete",
-            0,
-            100,
+            "Bulk Polish",
+            12,
+            60,
             false);
 
         ChamberC = new DesignChamberPipelineViewModel(
             "Chamber C",
             "Post-Clean & Dry",
-            false,
-            string.Empty,
-            "Empty",
+            true,
+            "W02",
+            "Processing",
             "PostClean_Dry",
-            "-",
-            0,
-            0,
+            "Dry Rinse",
+            4,
+            70,
             false);
 
         RunSimulatorDemoCommand = CreateNoOpCommand();
@@ -81,31 +81,31 @@ public sealed class DesignMachineTwinViewModel
     public string ScenarioName => "Visual Studio Designer sample";
     public string EquipmentKind => "Wafer transfer robot teaching/training setup";
     public string PhotoCaption => "Real equipment context reference / designer sample data";
-    public string FeedbackBoundary => "Design-time simulator sample only. Runtime demo animates the real ViewModel.";
+    public string FeedbackBoundary => "Design-time sample only. Five unique wafers total; runtime demo animates the real ViewModel.";
     public bool IsDemoRunning => false;
     public bool IsSimulatorMode => true;
     public bool IsRealHardwareMode => false;
     public bool IsConnected => false;
     public string MachineState => "DesignerPreview";
-    public string CurrentStation => "Chamber A";
-    public string PreviousStation => "FOUP A";
-    public string NextStation => "Chamber B";
-    public string CurrentStepName => "Designer sample: W01 on blade / Chamber A processing";
-    public double VisualThetaAngle => -75;
-    public string ThetaTargetName => "Chamber A";
-    public long PreservedThetaEncoderValue => -59064;
+    public string CurrentStation => "Chamber C";
+    public string PreviousStation => "Chamber B";
+    public string NextStation => "FOUP B";
+    public string CurrentStepName => "Designer sample: five unique wafers / pipeline mid-drain";
+    public double VisualThetaAngle => 75;
+    public string ThetaTargetName => "Chamber C";
+    public long PreservedThetaEncoderValue => -322000;
     public string ZState => "Z Work";
     public bool IsBladeExtended => true;
     public bool IsCylinderForward => true;
     public bool IsCylinderBackward => false;
-    public bool IsVacuumOn => true;
-    public bool IsWaferOnBlade => true;
-    public bool IsWaferInFoupA1 => false;
+    public bool IsVacuumOn => false;
+    public bool IsWaferOnBlade => false;
+    public bool IsWaferInFoupA1 => true;
     public bool IsWaferInChamberA => true;
     public bool IsWaferInChamberB => true;
-    public bool IsWaferInChamberC => false;
+    public bool IsWaferInChamberC => true;
     public bool IsWaferInFoupB1 => true;
-    public bool ChamberADoorOpen => true;
+    public bool ChamberADoorOpen => false;
     public bool ChamberBDoorOpen => false;
     public bool ChamberCDoorOpen => false;
     public bool TowerRed => false;
@@ -114,21 +114,21 @@ public sealed class DesignMachineTwinViewModel
     public string AlarmSummary => "Designer preview: no active alarms";
     public string SelectedDemoSpeed { get; set; } = "Realistic";
     public string PipelineState => "Running";
-    public int FoupACount => 5;
+    public int FoupACount => 1;
     public int FoupBCount => 1;
     public int CompletedCount => 1;
-    public string CurrentTransferDescription => "Sample pipeline: FOUP A feeds Chamber A while downstream drains first.";
-    public string ActiveWaferId => "W01";
-    public string WaferIdOnBlade => "W01";
+    public string CurrentTransferDescription => "Static preview: W01 complete, W02-W04 in chambers, W05 waiting.";
+    public string ActiveWaferId => "W02";
+    public string WaferIdOnBlade => string.Empty;
     public string TimingProfileName => "Realistic";
     public string ModeLabel => "SIMULATOR";
     public string ConnectionLabel => "Designer";
     public double BladeLength => 245;
     public double BladeScaleY => 1.0;
     public string CylinderState => "Forward / blade extended";
-    public string VacuumState => "Suction ON / wafer held";
-    public string WaferSummary => "W01 on blade / B1 completed sample";
-    public string FoupASummary => "FOUP A: 5/5 loaded";
+    public string VacuumState => "Vacuum OFF / no wafer on blade";
+    public string WaferSummary => "5 unique wafers: W01 B1, W02 C, W03 B, W04 A, W05 FOUP A";
+    public string FoupASummary => "FOUP A: 1/5 waiting";
     public string FoupBSummary => "FOUP B: 1/5 completed";
 
     public ICommand RunSimulatorDemoCommand { get; }

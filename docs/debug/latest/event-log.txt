@@ -1,12 +1,12 @@
-﻿2026-05-29T19:04:39.5653088+09:00 | Pipeline ready: FOUP A 5 wafers, FOUP B empty.
-2026-05-29T19:04:39.6205770+09:00 | FOUP A slots A1-A5 are loaded. FOUP B is empty.
-2026-05-29T19:04:39.6948908+09:00 | Transfer W01: FOUP A Slot A1 -> Chamber A started. Z Work, blade extended.
-2026-05-29T19:04:39.7408655+09:00 | Vacuum suction ON: W01 is on the blade.
-2026-05-29T19:04:39.7817500+09:00 | W01 placed in Chamber A. PreClean_Default started.
-2026-05-29T19:04:39.8314104+09:00 | Scheduler fed W02 into Chamber A after W01 moved to Chamber B.
-2026-05-29T19:04:39.8721572+09:00 | Pipeline state: Chamber A W03, Chamber B W02, Chamber C W01.
-2026-05-29T19:04:39.9135276+09:00 | W01 Chamber C process complete. Scheduler priority selects Chamber C -> FOUP B.
-2026-05-29T19:04:39.9559647+09:00 | W01 placed into FOUP B Slot B1. FOUP B count is now 1/5.
-2026-05-29T19:04:40.0122778+09:00 | FOUP A is empty. Pipeline is draining remaining wafers toward FOUP B.
-2026-05-29T19:04:40.0539252+09:00 | All 5 wafers completed in FOUP B. Tower green blink enabled.
-2026-05-29T19:04:40.1013359+09:00 | Reset returns simulator to FOUP A loaded, FOUP B empty, blade retracted, vacuum off.
+﻿2026-05-29T21:38:41.7278331+09:00 | Pipeline ready: FOUP A 5 wafers, FOUP B empty.
+2026-05-29T21:38:41.7983913+09:00 | FOUP A slots A1-A5 are loaded. FOUP B is empty.
+2026-05-29T21:38:41.8518764+09:00 | Transfer W01: FOUP A Slot A1 -> Chamber A started. Z Work, blade extended.
+2026-05-29T21:38:41.9121043+09:00 | Vacuum suction ON: W01 is on the blade.
+2026-05-29T21:38:41.9647185+09:00 | W01 placed in Chamber A. PreClean_Default started.
+2026-05-29T21:38:42.0277786+09:00 | Scheduler fed W02 into Chamber A after W01 moved to Chamber B.
+2026-05-29T21:38:42.0805030+09:00 | Pipeline state: Chamber A W03, Chamber B W02, Chamber C W01.
+2026-05-29T21:38:42.1502969+09:00 | W01 Chamber C process complete. Scheduler priority selects Chamber C -> FOUP B.
+2026-05-29T21:38:42.2138364+09:00 | W01 placed into FOUP B Slot B1. FOUP B count is now 1/5.
+2026-05-29T21:38:42.2875040+09:00 | FOUP A is empty. Pipeline is draining remaining wafers toward FOUP B.
+2026-05-29T21:38:42.3430806+09:00 | All 5 wafers completed in FOUP B. Tower green blink enabled.
+2026-05-29T21:38:42.3967131+09:00 | Reset returns simulator to FOUP A loaded, FOUP B empty, blade retracted, vacuum off.
