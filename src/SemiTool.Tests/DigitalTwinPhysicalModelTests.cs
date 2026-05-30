@@ -57,7 +57,7 @@ public sealed class DigitalTwinPhysicalModelTests
     }
 
     [Fact]
-    public void ChamberRecipeMetadata_MatchesTeachingScenario()
+    public void ChamberRecipeMetadata_MatchesTransferScenario()
     {
         var recipes = TestProfile.Load().Recipes;
 
@@ -68,34 +68,34 @@ public sealed class DigitalTwinPhysicalModelTests
     }
 
     [Fact]
-    public void MachineTwinDemoPlan_MovesFromFoupAToFoupB()
+    public void MachineTwinSequencePlan_MovesFromFoupAToFoupB()
     {
         var model = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load());
-        var steps = MachineTwinDemoPlan.CreateDefault(model);
+        var steps = MachineTwinSequencePlan.CreateDefault(model);
 
         Assert.Equal("FOUP A", steps[0].CurrentStation);
         Assert.Contains(steps, step => step.CurrentStation == "Chamber A");
         Assert.Contains(steps, step => step.CurrentStation == "Chamber B (CMP)");
         Assert.Contains(steps, step => step.CurrentStation == "Chamber C");
         Assert.Equal("FOUP B", steps[^1].CurrentStation);
-        Assert.Equal(MachineTwinDemoPlan.CompletedStepName, steps[^1].StepName);
+        Assert.Equal(MachineTwinSequencePlan.CompletedStepName, steps[^1].StepName);
     }
 
     [Fact]
-    public void MachineTwinDemoPlan_DoesNotRequireRealHardware()
+    public void MachineTwinSequencePlan_DoesNotRequireRealHardware()
     {
         var model = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load());
-        var steps = MachineTwinDemoPlan.CreateDefault(model);
+        var steps = MachineTwinSequencePlan.CreateDefault(model);
 
         Assert.All(steps, step => Assert.DoesNotContain("RealHardware", step.EventLogMessage, StringComparison.OrdinalIgnoreCase));
         Assert.All(steps, step => Assert.DoesNotContain("IEG3268", step.EventLogMessage, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public void MachineTwinDemoPlan_VisualAnglesStaySeparateFromEncoderValues()
+    public void MachineTwinSequencePlan_VisualAnglesStaySeparateFromEncoderValues()
     {
         var model = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load());
-        var steps = MachineTwinDemoPlan.CreateDefault(model);
+        var steps = MachineTwinSequencePlan.CreateDefault(model);
 
         Assert.All(steps, step => Assert.InRange(step.VisualThetaAngle, -150, 150));
         Assert.DoesNotContain(steps, step => step.VisualThetaAngle == step.PreservedThetaEncoderValue);

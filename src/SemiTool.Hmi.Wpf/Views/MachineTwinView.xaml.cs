@@ -7,7 +7,7 @@ namespace SemiTool.Hmi.Wpf.Views;
 /// </summary>
 /// <remarks>
 /// This code-behind intentionally stays thin. All machine state, simulator
-/// demo sequencing, and safety boundary text live in
+/// runtime sequencing, and safety boundary text live in
 /// <see cref="ViewModels.MachineTwinViewModel"/> so the same view model can
 /// drive both the running app and the screenshot/debug-evidence capture modes.
 ///

@@ -15,7 +15,7 @@ using SemiTool.Hmi.Wpf.Views;
 
 namespace SemiTool.Hmi.Wpf;
 
-internal static class DemoAssetCapture
+internal static class SequenceAssetCapture
 {
     private const int CaptureWidth = 1280;
     private const int CaptureHeight = 820;
@@ -55,7 +55,7 @@ internal static class DemoAssetCapture
         await viewModel.RefreshAsync();
 
         var trace = new List<MachineTwinStateTraceEntry>();
-        await viewModel.MachineTwin.RunSimulatorDemoForCaptureAsync(async step =>
+        await viewModel.MachineTwin.RunTransferSequenceForCaptureAsync(async step =>
         {
             if (!ShouldCaptureDebugStep(step))
             {
@@ -82,7 +82,7 @@ internal static class DemoAssetCapture
 
     private static async Task CaptureMachineTwinPortfolioFramesAsync(MachineTwinViewModel machineTwin, string outputDirectory)
     {
-        await machineTwin.RunSimulatorDemoForCaptureAsync(async step =>
+        await machineTwin.RunTransferSequenceForCaptureAsync(async step =>
         {
             var fileName = step.ScreenshotName switch
             {
@@ -103,7 +103,7 @@ internal static class DemoAssetCapture
         });
     }
 
-    private static bool ShouldCaptureDebugStep(MachineTwinDemoStep step) =>
+    private static bool ShouldCaptureDebugStep(MachineTwinSequenceStep step) =>
         step.StepIndex == 0 ||
         step.ScreenshotName is
             "01-foup-a-before-pickup.png" or
@@ -186,8 +186,8 @@ internal static class DemoAssetCapture
             "NextStation",
             "CurrentStepName",
             "CurrentAction",
-            "RobotTeachingState",
-            "BladeTeachingState",
+            "RobotState",
+            "BladeState",
             "VacuumDisplayState",
             "ChamberADoorState",
             "ChamberBDoorState",
@@ -249,8 +249,8 @@ internal static class DemoAssetCapture
                 Csv(item.NextStation),
                 Csv(item.CurrentStepName),
                 Csv(item.CurrentAction),
-                Csv(item.RobotTeachingState),
-                Csv(item.BladeTeachingState),
+                Csv(item.RobotState),
+                Csv(item.BladeState),
                 Csv(item.VacuumDisplayState),
                 Csv(item.ChamberADoorState),
                 Csv(item.ChamberBDoorState),
@@ -321,16 +321,16 @@ internal static class DemoAssetCapture
         builder.AppendLine("- No vendor DLL is loaded.");
         builder.AppendLine("- No real hardware connection is attempted.");
         builder.AppendLine("- Visual theta angle is for HMI rendering only.");
-        builder.AppendLine("- Preserved theta encoder values are machine/teaching values, not literal UI degrees.");
+        builder.AppendLine("- Preserved theta encoder values are machine position values, not literal UI degrees.");
         builder.AppendLine("- The robot is modeled as a limited station-to-station theta swing, not continuous 360-degree rotation.");
-        builder.AppendLine("- Normal runtime `Run Teaching Demo` holds at FOUP B 5/5 completed until the user presses Reset; only explicit capture modes call application shutdown.");
+        builder.AppendLine("- Normal runtime `Run Transfer Sequence` holds at FOUP B 5/5 completed until the user presses Reset; only explicit capture modes call application shutdown.");
         builder.AppendLine();
         builder.AppendLine("## Runtime Integration Check");
         builder.AppendLine();
         builder.AppendLine("- MainWindow first tab is `Machine Twin`.");
         builder.AppendLine("- MainWindow uses `<views:MachineTwinView DataContext=\"{Binding MachineTwin}\" />`.");
         builder.AppendLine("- MainViewModel exposes `MachineTwinViewModel` through the `MachineTwin` property.");
-        builder.AppendLine("- `Run Teaching Demo` is a command on the actual `MachineTwinView` runtime screen.");
+        builder.AppendLine("- `Run Transfer Sequence` is a command on the actual `MachineTwinView` runtime screen.");
         builder.AppendLine("- `00-startup-simulator.png` is captured from the actual `MainWindow`, so it shows the selected `Machine Twin` tab.");
         builder.AppendLine("- The remaining screenshots are captured from the same `MachineTwinView` and `MachineTwinViewModel` used by the running app.");
         builder.AppendLine();
@@ -342,8 +342,8 @@ internal static class DemoAssetCapture
         foreach (var item in trace)
         {
             var chamberSummary = $"{item.ChamberAState}<br>{item.ChamberBState}<br>{item.ChamberCState}";
-            var teachingState = $"A:{item.ChamberADoorState} B:{item.ChamberBDoorState} C:{item.ChamberCDoorState}<br>{item.BladeTeachingState}<br>{item.VacuumDisplayState}";
-            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentAction} | {item.CurrentStation} | {item.FoupACount}/5 | {item.FoupBCount}/5 | {chamberSummary} | {teachingState} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
+            var sequenceState = $"A:{item.ChamberADoorState} B:{item.ChamberBDoorState} C:{item.ChamberCDoorState}<br>{item.BladeState}<br>{item.VacuumDisplayState}";
+            builder.AppendLine($"| {item.StepIndex} | {item.StepName} | {item.CurrentAction} | {item.CurrentStation} | {item.FoupACount}/5 | {item.FoupBCount}/5 | {chamberSummary} | {sequenceState} | [{IoPath.GetFileName(item.ScreenshotPath)}]({item.ScreenshotPath.Replace("docs/debug/latest/", string.Empty)}) |");
         }
 
         builder.AppendLine();
@@ -356,7 +356,7 @@ internal static class DemoAssetCapture
         builder.AppendLine("| Theta target follows the limited station arc instead of a 360-degree dial. | The trace records station-to-station `ThetaTargetName` changes plus preserved encoder values. |");
         builder.AppendLine("| Z moves from Safe to Work only during pick/place visualization. | Pick/place steps show `ZState=Z Work`; processing and reset states return to `Z Safe`. |");
         builder.AppendLine("| Chamber doors gate blade entry. | Chamber-target blade-extension steps include `DoorState=Open`; close steps occur only after the blade retracts. |");
-        builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `BladeTeachingState=Extending/Extended` also show `IsCylinderForward=true`. |");
+        builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `BladeState=Extending/Extended` also show `IsCylinderForward=true`. |");
         builder.AppendLine("| Vacuum suction attaches the wafer to the blade. | Pickup steps show `VacuumDisplayState=SuctionOn` before the wafer appears on the blade. |");
         builder.AppendLine("| Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps show `VacuumDisplayState=ExhaustOrRelease` before the wafer moves to the target. |");
         builder.AppendLine("| Tower green indicates simulator sequence completion. | The final complete state shows `TowerGreen=true` with FOUP B 5/5. |");
@@ -365,7 +365,7 @@ internal static class DemoAssetCapture
         builder.AppendLine("| FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |");
         builder.AppendLine("| Chambers are used as a pipeline. | The state trace records Chamber A/B/C wafer ownership and process state while the five-wafer scheduler drains downstream first. |");
         builder.AppendLine("| Scheduler drains downstream first. | The timeline only unloads completed chambers and uses the priority C -> FOUP B, B -> C, A -> B, FOUP A -> A. |");
-        builder.AppendLine("| Runtime demo does not auto-close or auto-reset. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Teaching Demo` leaves the window open at FOUP B 5/5 completed until Reset is pressed. |");
+        builder.AppendLine("| Runtime sequence does not auto-close or auto-reset. | The only shutdown calls live in explicit capture-mode startup paths; normal `Run Transfer Sequence` leaves the window open at FOUP B 5/5 completed until Reset is pressed. |");
         builder.AppendLine();
         builder.AppendLine("## Screenshot Timeline");
         builder.AppendLine();
@@ -443,8 +443,8 @@ internal static class DemoAssetCapture
         runtime.Scheduler.State.PmC.RemainingSeconds = 0;
         runtime.Scheduler.State.PmC.ProcessComplete = true;
 
-        runtime.Events.Info(nameof(DemoAssetCapture), "Simulator capture mode started.");
-        runtime.Events.Info(nameof(DemoAssetCapture), "Real hardware mode was not selected or connected.");
+        runtime.Events.Info(nameof(SequenceAssetCapture), "Simulator capture mode started.");
+        runtime.Events.Info(nameof(SequenceAssetCapture), "Real hardware mode was not selected or connected.");
     }
 
     private static async Task RenderAsync(FrameworkElement content, string title, string subtitle, string path)
@@ -532,7 +532,7 @@ internal static class DemoAssetCapture
         return surface;
     }
 
-    private static FrameworkElement CreateDigitalTwinLayout(DigitalTwinPhysicalModel model, DigitalTwinDemoState state)
+    private static FrameworkElement CreateDigitalTwinLayout(DigitalTwinPhysicalModel model, DigitalTwinSequenceAssetState state)
     {
         var root = new Grid { Background = new SolidColorBrush(Color.FromRgb(18, 26, 32)) };
         root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -634,7 +634,7 @@ internal static class DemoAssetCapture
         AddEllipse(canvas, 720, 152, 24, 24, greenOn ? Color.FromRgb(25, 155, 83) : Color.FromRgb(28, 73, 48), Color.FromRgb(160, 240, 190), 1);
     }
 
-    private static void DrawThetaBaseAndBlade(Canvas canvas, Point center, Point target, DigitalTwinDemoState state)
+    private static void DrawThetaBaseAndBlade(Canvas canvas, Point center, Point target, DigitalTwinSequenceAssetState state)
     {
         AddEllipse(canvas, center.X - 66, center.Y - 66, 132, 132, Color.FromRgb(38, 47, 54), Color.FromRgb(207, 216, 222), 3);
         AddEllipse(canvas, center.X - 34, center.Y - 34, 68, 68, Color.FromRgb(85, 96, 104), Color.FromRgb(232, 238, 242), 2);
@@ -656,7 +656,7 @@ internal static class DemoAssetCapture
         }
     }
 
-    private static Border CreateStatusPanel(DigitalTwinPhysicalModel model, DigitalTwinDemoState state)
+    private static Border CreateStatusPanel(DigitalTwinPhysicalModel model, DigitalTwinSequenceAssetState state)
     {
         var panel = new StackPanel { Margin = new Thickness(16) };
         panel.Children.Add(new TextBlock { Text = "Physical Model", Foreground = Brushes.White, FontSize = 22, FontWeight = FontWeights.SemiBold });
@@ -782,7 +782,7 @@ internal static class DemoAssetCapture
         AddText(canvas, label, Math.Min(start.X, end.X), Math.Min(start.Y, end.Y) - 30, 15, Brushes.White, FontWeights.SemiBold);
     }
 
-    private sealed record DigitalTwinDemoState(
+    private sealed record DigitalTwinSequenceAssetState(
         string CurrentTargetKey,
         string TargetLabel,
         bool BladeExtended,
@@ -794,12 +794,12 @@ internal static class DemoAssetCapture
         string CurrentStep,
         bool TowerGreen)
     {
-        public static DigitalTwinDemoState LimitedSwingOverview { get; } = new("ChamberB", "Chamber B (CMP)", false, false, "Z Safe", "Cylinder Backward", "Vacuum OFF", "No wafer on blade", "Station arc overview", false);
-        public static DigitalTwinDemoState TransferRobotWithWafer { get; } = new("ChamberA", "Chamber A", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer held on blade", "Place wafer into Chamber A", false);
-        public static DigitalTwinDemoState PickFromFoupA { get; } = new("FoupA", "FOUP A Slot 1", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer picked from FOUP A", "Pick FOUP A Slot 1", false);
-        public static DigitalTwinDemoState PlaceToChamberA { get; } = new("ChamberA", "Chamber A", true, false, "Z Work", "Cylinder Forward", "Vacuum Exhaust / release", "Wafer in Chamber A", "PreClean_Default starts", false);
-        public static DigitalTwinDemoState TransferToChamberC { get; } = new("ChamberC", "Chamber C", false, true, "Z Safe", "Cylinder Backward", "Vacuum Suction ON", "Wafer carried from Chamber B", "CMP_Main complete, moving to PostClean_Dry", false);
-        public static DigitalTwinDemoState PlaceToFoupB { get; } = new("FoupB", "FOUP B Slot 1", true, false, "Z Work -> Z Safe", "Cylinder Forward then Backward", "Vacuum Exhaust / release", "Wafer stored in FOUP B Slot 1", "Overall simulator flow complete", true);
+        public static DigitalTwinSequenceAssetState LimitedSwingOverview { get; } = new("ChamberB", "Chamber B (CMP)", false, false, "Z Safe", "Cylinder Backward", "Vacuum OFF", "No wafer on blade", "Station arc overview", false);
+        public static DigitalTwinSequenceAssetState TransferRobotWithWafer { get; } = new("ChamberA", "Chamber A", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer held on blade", "Place wafer into Chamber A", false);
+        public static DigitalTwinSequenceAssetState PickFromFoupA { get; } = new("FoupA", "FOUP A Slot 1", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer picked from FOUP A", "Pick FOUP A Slot 1", false);
+        public static DigitalTwinSequenceAssetState PlaceToChamberA { get; } = new("ChamberA", "Chamber A", true, false, "Z Work", "Cylinder Forward", "Vacuum Exhaust / release", "Wafer in Chamber A", "PreClean_Default starts", false);
+        public static DigitalTwinSequenceAssetState TransferToChamberC { get; } = new("ChamberC", "Chamber C", false, true, "Z Safe", "Cylinder Backward", "Vacuum Suction ON", "Wafer carried from Chamber B", "CMP_Main complete, moving to PostClean_Dry", false);
+        public static DigitalTwinSequenceAssetState PlaceToFoupB { get; } = new("FoupB", "FOUP B Slot 1", true, false, "Z Work -> Z Safe", "Cylinder Forward then Backward", "Vacuum Exhaust / release", "Wafer stored in FOUP B Slot 1", "Overall simulator flow complete", true);
     }
 
     private static string FindRepositoryRoot()
@@ -815,6 +815,6 @@ internal static class DemoAssetCapture
             directory = directory.Parent;
         }
 
-        throw new DirectoryNotFoundException("Could not locate repository root for demo asset output.");
+        throw new DirectoryNotFoundException("Could not locate repository root for sequence asset output.");
     }
 }

@@ -9,10 +9,10 @@ public sealed class MachineTwinViewModel : ObservableObject
 {
     private readonly RuntimeCoordinator _runtime;
     private readonly DigitalTwinPhysicalModel _physicalModel;
-    private readonly IReadOnlyList<MachineTwinDemoStep> _demoSteps;
-    private readonly MachineTwinDemoStep _resetStep;
-    private CancellationTokenSource? _demoCts;
-    private bool _isDemoRunning;
+    private readonly IReadOnlyList<MachineTwinSequenceStep> _sequenceSteps;
+    private readonly MachineTwinSequenceStep _resetStep;
+    private CancellationTokenSource? _sequenceCts;
+    private bool _isSequenceRunning;
     private bool _isSimulatorMode = true;
     private bool _isRealHardwareMode;
     private bool _isConnected;
@@ -22,12 +22,17 @@ public sealed class MachineTwinViewModel : ObservableObject
     private string _nextStation = "Chamber A";
     private string _currentStepName = "Simulator startup / safe state";
     private string _currentAction = "Pipeline ready: FOUP A 5 wafers, FOUP B empty";
-    private string _robotTeachingState = SemiTool.Domain.RobotTeachingState.Idle.ToString();
-    private string _bladeTeachingState = SemiTool.Domain.BladeTeachingState.Retracted.ToString();
-    private string _vacuumDisplayState = SemiTool.Domain.VacuumTeachingState.Off.ToString();
-    private string _chamberADoorState = SemiTool.Domain.ChamberDoorTeachingState.Closed.ToString();
-    private string _chamberBDoorState = SemiTool.Domain.ChamberDoorTeachingState.Closed.ToString();
-    private string _chamberCDoorState = SemiTool.Domain.ChamberDoorTeachingState.Closed.ToString();
+    private string _operationWafer = "-";
+    private string _operationSource = "FOUP A";
+    private string _operationDestination = "Chamber A";
+    private string _operationCurrentStep = "Ready";
+    private string _operationNextStep = "Move theta to FOUP A";
+    private string _robotSequenceState = SemiTool.Domain.RobotSequenceState.Idle.ToString();
+    private string _bladeSequenceState = SemiTool.Domain.BladeSequenceState.Retracted.ToString();
+    private string _vacuumDisplayState = SemiTool.Domain.VacuumSequenceState.Off.ToString();
+    private string _chamberADoorState = SemiTool.Domain.ChamberDoorSequenceState.Closed.ToString();
+    private string _chamberBDoorState = SemiTool.Domain.ChamberDoorSequenceState.Closed.ToString();
+    private string _chamberCDoorState = SemiTool.Domain.ChamberDoorSequenceState.Closed.ToString();
     private double _visualThetaAngle = -150;
     private string _thetaTargetName = "FOUP A";
     private long _preservedThetaEncoderValue = 14140;
@@ -49,7 +54,7 @@ public sealed class MachineTwinViewModel : ObservableObject
     private bool _towerYellow;
     private bool _towerGreen;
     private string _alarmSummary = "No active alarms";
-    private string _selectedDemoSpeed = "Teaching";
+    private string _selectedSequenceSpeed = "Normal";
     private string _pipelineState = PipelineStateKind.Ready.ToString();
     private int _foupACount = 5;
     private int _foupBCount;
@@ -57,8 +62,8 @@ public sealed class MachineTwinViewModel : ObservableObject
     private string _currentTransferDescription = "Ready";
     private string _activeWaferId = string.Empty;
     private string _waferIdOnBlade = string.Empty;
-    private string _timingProfileName = SimulatorTimingProfile.Teaching.Name;
-    private bool _isDemoPaused;
+    private string _timingProfileName = SimulatorTimingProfile.Normal.Name;
+    private bool _isSequencePaused;
     private bool _stepOnceRequested;
     private int _manualStepIndex;
 
@@ -66,34 +71,34 @@ public sealed class MachineTwinViewModel : ObservableObject
     {
         _runtime = runtime;
         _physicalModel = DigitalTwinPhysicalModel.CreateDefault(runtime.Profile);
-        _demoSteps = MachineTwinDemoPlan.CreateDefault(_physicalModel);
-        _resetStep = MachineTwinDemoPlan.CreateResetStep(_physicalModel);
+        _sequenceSteps = MachineTwinSequencePlan.CreateDefault(_physicalModel);
+        _resetStep = MachineTwinSequencePlan.CreateResetStep(_physicalModel);
         ReferencePhotoPath = ResolveRepositoryPath("docs", "images", "real-equipment-context-top-view.jpg");
         EventLogLines = new ObservableCollection<string>();
-        DemoSpeedOptions = new ObservableCollection<string>(["Teaching", "Realistic", "Fast", "Step"]);
-        FoupASlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots(_demoSteps[0].FoupASlots));
-        FoupBSlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots(_demoSteps[0].FoupBSlots));
-        ChamberA = ChamberPipelineViewModel.From(_demoSteps[0].ChamberA);
-        ChamberB = ChamberPipelineViewModel.From(_demoSteps[0].ChamberB);
-        ChamberC = ChamberPipelineViewModel.From(_demoSteps[0].ChamberC);
+        SequenceSpeedOptions = new ObservableCollection<string>(["Normal", "Realistic", "Fast", "Step"]);
+        FoupASlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots(_sequenceSteps[0].FoupASlots));
+        FoupBSlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots(_sequenceSteps[0].FoupBSlots));
+        ChamberA = ChamberPipelineViewModel.From(_sequenceSteps[0].ChamberA);
+        ChamberB = ChamberPipelineViewModel.From(_sequenceSteps[0].ChamberB);
+        ChamberC = ChamberPipelineViewModel.From(_sequenceSteps[0].ChamberC);
         Stations = new ObservableCollection<MachineTwinStationViewModel>(
             _physicalModel.ThetaSwing.Stations.OrderBy(station => station.Order).Select(MachineTwinStationViewModel.From));
-        RunSimulatorDemoCommand = new AsyncRelayCommand(_ => RunSimulatorDemoCommandAsync());
-        PauseCommand = new RelayCommand(_ => PauseTeachingDemo(), _ => IsDemoRunning && !IsDemoPaused);
-        ResumeCommand = new RelayCommand(_ => ResumeTeachingDemo(), _ => IsDemoRunning && IsDemoPaused);
+        RunTransferSequenceCommand = new AsyncRelayCommand(_ => RunTransferSequenceCommandAsync());
+        PauseCommand = new RelayCommand(_ => PauseSequenceRun(), _ => IsSequenceRunning && !IsSequencePaused);
+        ResumeCommand = new RelayCommand(_ => ResumeSequenceRun(), _ => IsSequenceRunning && IsSequencePaused);
         StepOnceCommand = new AsyncRelayCommand(_ => StepOnceAsync());
-        StopCommand = new AsyncRelayCommand(_ => StopDemoAsync());
+        StopCommand = new AsyncRelayCommand(_ => StopSequenceAsync());
         ResetCommand = new AsyncRelayCommand(_ => ResetSafeStateAsync());
         AutoStartCommand = new AsyncRelayCommand(_ => ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.StartAutoAsync));
         AutoStopCommand = new AsyncRelayCommand(_ => ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.StopAutoAsync));
         EmergencyStopCommand = new AsyncRelayCommand(_ => ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.EmergencyStopAsync));
-        ApplyDemoStep(_demoSteps[0]);
+        ApplySequenceStep(_sequenceSteps[0]);
     }
 
     public ObservableCollection<MachineTwinStationViewModel> Stations { get; }
     public ObservableCollection<FoupSlotChipViewModel> FoupASlots { get; }
     public ObservableCollection<FoupSlotChipViewModel> FoupBSlots { get; }
-    public ObservableCollection<string> DemoSpeedOptions { get; }
+    public ObservableCollection<string> SequenceSpeedOptions { get; }
     public ObservableCollection<string> EventLogLines { get; }
     public ChamberPipelineViewModel ChamberA { get; }
     public ChamberPipelineViewModel ChamberB { get; }
@@ -106,17 +111,17 @@ public sealed class MachineTwinViewModel : ObservableObject
     public string FeedbackBoundary => IsRealHardwareMode
         ? "Commanded / last-known state. Physical feedback depends on the real adapter."
         : "Simulator state is the source of truth.";
-    public bool IsDemoRunning
+    public bool IsSequenceRunning
     {
-        get => _isDemoRunning;
+        get => _isSequenceRunning;
         private set
         {
-            if (SetProperty(ref _isDemoRunning, value))
+            if (SetProperty(ref _isSequenceRunning, value))
             {
                 PauseCommand.RaiseCanExecuteChanged();
                 ResumeCommand.RaiseCanExecuteChanged();
                 StepOnceCommand.RaiseCanExecuteChanged();
-                RunSimulatorDemoCommand.RaiseCanExecuteChanged();
+                RunTransferSequenceCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -129,8 +134,13 @@ public sealed class MachineTwinViewModel : ObservableObject
     public string NextStation { get => _nextStation; private set => SetProperty(ref _nextStation, value); }
     public string CurrentStepName { get => _currentStepName; private set => SetProperty(ref _currentStepName, value); }
     public string CurrentAction { get => _currentAction; private set => SetProperty(ref _currentAction, value); }
-    public string RobotTeachingState { get => _robotTeachingState; private set => SetProperty(ref _robotTeachingState, value); }
-    public string BladeTeachingState { get => _bladeTeachingState; private set => SetProperty(ref _bladeTeachingState, value); }
+    public string OperationWafer { get => _operationWafer; private set => SetProperty(ref _operationWafer, value); }
+    public string OperationSource { get => _operationSource; private set => SetProperty(ref _operationSource, value); }
+    public string OperationDestination { get => _operationDestination; private set => SetProperty(ref _operationDestination, value); }
+    public string OperationCurrentStep { get => _operationCurrentStep; private set => SetProperty(ref _operationCurrentStep, value); }
+    public string OperationNextStep { get => _operationNextStep; private set => SetProperty(ref _operationNextStep, value); }
+    public string RobotSequenceState { get => _robotSequenceState; private set => SetProperty(ref _robotSequenceState, value); }
+    public string BladeSequenceState { get => _bladeSequenceState; private set => SetProperty(ref _bladeSequenceState, value); }
     public string VacuumDisplayState { get => _vacuumDisplayState; private set => SetProperty(ref _vacuumDisplayState, value); }
     public string ChamberADoorState { get => _chamberADoorState; private set => SetProperty(ref _chamberADoorState, value); }
     public string ChamberBDoorState { get => _chamberBDoorState; private set => SetProperty(ref _chamberBDoorState, value); }
@@ -156,7 +166,7 @@ public sealed class MachineTwinViewModel : ObservableObject
     public bool TowerYellow { get => _towerYellow; private set => SetProperty(ref _towerYellow, value); }
     public bool TowerGreen { get => _towerGreen; private set => SetProperty(ref _towerGreen, value); }
     public string AlarmSummary { get => _alarmSummary; private set => SetProperty(ref _alarmSummary, value); }
-    public string SelectedDemoSpeed { get => _selectedDemoSpeed; set => SetProperty(ref _selectedDemoSpeed, value); }
+    public string SelectedSequenceSpeed { get => _selectedSequenceSpeed; set => SetProperty(ref _selectedSequenceSpeed, value); }
     public string PipelineState { get => _pipelineState; private set => SetProperty(ref _pipelineState, value); }
     public int FoupACount { get => _foupACount; private set => SetProperty(ref _foupACount, value); }
     public int FoupBCount { get => _foupBCount; private set => SetProperty(ref _foupBCount, value); }
@@ -165,12 +175,12 @@ public sealed class MachineTwinViewModel : ObservableObject
     public string ActiveWaferId { get => _activeWaferId; private set => SetProperty(ref _activeWaferId, value); }
     public string WaferIdOnBlade { get => _waferIdOnBlade; private set => SetProperty(ref _waferIdOnBlade, value); }
     public string TimingProfileName { get => _timingProfileName; private set => SetProperty(ref _timingProfileName, value); }
-    public bool IsDemoPaused
+    public bool IsSequencePaused
     {
-        get => _isDemoPaused;
+        get => _isSequencePaused;
         private set
         {
-            if (SetProperty(ref _isDemoPaused, value))
+            if (SetProperty(ref _isSequencePaused, value))
             {
                 PauseCommand.RaiseCanExecuteChanged();
                 ResumeCommand.RaiseCanExecuteChanged();
@@ -181,11 +191,11 @@ public sealed class MachineTwinViewModel : ObservableObject
     public string ConnectionLabel => IsConnected ? "Connected" : "Disconnected";
     public double BladeLength => IsBladeExtended ? 245 : 160;
     public double BladeScaleY => IsBladeExtended ? 1.0 : 0.68;
-    public string CylinderState => $"{BladeTeachingState} / {(IsCylinderForward ? "Cylinder forward" : "Cylinder backward")}";
+    public string CylinderState => $"{BladeSequenceState} / {(IsCylinderForward ? "Cylinder forward" : "Cylinder backward")}";
     public string VacuumState => VacuumDisplayState switch
     {
-        nameof(VacuumTeachingState.SuctionOn) => "Suction ON / wafer pickup enabled",
-        nameof(VacuumTeachingState.ExhaustOrRelease) => "Exhaust / release active",
+        nameof(VacuumSequenceState.SuctionOn) => "Suction ON / wafer pickup enabled",
+        nameof(VacuumSequenceState.ExhaustOrRelease) => "Exhaust / release active",
         _ => "Vacuum OFF"
     };
     public string WaferSummary => IsWaferOnBlade
@@ -195,7 +205,7 @@ public sealed class MachineTwinViewModel : ObservableObject
     public string FoupASummary => $"FOUP A: {FoupACount}/5 loaded";
     public string FoupBSummary => $"FOUP B: {FoupBCount}/5 completed";
 
-    public AsyncRelayCommand RunSimulatorDemoCommand { get; }
+    public AsyncRelayCommand RunTransferSequenceCommand { get; }
     public RelayCommand PauseCommand { get; }
     public RelayCommand ResumeCommand { get; }
     public AsyncRelayCommand StepOnceCommand { get; }
@@ -216,7 +226,7 @@ public sealed class MachineTwinViewModel : ObservableObject
         OnPropertyChanged(nameof(ConnectionLabel));
         OnPropertyChanged(nameof(FeedbackBoundary));
 
-        if (IsDemoRunning)
+        if (IsSequenceRunning)
         {
             return;
         }
@@ -234,10 +244,10 @@ public sealed class MachineTwinViewModel : ObservableObject
         UpdateComputedProperties();
     }
 
-    public async Task RunSimulatorDemoForCaptureAsync(Func<MachineTwinDemoStep, Task> captureStep, CancellationToken cancellationToken = default)
+    public async Task RunTransferSequenceForCaptureAsync(Func<MachineTwinSequenceStep, Task> captureStep, CancellationToken cancellationToken = default)
     {
         await EnsureSimulatorReadyAsync(cancellationToken).ConfigureAwait(true);
-        foreach (var step in _demoSteps)
+        foreach (var step in _sequenceSteps)
         {
             cancellationToken.ThrowIfCancellationRequested();
             await ApplySimulatorStepAsync(step, cancellationToken).ConfigureAwait(true);
@@ -251,7 +261,7 @@ public sealed class MachineTwinViewModel : ObservableObject
         await captureStep(_resetStep).ConfigureAwait(true);
     }
 
-    public MachineTwinStateTraceEntry CreateTraceEntry(MachineTwinDemoStep step, string screenshotPath) => new(
+    public MachineTwinStateTraceEntry CreateTraceEntry(MachineTwinSequenceStep step, string screenshotPath) => new(
         step.StepIndex,
         step.StepName,
         DateTimeOffset.Now,
@@ -264,8 +274,8 @@ public sealed class MachineTwinViewModel : ObservableObject
         NextStation,
         CurrentStepName,
         CurrentAction,
-        RobotTeachingState,
-        BladeTeachingState,
+        RobotSequenceState,
+        BladeSequenceState,
         VacuumDisplayState,
         ChamberADoorState,
         ChamberBDoorState,
@@ -310,75 +320,75 @@ public sealed class MachineTwinViewModel : ObservableObject
             FormatChamber(step.ChamberC),
             screenshotPath);
 
-    private async Task RunSimulatorDemoCommandAsync()
+    private async Task RunTransferSequenceCommandAsync()
     {
-        _demoCts?.Cancel();
-        _demoCts = new CancellationTokenSource();
+        _sequenceCts?.Cancel();
+        _sequenceCts = new CancellationTokenSource();
         try
         {
-            IsDemoRunning = true;
-            IsDemoPaused = false;
+            IsSequenceRunning = true;
+            IsSequencePaused = false;
             _manualStepIndex = 0;
-            await EnsureSimulatorReadyAsync(_demoCts.Token).ConfigureAwait(true);
-            for (var i = 0; i < _demoSteps.Count; i++)
+            await EnsureSimulatorReadyAsync(_sequenceCts.Token).ConfigureAwait(true);
+            for (var i = 0; i < _sequenceSteps.Count; i++)
             {
-                var stepOnce = await WaitForTeachingGateAsync(_demoCts.Token).ConfigureAwait(true);
-                _demoCts.Token.ThrowIfCancellationRequested();
-                var step = _demoSteps[i];
-                await ApplySimulatorStepAsync(step, _demoCts.Token).ConfigureAwait(true);
-                _manualStepIndex = Math.Min(i + 1, _demoSteps.Count - 1);
+                var stepOnce = await WaitForSequenceGateAsync(_sequenceCts.Token).ConfigureAwait(true);
+                _sequenceCts.Token.ThrowIfCancellationRequested();
+                var step = _sequenceSteps[i];
+                await ApplySimulatorStepAsync(step, _sequenceCts.Token).ConfigureAwait(true);
+                _manualStepIndex = Math.Min(i + 1, _sequenceSteps.Count - 1);
                 if (stepOnce)
                 {
-                    IsDemoPaused = true;
+                    IsSequencePaused = true;
                     continue;
                 }
 
-                await DelayWithTeachingGateAsync(GetRuntimeDelayForSelectedSpeed(step), _demoCts.Token).ConfigureAwait(true);
+                await DelayWithSequenceGateAsync(GetRuntimeDelayForSelectedSpeed(step), _sequenceCts.Token).ConfigureAwait(true);
             }
         }
         catch (OperationCanceledException)
         {
-            AddEvent("Simulator demo canceled.");
+            AddEvent("Sequence run canceled.");
         }
         finally
         {
-            IsDemoRunning = false;
-            IsDemoPaused = false;
+            IsSequenceRunning = false;
+            IsSequencePaused = false;
         }
     }
 
-    private void PauseTeachingDemo()
+    private void PauseSequenceRun()
     {
-        IsDemoPaused = true;
-        AddEvent("Teaching demo paused.");
+        IsSequencePaused = true;
+        AddEvent("Sequence run paused.");
     }
 
-    private void ResumeTeachingDemo()
+    private void ResumeSequenceRun()
     {
         _stepOnceRequested = false;
-        IsDemoPaused = false;
-        AddEvent("Teaching demo resumed.");
+        IsSequencePaused = false;
+        AddEvent("Sequence run resumed.");
     }
 
     private async Task StepOnceAsync()
     {
-        if (IsDemoRunning)
+        if (IsSequenceRunning)
         {
             _stepOnceRequested = true;
-            IsDemoPaused = false;
+            IsSequencePaused = false;
             AddEvent("Step once requested.");
             return;
         }
 
         await EnsureSimulatorReadyAsync(CancellationToken.None).ConfigureAwait(true);
-        var index = Math.Clamp(_manualStepIndex, 0, _demoSteps.Count - 1);
-        await ApplySimulatorStepAsync(_demoSteps[index], CancellationToken.None).ConfigureAwait(true);
-        _manualStepIndex = Math.Min(index + 1, _demoSteps.Count - 1);
+        var index = Math.Clamp(_manualStepIndex, 0, _sequenceSteps.Count - 1);
+        await ApplySimulatorStepAsync(_sequenceSteps[index], CancellationToken.None).ConfigureAwait(true);
+        _manualStepIndex = Math.Min(index + 1, _sequenceSteps.Count - 1);
     }
 
-    private async Task<bool> WaitForTeachingGateAsync(CancellationToken cancellationToken)
+    private async Task<bool> WaitForSequenceGateAsync(CancellationToken cancellationToken)
     {
-        while (IsDemoPaused && !_stepOnceRequested)
+        while (IsSequencePaused && !_stepOnceRequested)
         {
             await Task.Delay(100, cancellationToken).ConfigureAwait(true);
         }
@@ -392,14 +402,14 @@ public sealed class MachineTwinViewModel : ObservableObject
         return true;
     }
 
-    private async Task DelayWithTeachingGateAsync(int totalDelayMs, CancellationToken cancellationToken)
+    private async Task DelayWithSequenceGateAsync(int totalDelayMs, CancellationToken cancellationToken)
     {
         var remaining = Math.Max(0, totalDelayMs);
         while (remaining > 0)
         {
-            if (await WaitForTeachingGateAsync(cancellationToken).ConfigureAwait(true))
+            if (await WaitForSequenceGateAsync(cancellationToken).ConfigureAwait(true))
             {
-                IsDemoPaused = true;
+                IsSequencePaused = true;
                 return;
             }
 
@@ -409,20 +419,20 @@ public sealed class MachineTwinViewModel : ObservableObject
         }
     }
 
-    private Task StopDemoAsync()
+    private Task StopSequenceAsync()
     {
-        _demoCts?.Cancel();
-        IsDemoRunning = false;
-        IsDemoPaused = false;
-        AddEvent("Stop requested. Simulator demo sequence canceled.");
+        _sequenceCts?.Cancel();
+        IsSequenceRunning = false;
+        IsSequencePaused = false;
+        AddEvent("Stop requested. Transfer sequence canceled.");
         return ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.StopAutoAsync);
     }
 
     private async Task ResetSafeStateAsync()
     {
-        _demoCts?.Cancel();
-        IsDemoRunning = false;
-        IsDemoPaused = false;
+        _sequenceCts?.Cancel();
+        IsSequenceRunning = false;
+        IsSequencePaused = false;
         _manualStepIndex = 0;
         await ApplySimulatorStepAsync(_resetStep, CancellationToken.None).ConfigureAwait(true);
         await ViewModelErrorHandler.RunAsync(_runtime, nameof(MachineTwinViewModel), _runtime.ResetAsync).ConfigureAwait(true);
@@ -432,7 +442,7 @@ public sealed class MachineTwinViewModel : ObservableObject
     {
         if (_runtime.Controller.Mode == OperatingMode.RealHardware && _runtime.Controller.IsConnected)
         {
-            throw new InvalidOperationException("Simulator demo is blocked while Real Hardware mode is connected.");
+            throw new InvalidOperationException("Transfer sequence run is blocked while Real Hardware mode is connected.");
         }
 
         if (_runtime.Controller.Mode != OperatingMode.Simulator)
@@ -456,23 +466,24 @@ public sealed class MachineTwinViewModel : ObservableObject
         MachineState = SemiTool.Domain.MachineState.Manual.ToString();
     }
 
-    private async Task ApplySimulatorStepAsync(MachineTwinDemoStep step, CancellationToken cancellationToken)
+    private async Task ApplySimulatorStepAsync(MachineTwinSequenceStep step, CancellationToken cancellationToken)
     {
-        ApplyDemoStep(step);
+        ApplySequenceStep(step);
         await ApplySimulatorOutputsAsync(step, cancellationToken).ConfigureAwait(true);
         AddEvent(step.EventLogMessage);
     }
 
-    private void ApplyDemoStep(MachineTwinDemoStep step)
+    private void ApplySequenceStep(MachineTwinSequenceStep step)
     {
         CurrentStation = step.CurrentStation;
         PreviousStation = step.PreviousStation;
         NextStation = step.NextStation;
         CurrentStepName = step.CurrentStepName;
         CurrentAction = step.CurrentAction;
-        RobotTeachingState = step.RobotState;
-        BladeTeachingState = step.BladeState;
-        VacuumDisplayState = step.VacuumTeachingState;
+        ApplyOperationStrip(step);
+        RobotSequenceState = step.RobotState;
+        BladeSequenceState = step.BladeState;
+        VacuumDisplayState = step.VacuumSequenceState;
         ChamberADoorState = step.ChamberADoorState;
         ChamberBDoorState = step.ChamberBDoorState;
         ChamberCDoorState = step.ChamberCDoorState;
@@ -513,7 +524,7 @@ public sealed class MachineTwinViewModel : ObservableObject
         UpdateComputedProperties();
     }
 
-    private async Task ApplySimulatorOutputsAsync(MachineTwinDemoStep step, CancellationToken cancellationToken)
+    private async Task ApplySimulatorOutputsAsync(MachineTwinSequenceStep step, CancellationToken cancellationToken)
     {
         if (!_runtime.Controller.IsConnected || _runtime.Controller.Mode != OperatingMode.Simulator)
         {
@@ -545,6 +556,106 @@ public sealed class MachineTwinViewModel : ObservableObject
         }
     }
 
+    private void ApplyOperationStrip(MachineTwinSequenceStep step)
+    {
+        var (source, destination) = ParseTransfer(step.CurrentTransferDescription, step.CurrentStation, step.NextStation);
+        OperationWafer = string.IsNullOrWhiteSpace(step.ActiveWaferId) ? "-" : step.ActiveWaferId;
+        OperationSource = source;
+        OperationDestination = destination;
+        OperationCurrentStep = step.PipelineState == PipelineStateKind.Completed.ToString()
+            ? "Sequence Complete"
+            : NormalizeOperationStep(step);
+        OperationNextStep = BuildNextStepPreview(step);
+    }
+
+    private static (string Source, string Destination) ParseTransfer(string description, string currentStation, string nextStation)
+    {
+        if (!string.IsNullOrWhiteSpace(description) && description.Contains("->", StringComparison.Ordinal))
+        {
+            var parts = description.Split("->", 2, StringSplitOptions.TrimEntries);
+            return (CleanOperationField(parts[0], currentStation), CleanOperationField(parts[1], nextStation));
+        }
+
+        return (CleanOperationField(currentStation, "-"), CleanOperationField(nextStation, "-"));
+    }
+
+    private static string CleanOperationField(string value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Equals("Ready", StringComparison.OrdinalIgnoreCase))
+        {
+            return fallback;
+        }
+
+        return value;
+    }
+
+    private static string NormalizeOperationStep(MachineTwinSequenceStep step)
+    {
+        if (step.RobotState == nameof(SemiTool.Domain.RobotSequenceState.MovingTheta))
+        {
+            return $"Theta moving to {step.CurrentStation}";
+        }
+
+        if (step.ZState.StartsWith("Z Work", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Z at Work position";
+        }
+
+        if (step.BladeState is nameof(SemiTool.Domain.BladeSequenceState.Extending) or nameof(SemiTool.Domain.BladeSequenceState.Extended))
+        {
+            return step.IsWaferOnBlade ? "Blade extended with wafer" : "Blade extended";
+        }
+
+        if (step.BladeState == nameof(SemiTool.Domain.BladeSequenceState.Retracting))
+        {
+            return "Blade retracting";
+        }
+
+        if (step.VacuumSequenceState == nameof(VacuumSequenceState.SuctionOn))
+        {
+            return "Vacuum suction";
+        }
+
+        if (step.VacuumSequenceState == nameof(VacuumSequenceState.ExhaustOrRelease))
+        {
+            return "Vacuum release";
+        }
+
+        return string.IsNullOrWhiteSpace(step.CurrentStepName) ? step.PipelineState : step.CurrentStepName;
+    }
+
+    private static string BuildNextStepPreview(MachineTwinSequenceStep step)
+    {
+        if (step.PipelineState == PipelineStateKind.Completed.ToString())
+        {
+            return "Hold completed state until Reset";
+        }
+
+        if (step.CurrentAction.Contains("door opening", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Confirm door open, then extend blade";
+        }
+
+        if (step.CurrentAction.Contains("Blade extending", StringComparison.OrdinalIgnoreCase))
+        {
+            return step.IsWaferOnBlade ? "Vacuum release / place wafer" : "Vacuum suction / pick wafer";
+        }
+
+        if (step.CurrentAction.Contains("placed", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Retract blade before door close";
+        }
+
+        if (step.CurrentAction.Contains("processing", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Wait for process complete";
+        }
+
+        return string.IsNullOrWhiteSpace(step.NextStation) || step.NextStation == "-"
+            ? "Await scheduler decision"
+            : $"Next station: {step.NextStation}";
+    }
+
     private void UpdateComputedProperties()
     {
         OnPropertyChanged(nameof(BladeLength));
@@ -565,8 +676,8 @@ public sealed class MachineTwinViewModel : ObservableObject
         }
     }
 
-    private int GetRuntimeDelayForSelectedSpeed(MachineTwinDemoStep step) =>
-        SelectedDemoSpeed switch
+    private int GetRuntimeDelayForSelectedSpeed(MachineTwinSequenceStep step) =>
+        SelectedSequenceSpeed switch
         {
             _ when string.Equals(step.StepName, "Reset Safe State", StringComparison.OrdinalIgnoreCase) => 800,
             "Fast" => Math.Max(180, Math.Min(step.DelayMs / 6, 450)),
@@ -727,8 +838,8 @@ public sealed record MachineTwinStateTraceEntry(
     string NextStation,
     string CurrentStepName,
     string CurrentAction,
-    string RobotTeachingState,
-    string BladeTeachingState,
+    string RobotState,
+    string BladeState,
     string VacuumDisplayState,
     string ChamberADoorState,
     string ChamberBDoorState,

@@ -1,4 +1,4 @@
-# Demo Assets
+# Sequence Assets
 
 ## How Assets Were Generated
 
@@ -31,7 +31,7 @@ The capture mode uses WPF `RenderTargetBitmap` and existing `UserControl` views.
 
 ## Physical Model Context
 
-The Digital Twin images are generated simulator-mode abstractions. `machine-twin-runtime.png` is captured from the actual runtime WPF `MachineTwinView`. They represent a wafer transfer robot teaching setup with:
+The Digital Twin images are generated simulator-mode abstractions. `machine-twin-runtime.png` is captured from the actual runtime WPF `MachineTwinView`. They represent a wafer transfer robot sequence monitor with:
 
 - a fixed aluminum-like base
 - a central limited-swing theta base

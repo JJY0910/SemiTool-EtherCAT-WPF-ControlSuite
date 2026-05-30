@@ -14,9 +14,9 @@
 
 실제 장비 사진은 사용자가 포트폴리오 맥락으로 공개해도 된다고 승인한 참고 이미지입니다. 이 사진은 새 WPF 앱이 실제 장비 검증을 완료했다는 주장으로 사용하지 않습니다.
 
-Digital Twin은 웨이퍼 이송 로봇 Teaching 장비를 추상화해서 표현합니다. 고정 알루미늄 베이스, 중앙 θ축 제한 스윙 베이스, 2단/텔레스코픽 블레이드, Z Safe/Work, 실린더 전진/후진, 진공 흡착/배기, FOUP A, Chamber A/B/C, FOUP B, 타워램프 맥락을 보여줍니다.
+Digital Twin은 웨이퍼 이송 로봇 장비를 추상화해서 표현합니다. 고정 알루미늄 베이스, 중앙 θ축 제한 스윙 베이스, 2단/텔레스코픽 블레이드, Z Safe/Work, 실린더 전진/후진, 진공 흡착/배기, FOUP A, Chamber A/B/C, FOUP B, 타워램프 맥락을 보여줍니다.
 
-`CMP Cluster`는 이전 HMI simulator scenario 이름으로 유지합니다. 실제 물리 장비는 웨이퍼 이송 로봇 Teaching 장비로 설명하며, θ축은 360도 무한회전이 아니라 station-to-station 제한 스윙으로 시각화합니다. 보존된 theta 숫자는 encoder position 값이지 literal degree 값이 아닙니다.
+`CMP Cluster`는 이전 HMI simulator scenario 이름으로 유지합니다. 실제 물리 장비는 웨이퍼 이송 로봇 장비로 설명하며, θ축은 360도 무한회전이 아니라 station-to-station 제한 스윙으로 시각화합니다. 보존된 theta 숫자는 encoder position 값이지 literal degree 값이 아닙니다.
 
 단, 새 WPF 앱이 실제 장비에서 검증 완료되었다고 주장하지 않습니다. 현재 저장소는 supervised real-hardware verification을 준비한 상태입니다.
 
@@ -42,13 +42,13 @@ Digital Twin은 웨이퍼 이송 로봇 Teaching 장비를 추상화해서 표�
 - tower lamp indicator
 - alarm summary와 runtime event trace
 
-`Run Teaching Demo` 버튼은 실제 Machine Twin 화면을 teaching sequence로 움직입니다.
+`Run Transfer Sequence` 버튼은 실제 Machine Twin 화면을 이송 시퀀스로 움직입니다.
 
 ```text
 FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 ```
 
-이 데모는 Simulator mode 전용이며 vendor DLL을 로드하지 않고 실제 장비에 연결하지 않습니다.
+이 시퀀스는 Simulator mode 전용이며 vendor DLL을 로드하지 않고 실제 장비에 연결하지 않습니다.
 
 첫 번째 runtime debug screenshot은 실제 `MainWindow`에서 `Machine Twin` 탭이 선택된 상태를 캡처합니다. 이 탭은 `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`를 사용하며, `MainViewModel.MachineTwin`은 다른 HMI 탭과 같은 `RuntimeCoordinator`를 공유합니다.
 
@@ -97,11 +97,11 @@ Scheduler priority는 downstream-first입니다.
 4. FOUP A waiting wafer -> Chamber A
 5. 이동이 불가능하면 chamber process countdown 진행
 
-일반 runtime demo 기본 속도는 `Teaching`입니다. 그래서 robot, chamber door, blade, Z, vacuum, chamber processing 상태가 눈에 보이게 진행되며 즉시 완료로 점프하지 않습니다. `Realistic`, `Fast`, `Step` 옵션은 리뷰/캡처용으로 사용할 수 있지만 중간 상태는 유지합니다. 데모가 끝나도 실제 앱 창은 닫히지 않고 FOUP B 5/5 completed 상태를 유지하며, FOUP A loaded 상태로 돌아가는 것은 사용자가 Reset을 눌렀을 때만 수행됩니다.
+일반 runtime 시퀀스 기본 속도는 `Normal`입니다. 그래서 robot, chamber door, blade, Z, vacuum, chamber processing 상태가 눈에 보이게 진행되며 즉시 완료로 점프하지 않습니다. `Realistic`, `Fast`, `Step` 옵션은 리뷰/캡처용으로 사용할 수 있지만 중간 상태는 유지합니다. 시퀀스가 끝나도 실제 앱 창은 닫히지 않고 FOUP B 5/5 completed 상태를 유지하며, FOUP A loaded 상태로 돌아가는 것은 사용자가 Reset을 눌렀을 때만 수행됩니다.
 
-## Machine Twin Teaching Demo Update
+## Machine Twin Transfer Sequence Update
 
-`Run Teaching Demo`는 실제 EtherCAT 동작이 아니라 WPF UI / simulator teaching visualization입니다.
+`Run Transfer Sequence`는 실제 EtherCAT 동작이 아니라 WPF UI / 시뮬레이터 시각화입니다.
 
 - Chamber door open 이후에만 blade가 chamber로 들어갑니다.
 - Vacuum suction이 켜진 뒤 wafer를 blade로 pick합니다.
@@ -109,11 +109,11 @@ Scheduler priority는 downstream-first입니다.
 - Blade가 완전히 retract된 뒤 chamber door가 close됩니다.
 - Chamber process는 wafer가 stage에 있고 door가 closed인 상태에서만 시작됩니다.
 - Chamber unload는 process complete 이후에만 진행됩니다.
-- 일반 runtime demo 기본 속도는 `Teaching`이며 즉시 완료로 점프하지 않습니다.
+- 일반 runtime 시퀀스 기본 속도는 `Normal`이며 즉시 완료로 점프하지 않습니다.
 - Real EtherCAT adapter, vendor DLL loading, preserved theta value, I/O mapping은 이 UI 수정으로 변경하지 않습니다.
 - 새 WPF 앱의 실제 장비 검증 완료를 주장하지 않습니다.
 
-Debug evidence의 주요 teaching screenshot은 다음 파일명으로 갱신됩니다.
+Debug evidence의 주요 sequence screenshot은 다음 파일명으로 갱신됩니다.
 
 - `01-foup-a-before-pickup.png`
 - `02-blade-holding-wafer-after-pickup.png`
@@ -159,9 +159,9 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 
 SemiTool-EtherCAT-WPF-ControlSuite는 실제 EtherCAT 장비를 제어했던 기존 WinForms 프로젝트 경험을 바탕으로 새로 설계한 WPF/MVVM 기반 반도체 장비 제어 HMI 및 시퀀스 플랫폼입니다.
 
-이 저장소는 단순 화면 데모가 아니라, 장비 제어에서 중요한 I/O 매핑, 로봇 포즈, FOUP 슬롯 위치, 타이밍 값, 시퀀스, 알람, 인터락, simulator/real hardware 분리 구조를 포함합니다.
+이 저장소는 단순 화면 시퀀스가 아니라, 장비 제어에서 중요한 I/O 매핑, 로봇 포즈, FOUP 슬롯 위치, 타이밍 값, 시퀀스, 알람, 인터락, simulator/real hardware 분리 구조를 포함합니다.
 
-## 왜 화면만 만든 데모가 아닌가
+## 왜 화면만 만든 시퀀스가 아닌가
 
 - 기존 WinForms 프로젝트는 실제 EtherCAT 장비 제어에 사용되었습니다.
 - 새 WPF 프로젝트는 기존 UI를 그대로 변환하지 않고 MVVM 구조로 재설계했습니다.
@@ -247,7 +247,7 @@ DLL은 RealHardware mode를 선택하고 hardware unlock 후 Connect를 눌렀�
 
 ## 실제 장비 검증 전 현재 상태
 
-현재 저장소는 simulator 기준으로 build/test/CI와 visual demo asset 생성까지 완료된 상태입니다. 실제 장비 검증 전이므로 README와 문서에서는 새 WPF 앱의 real hardware 검증 완료를 주장하지 않습니다.
+현재 저장소는 simulator 기준으로 build/test/CI와 visual sequence asset 생성까지 완료된 상태입니다. 실제 장비 검증 전이므로 README와 문서에서는 새 WPF 앱의 real hardware 검증 완료를 주장하지 않습니다.
 
 ## 학교 장비 검증 후 추가할 항목
 

@@ -1,7 +1,7 @@
 namespace SemiTool.Domain;
 
 /// <summary>
-/// Simulator-only timing profile for the Machine Twin pipeline demo.
+/// Simulator-only timing profile for the Machine Twin transfer sequence.
 /// </summary>
 /// <remarks>
 /// These values are not hardware constants. They only control how quickly the
@@ -23,8 +23,8 @@ public sealed record SimulatorTimingProfile(
     int ChamberCProcessSeconds,
     int TowerBlinkMs)
 {
-    public static SimulatorTimingProfile Teaching { get; } = new(
-        "Teaching",
+    public static SimulatorTimingProfile Normal { get; } = new(
+        "Normal",
         1000,
         750,
         750,
@@ -100,7 +100,7 @@ public enum WaferTransferPriority
     ChamberCToFoupB
 }
 
-public enum ChamberDoorTeachingState
+public enum ChamberDoorSequenceState
 {
     Closed,
     Opening,
@@ -110,7 +110,7 @@ public enum ChamberDoorTeachingState
     Fault
 }
 
-public enum BladeTeachingState
+public enum BladeSequenceState
 {
     Retracted,
     Extending,
@@ -118,14 +118,14 @@ public enum BladeTeachingState
     Retracting
 }
 
-public enum VacuumTeachingState
+public enum VacuumSequenceState
 {
     Off,
     SuctionOn,
     ExhaustOrRelease
 }
 
-public enum RobotTeachingState
+public enum RobotSequenceState
 {
     Idle,
     MovingTheta,
@@ -179,12 +179,12 @@ public sealed record WaferPipelineSnapshot(
     string CurrentTransferDescription,
     string CurrentAction,
     string ActiveWaferId,
-    RobotTeachingState RobotState,
-    BladeTeachingState BladeState,
-    VacuumTeachingState VacuumTeachingState,
-    ChamberDoorTeachingState ChamberADoorState,
-    ChamberDoorTeachingState ChamberBDoorState,
-    ChamberDoorTeachingState ChamberCDoorState,
+    RobotSequenceState RobotState,
+    BladeSequenceState BladeState,
+    VacuumSequenceState VacuumSequenceState,
+    ChamberDoorSequenceState ChamberADoorState,
+    ChamberDoorSequenceState ChamberBDoorState,
+    ChamberDoorSequenceState ChamberCDoorState,
     bool IsMoving,
     string ZState,
     bool IsBladeExtended,
@@ -293,8 +293,8 @@ public static class WaferPipelineSimulator
             "Reset returns simulator to FOUP A loaded, FOUP B empty, blade retracted, vacuum off.")
     ];
 
-    public static IReadOnlyList<WaferPipelineSnapshot> CreateTeachingTimeline(SimulatorTimingProfile timing) =>
-        TeachingWaferPipelineSequence.Create(timing);
+    public static IReadOnlyList<WaferPipelineSnapshot> CreateTransferTimeline(SimulatorTimingProfile timing) =>
+        WaferTransferSequence.Create(timing);
 
     public static WaferTransferPriority ChooseNextTransfer(WaferPipelineSnapshot state)
     {
@@ -365,17 +365,17 @@ public static class WaferPipelineSimulator
             transferDescription,
             stepName,
             activeWafer,
-            moving ? RobotTeachingState.MovingTheta : RobotTeachingState.Idle,
-            bladeExtended ? BladeTeachingState.Extended : BladeTeachingState.Retracted,
+            moving ? RobotSequenceState.MovingTheta : RobotSequenceState.Idle,
+            bladeExtended ? BladeSequenceState.Extended : BladeSequenceState.Retracted,
             vacuumState switch
             {
-                "Suction" => VacuumTeachingState.SuctionOn,
-                "Exhaust" => VacuumTeachingState.ExhaustOrRelease,
-                _ => VacuumTeachingState.Off
+                "Suction" => VacuumSequenceState.SuctionOn,
+                "Exhaust" => VacuumSequenceState.ExhaustOrRelease,
+                _ => VacuumSequenceState.Off
             },
-            chamberA.DoorOpen ? ChamberDoorTeachingState.Open : ChamberDoorTeachingState.Closed,
-            chamberB.DoorOpen ? ChamberDoorTeachingState.Open : ChamberDoorTeachingState.Closed,
-            chamberC.DoorOpen ? ChamberDoorTeachingState.Open : ChamberDoorTeachingState.Closed,
+            chamberA.DoorOpen ? ChamberDoorSequenceState.Open : ChamberDoorSequenceState.Closed,
+            chamberB.DoorOpen ? ChamberDoorSequenceState.Open : ChamberDoorSequenceState.Closed,
+            chamberC.DoorOpen ? ChamberDoorSequenceState.Open : ChamberDoorSequenceState.Closed,
             moving,
             zState,
             bladeExtended,

@@ -3,7 +3,7 @@
 ## Korean
 
 ```text
-기존 프로젝트에서는 WinForms 기반으로 실제 EtherCAT 장비를 제어했습니다. 단순 화면 데모가 아니라 IEG3268 DLL을 통해 EtherCAT 연결, 서보 ON/OFF, Z/Theta 축 Homing과 절대 이동, Digital I/O, 실린더, 진공, 챔버 도어, 타워 램프를 제어했던 프로젝트였습니다.
+기존 프로젝트에서는 WinForms 기반으로 실제 EtherCAT 장비를 제어했습니다. 단순 화면 시연이 아니라 IEG3268 DLL을 통해 EtherCAT 연결, 서보 ON/OFF, Z/Theta 축 Homing과 절대 이동, Digital I/O, 실린더, 진공, 챔버 도어, 타워 램프를 제어했던 프로젝트였습니다.
 
 이번 포트폴리오에서는 그 경험을 그대로 WinForms 화면 변환으로 옮기지 않고, WPF/MVVM 기반의 장비 제어 플랫폼으로 다시 설계했습니다. 실제 장비에서 검증했던 DO/DI 채널, 로봇 포즈, FOUP 슬롯 위치, 타이밍 값을 EquipmentProfile JSON으로 분리했고, 단위 테스트로 값이 바뀌지 않도록 보호했습니다.
 

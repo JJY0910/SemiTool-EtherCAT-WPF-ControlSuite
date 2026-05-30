@@ -22,7 +22,7 @@ public sealed class DesignMachineTwinViewModel
         FoupBSlots = DesignMachineTwinData.CreateFoupBSlots();
         Stations = DesignMachineTwinData.CreateStations();
         EventLogLines = DesignMachineTwinData.CreateEventLogLines();
-        DemoSpeedOptions = new ObservableCollection<string>(["Teaching", "Realistic", "Fast", "Step"]);
+        SequenceSpeedOptions = new ObservableCollection<string>(["Normal", "Realistic", "Fast", "Step"]);
 
         ChamberA = new DesignChamberPipelineViewModel(
             "Chamber A",
@@ -60,7 +60,7 @@ public sealed class DesignMachineTwinViewModel
             70,
             false);
 
-        RunSimulatorDemoCommand = CreateNoOpCommand();
+        RunTransferSequenceCommand = CreateNoOpCommand();
         PauseCommand = CreateNoOpCommand();
         ResumeCommand = CreateNoOpCommand();
         StepOnceCommand = CreateNoOpCommand();
@@ -74,7 +74,7 @@ public sealed class DesignMachineTwinViewModel
     public ObservableCollection<DesignMachineTwinStationViewModel> Stations { get; }
     public ObservableCollection<DesignFoupSlotChipViewModel> FoupASlots { get; }
     public ObservableCollection<DesignFoupSlotChipViewModel> FoupBSlots { get; }
-    public ObservableCollection<string> DemoSpeedOptions { get; }
+    public ObservableCollection<string> SequenceSpeedOptions { get; }
     public ObservableCollection<string> EventLogLines { get; }
     public DesignChamberPipelineViewModel ChamberA { get; }
     public DesignChamberPipelineViewModel ChamberB { get; }
@@ -82,10 +82,10 @@ public sealed class DesignMachineTwinViewModel
 
     public string ReferencePhotoPath { get; }
     public string ScenarioName => "Visual Studio Designer sample";
-    public string EquipmentKind => "Wafer transfer robot teaching/training setup";
+    public string EquipmentKind => "Wafer transfer robot sequence monitor";
     public string PhotoCaption => "Real equipment context reference / designer sample data";
-    public string FeedbackBoundary => "Design-time sample only. Five unique wafers total; runtime demo animates the real ViewModel.";
-    public bool IsDemoRunning => false;
+    public string FeedbackBoundary => "Design-time sample only. Five unique wafers total; runtime sequence animates the real ViewModel.";
+    public bool IsSequenceRunning => false;
     public bool IsSimulatorMode => true;
     public bool IsRealHardwareMode => false;
     public bool IsConnected => false;
@@ -95,8 +95,13 @@ public sealed class DesignMachineTwinViewModel
     public string NextStation => "FOUP B";
     public string CurrentStepName => "Designer sample: five unique wafers / pipeline mid-drain";
     public string CurrentAction => "Blade is extended into Chamber C after the door-open interlock.";
-    public string RobotTeachingState => "Placing";
-    public string BladeTeachingState => "Extended";
+    public string OperationWafer => "W02";
+    public string OperationSource => "Chamber B";
+    public string OperationDestination => "Chamber C";
+    public string OperationCurrentStep => "Blade extended";
+    public string OperationNextStep => "Vacuum release / place wafer";
+    public string RobotSequenceState => "Placing";
+    public string BladeSequenceState => "Extended";
     public string VacuumDisplayState => "ExhaustOrRelease";
     public string ChamberADoorState => "Closed";
     public string ChamberBDoorState => "Closed";
@@ -122,7 +127,7 @@ public sealed class DesignMachineTwinViewModel
     public bool TowerYellow => false;
     public bool TowerGreen => true;
     public string AlarmSummary => "Designer preview: no active alarms";
-    public string SelectedDemoSpeed { get; set; } = "Teaching";
+    public string SelectedSequenceSpeed { get; set; } = "Normal";
     public string PipelineState => "Running";
     public int FoupACount => 1;
     public int FoupBCount => 1;
@@ -130,7 +135,7 @@ public sealed class DesignMachineTwinViewModel
     public string CurrentTransferDescription => "Static preview: W01 complete, W02-W04 in chambers, W05 waiting.";
     public string ActiveWaferId => "W02";
     public string WaferIdOnBlade => string.Empty;
-    public string TimingProfileName => "Teaching";
+    public string TimingProfileName => "Normal";
     public string ModeLabel => "SIMULATOR";
     public string ConnectionLabel => "Designer";
     public double BladeLength => 245;
@@ -141,7 +146,7 @@ public sealed class DesignMachineTwinViewModel
     public string FoupASummary => "FOUP A: 1/5 waiting";
     public string FoupBSummary => "FOUP B: 1/5 completed";
 
-    public ICommand RunSimulatorDemoCommand { get; }
+    public ICommand RunTransferSequenceCommand { get; }
     public ICommand PauseCommand { get; }
     public ICommand ResumeCommand { get; }
     public ICommand StepOnceCommand { get; }

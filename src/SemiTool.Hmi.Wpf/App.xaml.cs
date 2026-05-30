@@ -29,7 +29,7 @@ public partial class App : System.Windows.Application
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
             var viewModel = new MainViewModel(runtime, profilePath, settingsPath);
-            await DemoAssetCapture.CaptureAsync(runtime, viewModel);
+            await SequenceAssetCapture.CaptureAsync(runtime, viewModel);
             Shutdown();
             return;
         }
@@ -38,7 +38,7 @@ public partial class App : System.Windows.Application
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
             var viewModel = new MainViewModel(runtime, profilePath, settingsPath);
-            await DemoAssetCapture.CaptureUiDebugReportAsync(runtime, viewModel);
+            await SequenceAssetCapture.CaptureUiDebugReportAsync(runtime, viewModel);
             Shutdown();
             return;
         }

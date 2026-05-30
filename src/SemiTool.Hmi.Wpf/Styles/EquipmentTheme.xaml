@@ -92,7 +92,7 @@
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
-    <!-- Primary action for simulator demo and normal operator commands. -->
+    <!-- Primary action for simulator sequence runs and normal operator commands. -->
     <Style x:Key="HmiPrimaryButton" TargetType="Button" BasedOn="{StaticResource HmiButton}">
         <Setter Property="Background" Value="{StaticResource HmiAccentBrush}" />
         <Setter Property="BorderBrush" Value="#7CE5D4" />

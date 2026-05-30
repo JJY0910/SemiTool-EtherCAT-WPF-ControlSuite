@@ -4,7 +4,7 @@
 
 [한국어 README](README.ko.md)
 
-## Visual Demo
+## Visual Evidence
 
 These screenshots are simulator-mode visuals generated from the WPF UI. The original WinForms project controlled real EtherCAT hardware; the new WPF implementation is prepared for supervised real-hardware verification.
 
@@ -17,7 +17,7 @@ These screenshots are simulator-mode visuals generated from the WPF UI. The orig
 | Auto Sequence | ![Auto Sequence](docs/images/auto-sequence.png) |
 | Alarm & Event Log | ![Alarm & Event Log](docs/images/alarm-log.png) |
 
-Simulator demo frames: [01](docs/images/simulator-demo-frame-01.png), [02](docs/images/simulator-demo-frame-02.png), [03](docs/images/simulator-demo-frame-03.png), [04](docs/images/simulator-demo-frame-04.png)
+Simulator sequence frames: [01](docs/images/simulator-demo-frame-01.png), [02](docs/images/simulator-demo-frame-02.png), [03](docs/images/simulator-demo-frame-03.png), [04](docs/images/simulator-demo-frame-04.png)
 
 ## Digital Twin Equipment Context
 
@@ -28,9 +28,9 @@ Simulator demo frames: [01](docs/images/simulator-demo-frame-01.png), [02](docs/
 | Wafer transfer robot | ![Wafer transfer robot](docs/images/digital-twin-wafer-transfer-robot.png) |
 | Blade mechanism | ![Blade mechanism](docs/images/digital-twin-blade-mechanism.png) |
 
-The Digital Twin now uses an abstract wafer transfer robot teaching-equipment model: fixed aluminum-like base, central limited-swing theta base, two-stage/telescopic blade/end-effector, Z Safe/Work movement, cylinder extend/retract, vacuum hold/release, FOUP A, Chamber A/B/C, FOUP B, and tower lamp context.
+The Digital Twin now uses an abstract wafer transfer robot field HMI physical model: fixed aluminum-like base, central limited-swing theta base, two-stage/telescopic blade/end-effector, Z Safe/Work movement, cylinder extend/retract, vacuum hold/release, FOUP A, Chamber A/B/C, FOUP B, and tower lamp context.
 
-`CMP Cluster` is treated as a previous-year simulator/HMI scenario name. The physical teaching setup is explained as a wafer transfer robot. The theta axis is displayed as a limited station-to-station swing, not a 360-degree continuous rotation. Preserved theta values remain encoder positions, not literal UI degrees.
+`CMP Cluster` is treated as a previous-year simulator/HMI scenario name. The physical wafer transfer setup is explained as a wafer transfer robot. The theta axis is displayed as a limited station-to-station swing, not a 360-degree continuous rotation. Preserved theta values remain encoder positions, not literal UI degrees.
 
 The real-equipment top-view photo is included with user approval as public portfolio context. It is not used as a claim that the new WPF app has already been verified on the physical machine.
 
@@ -54,13 +54,13 @@ This is not a static documentation mockup. The `MachineTwinView` is bound to `Ma
 - tower lamp indicators
 - alarm summary and runtime event trace
 
-`Run Teaching Demo` animates the actual Machine Twin view through readable simulator-only mechanical substeps:
+`Run Transfer Sequence` animates the actual Machine Twin view through readable simulator-only mechanical substeps:
 
 ```text
 FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 ```
 
-The teaching sequence makes the chamber-gated motion visible: chamber door open, blade extend, vacuum suction or exhaust, wafer pick/place, blade retract, chamber door close, process start, process complete, and unload. The demo runs in Simulator mode only. It does not load `IEG3268_Dll.dll`, does not connect to real equipment, and does not claim real-hardware verification. The real EtherCAT adapter, vendor DLL loading, preserved theta values, and I/O mapping are not changed by this UI teaching sequence.
+The transfer sequence makes the chamber-gated motion visible: chamber door open, blade extend, vacuum suction or exhaust, wafer pick/place, blade retract, chamber door close, process start, process complete, and unload. The sequence run executes in Simulator mode only. It does not load `IEG3268_Dll.dll`, does not connect to real equipment, and does not claim real-hardware verification. The real EtherCAT adapter, vendor DLL loading, preserved theta values, and I/O mapping are not changed by this UI transfer sequence.
 
 The first runtime debug screenshot captures the actual `MainWindow` with the `Machine Twin` tab selected. That tab contains `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`, and `MainViewModel.MachineTwin` shares the same `RuntimeCoordinator` used by the other HMI tabs.
 
@@ -99,7 +99,7 @@ The runtime simulator now models a five-wafer cassette pipeline instead of a sin
 - FOUP A count decreases from `5/5` to `0/5`.
 - FOUP B count increases from `0/5` to `5/5`.
 - Chamber A, Chamber B, and Chamber C show wafer ID, recipe, current step, remaining time, and progress.
-- The demo completes only when all five wafers are in FOUP B and the chambers/blade are empty.
+- The sequence completes only when all five wafers are in FOUP B and the chambers/blade are empty.
 
 Scheduler priority is downstream-first:
 
@@ -109,7 +109,7 @@ Scheduler priority is downstream-first:
 4. FOUP A -> Chamber A when Chamber A is empty and FOUP A still has waiting wafers.
 5. If no transfer is possible, chamber process countdown advances.
 
-Normal runtime demo timing defaults to `Teaching`, so the robot, chamber doors, blade, Z, vacuum, and chamber processing states remain visible instead of instantly jumping to completion. `Realistic`, `Fast`, and `Step` speed options are available for review and capture workflows, but they still preserve intermediate states. The visible app remains open and holds the completed FOUP B 5/5 state after the demo completes; it returns to FOUP A loaded only when the user presses Reset.
+Normal runtime sequence timing defaults to `Normal`, so the robot, chamber doors, blade, Z, vacuum, and chamber processing states remain visible instead of instantly jumping to completion. `Realistic`, `Fast`, and `Step` speed options are available for review and capture workflows, but they still preserve intermediate states. The visible app remains open and holds the completed FOUP B 5/5 state after the sequence completes; it returns to FOUP A loaded only when the user presses Reset.
 
 ## Runtime UI Evidence Pack
 
@@ -123,7 +123,7 @@ The repo includes a repeatable runtime UI evidence pack:
 
 The startup screenshot `docs/debug/latest/screenshots/00-startup-simulator.png` is the integration proof: it shows the actual running shell with Machine Twin selected as the first/default tab.
 
-The debug evidence now includes the five-wafer pipeline and chamber-gated teaching milestones:
+The debug evidence now includes the five-wafer pipeline and chamber-gated sequence milestones:
 
 - `01-foup-a-before-pickup.png`
 - `02-blade-holding-wafer-after-pickup.png`
@@ -183,9 +183,9 @@ The original WinForms project controlled real EtherCAT hardware. This new WPF pr
 - [Real hardware DLL notes](docs/real-hardware-dll-notes.md)
 - [Real hardware commissioning checklist](.github/ISSUE_TEMPLATE/real-hardware-commissioning.md)
 
-## Demo Plan
+## Sequence Asset Plan
 
-- Add simulator demo GIF: `docs/images/simulator-demo.gif`
+- Add simulator sequence GIF: `docs/images/simulator-demo.gif`
 - Add Dashboard screenshot: `docs/images/dashboard.png`
 - Add Manual Control screenshot: `docs/images/manual-control.png`
 - Add I/O Monitor screenshot: `docs/images/io-monitor.png`
@@ -337,7 +337,7 @@ dotnet test SemiTool.EtherCAT.WPF.ControlSuite.sln --no-build --no-restore
 
 ## Portfolio Explanation
 
-This project demonstrates how real WinForms-based EtherCAT equipment-control experience can be redesigned into a safer WPF/MVVM architecture.
+This project shows how real WinForms-based EtherCAT equipment-control experience can be redesigned into a safer WPF/MVVM architecture.
 
 It keeps the equipment constants that mattered on hardware, while introducing simulator-first startup, named I/O points, async sequences, interlocks, alarm logging, and a reflection-isolated real hardware adapter.
 

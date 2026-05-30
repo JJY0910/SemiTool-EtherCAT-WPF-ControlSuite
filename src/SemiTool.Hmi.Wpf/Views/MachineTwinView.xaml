@@ -53,11 +53,11 @@
                 Padding="18,14">
             <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Left">
-                    <TextBlock Text="Machine Twin"
+                    <TextBlock Text="Wafer Transfer Sequence Monitor"
                                Foreground="{StaticResource HmiTextBrush}"
                                FontSize="28"
                                FontWeight="SemiBold" />
-                    <TextBlock Text="Runtime simulator Digital Twin / limited theta station swing / no real hardware claim"
+                    <TextBlock Text="Machine Twin / limited theta station swing / simulator-mode sequence monitor"
                                Foreground="{StaticResource HmiMutedTextBrush}"
                                FontSize="13" />
                 </StackPanel>
@@ -80,9 +80,9 @@
 
         <Grid Grid.Row="1" Margin="14">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="360" />
-                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="330" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="310" />
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
@@ -214,7 +214,7 @@
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,8">
                         <StackPanel>
-                            <TextBlock Text="Live Simulator Digital Twin" Style="{StaticResource HmiSectionHeader}" />
+                            <TextBlock Text="Wafer Transfer Sequence" Style="{StaticResource HmiSectionHeader}" />
                             <TextBlock Text="{Binding FeedbackBoundary}" Foreground="{StaticResource HmiMutedTextBrush}" />
                         </StackPanel>
                         <Border Background="#1B3540"
@@ -224,7 +224,7 @@
                                 Padding="12,8"
                                 Margin="0,8,0,0">
                             <StackPanel>
-                                <TextBlock Text="Current Teaching Action"
+                                <TextBlock Text="Current Sequence Step"
                                            Foreground="{StaticResource HmiMutedTextBrush}"
                                            FontSize="11"
                                            FontWeight="SemiBold" />
@@ -235,9 +235,41 @@
                                            TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
+                        <UniformGrid Columns="5" Margin="0,8,0,0">
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Wafer" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding OperationWafer}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Source" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding OperationSource}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Destination" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding OperationDestination}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Current Step" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding OperationCurrentStep}" Foreground="{StaticResource HmiWarningBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8">
+                                <StackPanel>
+                                    <TextBlock Text="Next Step" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding OperationNextStep}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <Button Content="Run Teaching Demo"
-                                    Command="{Binding RunSimulatorDemoCommand}"
+                            <Button Content="Run Transfer Sequence"
+                                    Command="{Binding RunTransferSequenceCommand}"
                                     Style="{StaticResource HmiPrimaryButton}" />
                             <Button Content="Pause"
                                     Command="{Binding PauseCommand}"
@@ -254,9 +286,9 @@
                             <Button Content="Reset"
                                     Command="{Binding ResetCommand}"
                                     Style="{StaticResource HmiButton}" />
-                            <TextBlock Text="Demo Speed" Foreground="{StaticResource HmiMutedTextBrush}" VerticalAlignment="Center" Margin="12,0,4,0" />
-                            <ComboBox ItemsSource="{Binding DemoSpeedOptions}"
-                                      SelectedItem="{Binding SelectedDemoSpeed}"
+                            <TextBlock Text="Sequence Speed" Foreground="{StaticResource HmiMutedTextBrush}" VerticalAlignment="Center" Margin="12,0,4,0" />
+                            <ComboBox ItemsSource="{Binding SequenceSpeedOptions}"
+                                      SelectedItem="{Binding SelectedSequenceSpeed}"
                                       Width="110"
                                       MinHeight="34" />
                         </StackPanel>
@@ -276,7 +308,7 @@
                                   StrokeDashArray="8 5"
                                   Fill="Transparent" />
                             <TextBlock Canvas.Left="228" Canvas.Top="142"
-                                       Text="Limited theta station arc"
+                                       Text="Limited θ station arc"
                                        Foreground="{StaticResource HmiTextBrush}"
                                        FontSize="15"
                                        FontWeight="SemiBold" />
@@ -427,13 +459,13 @@
                             <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,6">
                                 <StackPanel>
                                     <TextBlock Text="Robot" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
-                                    <TextBlock Text="{Binding RobotTeachingState}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding RobotSequenceState}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,0,6">
                                 <StackPanel>
                                     <TextBlock Text="Blade" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
-                                    <TextBlock Text="{Binding BladeTeachingState}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding BladeSequenceState}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,6">
@@ -444,8 +476,8 @@
                             </Border>
                             <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,0,6">
                                 <StackPanel>
-                                    <TextBlock Text="Demo" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
-                                    <TextBlock Text="{Binding SelectedDemoSpeed}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" />
+                                    <TextBlock Text="Sequence" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding SelectedSequenceSpeed}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>
                         </UniformGrid>

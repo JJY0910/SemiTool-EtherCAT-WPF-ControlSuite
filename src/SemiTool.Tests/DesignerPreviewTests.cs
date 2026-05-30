@@ -44,9 +44,14 @@ public sealed class DesignerPreviewTests
         Assert.Contains("public sealed class DesignMachineTwinViewModel", source);
         Assert.Contains("public string ModeLabel => \"SIMULATOR\";", source);
         Assert.Contains("public string ConnectionLabel => \"Designer\";", source);
-        Assert.Contains("RunSimulatorDemoCommand = CreateNoOpCommand();", source);
+        Assert.Contains("RunTransferSequenceCommand = CreateNoOpCommand();", source);
         Assert.Contains("EmergencyStopCommand = CreateNoOpCommand();", source);
+        Assert.Contains("SelectedSequenceSpeed { get; set; } = \"Normal\";", source);
+        Assert.Contains("OperationWafer", source);
+        Assert.Contains("OperationSource", source);
+        Assert.Contains("OperationDestination", source);
         Assert.DoesNotContain("new RuntimeCoordinator", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("Run " + "Teach" + "ing " + "Demo", source, StringComparison.Ordinal);
     }
 
     [Fact]

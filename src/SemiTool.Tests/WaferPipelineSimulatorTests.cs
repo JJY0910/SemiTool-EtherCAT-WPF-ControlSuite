@@ -132,7 +132,7 @@ public sealed class WaferPipelineSimulatorTests
     }
 
     [Fact]
-    public void NormalDemoMode_DoesNotRequestApplicationShutdown()
+    public void NormalSequenceMode_DoesNotRequestApplicationShutdown()
     {
         var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "ViewModels", "MachineTwinViewModel.cs");
 
@@ -154,7 +154,7 @@ public sealed class WaferPipelineSimulatorTests
     [Fact]
     public void StateTraceTimeline_IncludesAllFiveWaferIds()
     {
-        var steps = MachineTwinDemoPlan.Create(
+        var steps = MachineTwinSequencePlan.Create(
             DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
             SimulatorTimingProfile.Realistic);
 
@@ -165,7 +165,7 @@ public sealed class WaferPipelineSimulatorTests
     [Fact]
     public void VisualThetaAnglesRemainSeparateFromPreservedEncoderValues()
     {
-        var steps = MachineTwinDemoPlan.Create(
+        var steps = MachineTwinSequencePlan.Create(
             DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
             SimulatorTimingProfile.Realistic);
 
@@ -176,7 +176,7 @@ public sealed class WaferPipelineSimulatorTests
     [Fact]
     public void SimulatorPipelineTests_DoNotRequireVendorDll()
     {
-        var steps = MachineTwinDemoPlan.Create(
+        var steps = MachineTwinSequencePlan.Create(
             DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
             SimulatorTimingProfile.Realistic);
 
