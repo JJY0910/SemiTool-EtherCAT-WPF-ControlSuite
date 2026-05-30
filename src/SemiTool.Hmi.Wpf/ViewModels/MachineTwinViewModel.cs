@@ -189,8 +189,8 @@ public sealed class MachineTwinViewModel : ObservableObject
     }
     public string ModeLabel => IsSimulatorMode ? "SIMULATOR" : "REAL HARDWARE";
     public string ConnectionLabel => IsConnected ? "Connected" : "Disconnected";
-    public double BladeLength => IsBladeExtended ? 245 : 160;
-    public double BladeScaleY => IsBladeExtended ? 1.0 : 0.68;
+    public double BladeLength => IsBladeExtended ? 245 : 92;
+    public double BladeScaleY => IsBladeExtended ? 1.0 : 0.38;
     public string CylinderState => $"{BladeSequenceState} / {(IsCylinderForward ? "Cylinder forward" : "Cylinder backward")}";
     public string VacuumState => VacuumDisplayState switch
     {
@@ -202,8 +202,8 @@ public sealed class MachineTwinViewModel : ObservableObject
         ? $"{WaferIdOnBlade} on blade"
         : CompletedCount == 5 ? "All 5 wafers in FOUP B"
         : $"{FoupACount}/5 in FOUP A, {FoupBCount}/5 in FOUP B";
-    public string FoupASummary => $"FOUP A: {FoupACount}/5 loaded";
-    public string FoupBSummary => $"FOUP B: {FoupBCount}/5 completed";
+    public string FoupASummary => $"FOUP A: {FoupACount}/5";
+    public string FoupBSummary => $"FOUP B: {FoupBCount}/5";
 
     public AsyncRelayCommand RunTransferSequenceCommand { get; }
     public RelayCommand PauseCommand { get; }
@@ -758,10 +758,33 @@ public sealed class FoupSlotChipViewModel : ObservableObject
     }
 
     public string Label { get; }
-    public bool HasWafer { get => _hasWafer; set => SetProperty(ref _hasWafer, value); }
-    public string WaferId { get => _waferId; private set => SetProperty(ref _waferId, value); }
+    public bool HasWafer
+    {
+        get => _hasWafer;
+        set
+        {
+            if (SetProperty(ref _hasWafer, value))
+            {
+                OnPropertyChanged(nameof(SlotDisplay));
+            }
+        }
+    }
+
+    public string WaferId
+    {
+        get => _waferId;
+        private set
+        {
+            if (SetProperty(ref _waferId, value))
+            {
+                OnPropertyChanged(nameof(SlotDisplay));
+            }
+        }
+    }
+
     public string State { get => _state; private set => SetProperty(ref _state, value); }
     public bool IsActive { get => _isActive; private set => SetProperty(ref _isActive, value); }
+    public string SlotDisplay => HasWafer ? WaferId : "Empty";
 
     public static FoupSlotChipViewModel From(WaferPipelineSlot slot) =>
         new(slot.SlotName, slot.HasWafer, slot.WaferId, slot.State, slot.IsActive);

@@ -30,9 +30,9 @@ internal static class WaferTransferSequence
         private readonly ChamberState _chamberB = new("Chamber B", "ChamberB", "CMP Main", "CMP_Main", "Bulk Polish");
         private readonly ChamberState _chamberC = new("Chamber C", "ChamberC", "Post-Clean & Dry", "PostClean_Dry", "Spin Dry");
         private string _bladeWaferId = string.Empty;
-        private string _stationKey = "FoupA";
+        private string _stationKey = "Home";
         private string _previousStation = "-";
-        private string _nextStation = "Chamber A";
+        private string _nextStation = "FOUP A";
         private string _zState = "Z Safe";
         private BladeSequenceState _bladeState = BladeSequenceState.Retracted;
         private VacuumSequenceState _vacuumState = VacuumSequenceState.Off;
@@ -52,7 +52,7 @@ internal static class WaferTransferSequence
                 "00-startup-simulator.png",
                 PipelineStateKind.Ready,
                 "Pipeline ready: FOUP A 5 wafers, FOUP B empty",
-                "FOUP A starts with W01-W05 waiting. Blade retracted, vacuum off, all chamber doors closed.",
+                "Home/start position. FOUP A starts with W01-W05 waiting. Blade retracted, vacuum off, all chamber doors closed.",
                 "Ready",
                 delayMs: _timing.ThetaSwingMs);
 
@@ -155,7 +155,7 @@ internal static class WaferTransferSequence
             _previousStation = DisplayStation(_previousStation);
             _nextStation = targetName;
             _robotState = RobotSequenceState.MovingTheta;
-            _zState = transfer.Kind == TransferKind.FoupAToChamberA ? $"Z Work / {sourceName}" : "Z Safe";
+            _zState = "Z Safe";
             _bladeState = BladeSequenceState.Retracted;
             _vacuumState = VacuumSequenceState.Off;
             Add(
@@ -174,6 +174,19 @@ internal static class WaferTransferSequence
             }
 
             _robotState = RobotSequenceState.MovingZ;
+            _zState = $"Z Work / {sourceName}";
+            _bladeState = BladeSequenceState.Retracted;
+            _vacuumState = VacuumSequenceState.Off;
+            Add(
+                $"Z Work At {sourceName}",
+                FirstMatchingScreenshot(sourceName, "02-z-work-foup-a-slot-a1.png"),
+                PipelineStateKind.Running,
+                $"Z moving to {sourceName} height",
+                $"Z reaches the selected slot/stage before blade extension.",
+                $"{sourceName} -> {targetName}",
+                waferId,
+                _timing.ZSafeToWorkMs);
+
             _bladeState = BladeSequenceState.Extending;
             _vacuumState = VacuumSequenceState.Off;
             Add(
@@ -247,7 +260,7 @@ internal static class WaferTransferSequence
             _previousStation = sourceName;
             _nextStation = targetName;
             _robotState = RobotSequenceState.MovingTheta;
-            _zState = transfer.Kind == TransferKind.ChamberCToFoupB ? $"Z Work / {targetName}" : "Z Safe";
+            _zState = "Z Safe";
             _bladeState = BladeSequenceState.Retracted;
             _vacuumState = VacuumSequenceState.SuctionOn;
             Add(
@@ -266,6 +279,18 @@ internal static class WaferTransferSequence
             }
 
             _robotState = RobotSequenceState.MovingZ;
+            _zState = $"Z Work / {targetName}";
+            _bladeState = BladeSequenceState.Retracted;
+            Add(
+                $"Z Work At {targetName}",
+                null,
+                PipelineStateKind.Running,
+                $"Z moving to {targetName} height",
+                $"Z reaches the target slot/stage before blade extension.",
+                $"{sourceName} -> {targetName}",
+                waferId,
+                _timing.ZSafeToWorkMs);
+
             _bladeState = BladeSequenceState.Extending;
             Add(
                 $"Blade Entering {targetName}",
@@ -559,7 +584,7 @@ internal static class WaferTransferSequence
             _chamberB.DoorState = ChamberDoorSequenceState.Closed;
             _chamberC.DoorState = ChamberDoorSequenceState.Closed;
             _bladeWaferId = string.Empty;
-            _stationKey = "FoupA";
+            _stationKey = "Home";
             _previousStation = "-";
             _nextStation = "FOUP A";
             _zState = "Z Safe";

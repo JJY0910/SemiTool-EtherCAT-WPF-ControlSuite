@@ -169,8 +169,10 @@ public sealed class WaferPipelineSimulatorTests
             DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
             SimulatorTimingProfile.Realistic);
 
-        Assert.All(steps, step => Assert.InRange(step.VisualThetaAngle, -150, 150));
-        Assert.DoesNotContain(steps, step => step.VisualThetaAngle == step.PreservedThetaEncoderValue);
+        var transferSteps = steps.Where(step => step.StationKey != "Home").ToArray();
+
+        Assert.All(transferSteps, step => Assert.InRange(step.VisualThetaAngle, -150, 150));
+        Assert.DoesNotContain(transferSteps, step => step.VisualThetaAngle == step.PreservedThetaEncoderValue);
     }
 
     [Fact]

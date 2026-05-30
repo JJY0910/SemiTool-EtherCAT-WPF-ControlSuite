@@ -19,7 +19,7 @@ public sealed class DigitalTwinPhysicalModelTests
         var stations = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()).ThetaSwing.Stations;
 
         Assert.Equal(
-            ["FOUP A", "Chamber A", "Chamber B (CMP)", "Chamber C", "FOUP B"],
+            ["Home / Start", "FOUP A", "Chamber A", "Chamber B (CMP)", "Chamber C", "FOUP B"],
             stations.OrderBy(station => station.Order).Select(station => station.DisplayName).ToArray());
     }
 
@@ -40,8 +40,10 @@ public sealed class DigitalTwinPhysicalModelTests
     {
         var stations = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()).ThetaSwing.Stations;
 
-        Assert.All(stations, station => Assert.InRange(station.VisualArcPositionDegrees, -150, 150));
-        Assert.DoesNotContain(stations, station => station.VisualArcPositionDegrees == station.ThetaEncoderPosition);
+        var transferStations = stations.Where(station => station.PoseKey != "Home").ToArray();
+
+        Assert.All(transferStations, station => Assert.InRange(station.VisualArcPositionDegrees, -150, 150));
+        Assert.DoesNotContain(transferStations, station => station.VisualArcPositionDegrees == station.ThetaEncoderPosition);
     }
 
     [Fact]
@@ -73,7 +75,8 @@ public sealed class DigitalTwinPhysicalModelTests
         var model = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load());
         var steps = MachineTwinSequencePlan.CreateDefault(model);
 
-        Assert.Equal("FOUP A", steps[0].CurrentStation);
+        Assert.Equal("Home / Start", steps[0].CurrentStation);
+        Assert.Contains(steps, step => step.CurrentStation == "FOUP A");
         Assert.Contains(steps, step => step.CurrentStation == "Chamber A");
         Assert.Contains(steps, step => step.CurrentStation == "Chamber B (CMP)");
         Assert.Contains(steps, step => step.CurrentStation == "Chamber C");
@@ -97,8 +100,10 @@ public sealed class DigitalTwinPhysicalModelTests
         var model = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load());
         var steps = MachineTwinSequencePlan.CreateDefault(model);
 
-        Assert.All(steps, step => Assert.InRange(step.VisualThetaAngle, -150, 150));
-        Assert.DoesNotContain(steps, step => step.VisualThetaAngle == step.PreservedThetaEncoderValue);
+        var transferSteps = steps.Where(step => step.StationKey != "Home").ToArray();
+
+        Assert.All(transferSteps, step => Assert.InRange(step.VisualThetaAngle, -150, 150));
+        Assert.DoesNotContain(transferSteps, step => step.VisualThetaAngle == step.PreservedThetaEncoderValue);
     }
 
     [Fact]

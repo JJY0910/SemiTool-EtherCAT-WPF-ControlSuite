@@ -27,6 +27,23 @@ public sealed class MachineTwinTransferSequenceTests
     }
 
     [Fact]
+    public void TransferSequence_StartsHomeThenMovesZToFoupSlotBeforeBladeExtends()
+    {
+        var steps = CreateTransferSteps();
+        var firstFoupMove = steps.First(step => step.StepName == "Move To FOUP A Slot A1");
+        var zWorkAtSlot = steps.First(step => step.StepName == "Z Work At FOUP A Slot A1");
+        var bladeEnteringSlot = steps.First(step => step.StepName == "Blade Extending Into FOUP A Slot A1");
+
+        Assert.Equal("Home / Start", steps[0].CurrentStation);
+        Assert.Equal("Z Safe", firstFoupMove.ZState);
+        Assert.Equal(nameof(BladeSequenceState.Retracted), firstFoupMove.BladeState);
+        Assert.Equal("Z Work / FOUP A Slot A1", zWorkAtSlot.ZState);
+        Assert.Equal(nameof(BladeSequenceState.Retracted), zWorkAtSlot.BladeState);
+        Assert.True(zWorkAtSlot.StepIndex < bladeEnteringSlot.StepIndex);
+        Assert.Equal(nameof(BladeSequenceState.Extending), bladeEnteringSlot.BladeState);
+    }
+
+    [Fact]
     public void BladeCanEnterChamberOnlyWhenDoorIsOpen()
     {
         var steps = CreateTransferSteps();

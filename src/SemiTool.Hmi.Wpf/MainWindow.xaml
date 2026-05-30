@@ -6,10 +6,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         Title="SemiTool EtherCAT WPF Control Suite"
-        Height="860"
-        Width="1280"
-        MinHeight="720"
-        MinWidth="1080"
+        Height="960"
+        Width="1600"
+        MinHeight="780"
+        MinWidth="1360"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
         d:DataContext="{d:DesignInstance Type=design:DesignMainViewModel, IsDesignTimeCreatable=True}"
         mc:Ignorable="d">
     <!--

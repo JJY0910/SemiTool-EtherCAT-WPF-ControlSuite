@@ -6,8 +6,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              d:DataContext="{d:DesignInstance Type=design:DesignMachineTwinViewModel, IsDesignTimeCreatable=True}"
-             d:DesignHeight="820"
-             d:DesignWidth="1280"
+             d:DesignHeight="920"
+             d:DesignWidth="1600"
              mc:Ignorable="d">
     <UserControl.Resources>
         <Style x:Key="SlotChipStyle" TargetType="Border">
@@ -80,9 +80,9 @@
 
         <Grid Grid.Row="1" Margin="14">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="330" />
+                <ColumnDefinition Width="260" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="310" />
+                <ColumnDefinition Width="270" />
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
@@ -94,7 +94,7 @@
 
                 <Border Grid.Row="0" Style="{StaticResource HmiStatusCard}">
                     <StackPanel>
-                        <TextBlock Text="Real equipment context reference" Style="{StaticResource HmiSectionHeader}" />
+                        <TextBlock Text="Equipment Reference" Style="{StaticResource HmiSectionHeader}" />
                         <Border Background="#0A1115"
                                 BorderBrush="{StaticResource HmiStrokeBrush}"
                                 BorderThickness="1"
@@ -102,17 +102,17 @@
                                 Padding="4">
                             <Image Source="{Binding ReferencePhotoPath}"
                                    Stretch="Uniform"
-                                   Height="105" />
+                                   Height="72" />
                         </Border>
                         <TextBlock Text="{Binding PhotoCaption}"
                                    Foreground="{StaticResource HmiMutedTextBrush}"
                                    TextWrapping="Wrap"
-                                   FontSize="11"
+                                   FontSize="10"
                                    Margin="0,5,0,0" />
                         <TextBlock Text="Approved portfolio context photo. It does not claim WPF real-hardware verification."
                                    Foreground="{StaticResource HmiWarningBrush}"
                                    TextWrapping="Wrap"
-                                   FontSize="11"
+                                   FontSize="10"
                                    Margin="0,2,0,0" />
                     </StackPanel>
                 </Border>
@@ -147,11 +147,13 @@
                                                 <TextBlock Grid.Column="0" Text="{Binding Label}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" />
                                                 <Ellipse Grid.Column="1" Width="11" Height="11" Fill="#6BC29B" Stroke="#D9F8EA" StrokeThickness="1" VerticalAlignment="Center"
                                                          Visibility="{Binding HasWafer, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding WaferId}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" FontSize="10" />
-                                                    <TextBlock Text=" " />
-                                                    <TextBlock Text="{Binding State}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
-                                                </StackPanel>
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding SlotDisplay}"
+                                                           Foreground="{StaticResource HmiGreenBrush}"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -180,11 +182,13 @@
                                                 <TextBlock Grid.Column="0" Text="{Binding Label}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" />
                                                 <Ellipse Grid.Column="1" Width="11" Height="11" Fill="#6BC29B" Stroke="#D9F8EA" StrokeThickness="1" VerticalAlignment="Center"
                                                          Visibility="{Binding HasWafer, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding WaferId}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" FontSize="10" />
-                                                    <TextBlock Text=" " />
-                                                    <TextBlock Text="{Binding State}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
-                                                </StackPanel>
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding SlotDisplay}"
+                                                           Foreground="{StaticResource HmiGreenBrush}"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="10"
+                                                           VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -202,10 +206,10 @@
                 </Border>
             </Grid>
 
-            <Border Grid.Column="1"
+                <Border Grid.Column="1"
                     Style="{StaticResource HmiStatusCard}"
-                    Padding="10"
-                    Margin="0,0,10,10">
+                    Padding="8"
+                    Margin="0,0,8,8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -215,14 +219,14 @@
                     <StackPanel Grid.Row="0" Margin="0,0,0,8">
                         <StackPanel>
                             <TextBlock Text="Wafer Transfer Sequence" Style="{StaticResource HmiSectionHeader}" />
-                            <TextBlock Text="{Binding FeedbackBoundary}" Foreground="{StaticResource HmiMutedTextBrush}" />
+                            <TextBlock Text="{Binding FeedbackBoundary}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
                         </StackPanel>
                         <Border Background="#1B3540"
                                 BorderBrush="{StaticResource HmiAccentBrush}"
                                 BorderThickness="1"
                                 CornerRadius="6"
-                                Padding="12,8"
-                                Margin="0,8,0,0">
+                                Padding="10,6"
+                                Margin="0,6,0,0">
                             <StackPanel>
                                 <TextBlock Text="Current Sequence Step"
                                            Foreground="{StaticResource HmiMutedTextBrush}"
@@ -230,44 +234,44 @@
                                            FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding CurrentAction}"
                                            Foreground="{StaticResource HmiTextBrush}"
-                                           FontSize="20"
+                                           FontSize="18"
                                            FontWeight="SemiBold"
                                            TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
-                        <UniformGrid Columns="5" Margin="0,8,0,0">
-                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                        <UniformGrid Columns="5" Height="62" Margin="0,6,0,0">
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="6" Margin="0,0,5,0">
                                 <StackPanel>
                                     <TextBlock Text="Wafer" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
                                     <TextBlock Text="{Binding OperationWafer}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="6" Margin="0,0,5,0">
                                 <StackPanel>
                                     <TextBlock Text="Source" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
-                                    <TextBlock Text="{Binding OperationSource}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding OperationSource}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="6" Margin="0,0,5,0">
                                 <StackPanel>
                                     <TextBlock Text="Destination" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
-                                    <TextBlock Text="{Binding OperationDestination}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding OperationDestination}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="6" Margin="0,0,5,0">
                                 <StackPanel>
                                     <TextBlock Text="Current Step" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
-                                    <TextBlock Text="{Binding OperationCurrentStep}" Foreground="{StaticResource HmiWarningBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding OperationCurrentStep}" Foreground="{StaticResource HmiWarningBrush}" FontWeight="SemiBold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource HmiStatusCard}" Padding="8">
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="6">
                                 <StackPanel>
                                     <TextBlock Text="Next Step" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
-                                    <TextBlock Text="{Binding OperationNextStep}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding OperationNextStep}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
-                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <WrapPanel Margin="0,6,0,0">
                             <Button Content="Run Transfer Sequence"
                                     Command="{Binding RunTransferSequenceCommand}"
                                     Style="{StaticResource HmiPrimaryButton}" />
@@ -289,12 +293,12 @@
                             <TextBlock Text="Sequence Speed" Foreground="{StaticResource HmiMutedTextBrush}" VerticalAlignment="Center" Margin="12,0,4,0" />
                             <ComboBox ItemsSource="{Binding SequenceSpeedOptions}"
                                       SelectedItem="{Binding SelectedSequenceSpeed}"
-                                      Width="110"
+                                      Width="98"
                                       MinHeight="34" />
-                        </StackPanel>
+                        </WrapPanel>
                     </StackPanel>
 
-                    <Viewbox Grid.Row="1" Stretch="Uniform">
+                    <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <Canvas Width="700" Height="540" Background="#10191F">
                             <Rectangle Canvas.Left="28" Canvas.Top="28" Width="644" Height="484" RadiusX="10" RadiusY="10"
                                        Fill="#334149" Stroke="#A9BAC3" StrokeThickness="2" />
@@ -452,6 +456,20 @@
                 <Border Grid.Row="0" Style="{StaticResource HmiStatusCard}">
                     <StackPanel>
                         <TextBlock Text="Motion / Actuator State" Style="{StaticResource HmiSectionHeader}" />
+                        <UniformGrid Columns="2" Margin="0,0,0,8">
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Mode" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ModeLabel}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource HmiStatusCard}" Padding="8">
+                                <StackPanel>
+                                    <TextBlock Text="EtherCAT" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ConnectionLabel}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
                         <TextBlock Text="{Binding PipelineState, StringFormat=Pipeline: {0}}" Foreground="{StaticResource HmiGreenBrush}" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding CurrentTransferDescription}" Foreground="{StaticResource HmiMutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,8" />
                         <TextBlock Text="{Binding CurrentStepName}" Foreground="{StaticResource HmiTextBrush}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
@@ -545,7 +563,7 @@
                 Background="#111E25"
                 BorderBrush="{StaticResource HmiStrokeBrush}"
                 BorderThickness="0,1,0,0"
-                Padding="14,8">
+                Padding="10,5">
             <DockPanel>
                 <TextBlock Text="{Binding EquipmentKind}" Foreground="{StaticResource HmiMutedTextBrush}" DockPanel.Dock="Left" />
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">

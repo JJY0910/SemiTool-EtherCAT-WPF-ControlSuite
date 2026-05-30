@@ -90,7 +90,10 @@ public sealed record DesignFoupSlotChipViewModel(
     bool HasWafer,
     string WaferId,
     string State,
-    bool IsActive);
+    bool IsActive)
+{
+    public string SlotDisplay => HasWafer ? WaferId : "Empty";
+}
 
 public sealed record DesignMachineTwinStationViewModel(
     string DisplayName,

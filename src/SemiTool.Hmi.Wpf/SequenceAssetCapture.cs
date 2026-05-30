@@ -17,9 +17,11 @@ namespace SemiTool.Hmi.Wpf;
 
 internal static class SequenceAssetCapture
 {
-    private const int CaptureWidth = 1280;
-    private const int CaptureHeight = 820;
-    private const double Dpi = 96;
+    private const int CaptureWidth = 1536;
+    private const int CaptureHeight = 864;
+    private const int CapturePixelWidth = 1920;
+    private const int CapturePixelHeight = 1080;
+    private const double Dpi = 120;
 
     public static async Task CaptureAsync(RuntimeCoordinator runtime, MainViewModel viewModel)
     {
@@ -46,9 +48,25 @@ internal static class SequenceAssetCapture
         var repositoryRoot = FindRepositoryRoot();
         var debugDirectory = IoPath.Combine(repositoryRoot, "docs", "debug", "latest");
         var screenshotDirectory = IoPath.Combine(debugDirectory, "screenshots");
-        if (Directory.Exists(debugDirectory))
+        if (Directory.Exists(screenshotDirectory))
         {
-            Directory.Delete(debugDirectory, recursive: true);
+            Directory.Delete(screenshotDirectory, recursive: true);
+        }
+
+        Directory.CreateDirectory(debugDirectory);
+        foreach (var fileName in new[]
+        {
+            "ui-runtime-verification.md",
+            "machine-twin-state-trace.json",
+            "machine-twin-state-trace.csv",
+            "event-log.txt"
+        })
+        {
+            var filePath = IoPath.Combine(debugDirectory, fileName);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
         }
 
         Directory.CreateDirectory(screenshotDirectory);
@@ -107,6 +125,7 @@ internal static class SequenceAssetCapture
         step.StepIndex == 0 ||
         step.ScreenshotName is
             "01-foup-a-before-pickup.png" or
+            "02-z-work-foup-a-slot-a1.png" or
             "02-blade-holding-wafer-after-pickup.png" or
             "03-chamber-a-door-opening.png" or
             "04-blade-entering-chamber-a-door-open.png" or
@@ -132,18 +151,22 @@ internal static class SequenceAssetCapture
             Top = -32000,
             ShowInTaskbar = false,
             WindowStyle = WindowStyle.None,
+            WindowState = WindowState.Normal,
             ResizeMode = ResizeMode.NoResize
         };
 
         try
         {
             window.Show();
+            window.WindowState = WindowState.Normal;
+            window.Width = CaptureWidth;
+            window.Height = CaptureHeight;
             window.Measure(new Size(CaptureWidth, CaptureHeight));
             window.Arrange(new Rect(0, 0, CaptureWidth, CaptureHeight));
             window.UpdateLayout();
             await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
 
-            var bitmap = new RenderTargetBitmap(CaptureWidth, CaptureHeight, Dpi, Dpi, PixelFormats.Pbgra32);
+            var bitmap = new RenderTargetBitmap(CapturePixelWidth, CapturePixelHeight, Dpi, Dpi, PixelFormats.Pbgra32);
             bitmap.Render(window);
 
             var encoder = new PngBitmapEncoder();
@@ -455,7 +478,7 @@ internal static class SequenceAssetCapture
         surface.UpdateLayout();
         await surface.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
 
-        var bitmap = new RenderTargetBitmap(CaptureWidth, CaptureHeight, Dpi, Dpi, PixelFormats.Pbgra32);
+        var bitmap = new RenderTargetBitmap(CapturePixelWidth, CapturePixelHeight, Dpi, Dpi, PixelFormats.Pbgra32);
         bitmap.Render(surface);
 
         var encoder = new PngBitmapEncoder();
