@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:controls="clr-namespace:SemiTool.EtherCAT.ControlSuite.Controls"
         xmlns:models="clr-namespace:SemiTool.EtherCAT.ControlSuite.Models"
         mc:Ignorable="d"
         Title="SemiTool EtherCAT WPF Control Suite"
@@ -233,8 +234,8 @@
 
                     <Grid Grid.Row="0" Margin="0,0,0,14">
                         <StackPanel>
-                            <TextBlock Text="2.5D Machine Twin" Style="{StaticResource TitleStyle}" FontSize="24" />
-                            <TextBlock Text="Simulator values drive theta angle and blade extension. Real teaching values are not embedded." Foreground="{StaticResource MutedBrush}" />
+                            <TextBlock Text="Native WPF 3D Machine Twin" Style="{StaticResource TitleStyle}" FontSize="24" />
+                            <TextBlock Text="Viewport3D robot, chamber, FOUP, blade, and wafer motion are bound to simulator theta and blade extension values." Foreground="{StaticResource MutedBrush}" />
                         </StackPanel>
                         <TextBlock Text="{Binding SelectedRoute}" HorizontalAlignment="Right" Foreground="{StaticResource CyanBrush}" FontWeight="Bold" FontSize="16" />
                     </Grid>
@@ -331,6 +332,30 @@
                             <TextBlock Canvas.Left="340" Canvas.Top="482" Text="{Binding BladePose.Direction}" Foreground="{StaticResource CyanBrush}" FontSize="15" FontWeight="SemiBold" />
                         </Canvas>
                     </Viewbox>
+
+                    <Border Grid.Row="1" Panel.ZIndex="2" Background="#071116" BorderBrush="#33576A" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                        <Grid>
+                            <controls:MachineTwin3DView RobotAngle="{Binding BladePose.VisualAngle}"
+                                                        BladeLength="{Binding BladePose.BladeLength}"
+                                                        VacuumOn="{Binding BladePose.VacuumOn}"
+                                                        WaferOnBlade="{Binding BladePose.WaferOnBlade}"
+                                                        ChamberDoorsClosed="{Binding AreChamberDoorsClosed}" />
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="18" Background="#B20A1820" BorderBrush="#426C80" BorderThickness="1" CornerRadius="7" Padding="12,10">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding BladePose.CurrentStation}" Foreground="{StaticResource InkBrush}" FontSize="18" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding BladePose.Direction}" Foreground="{StaticResource CyanBrush}" FontSize="14" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding BladePose.Reach}" Foreground="{StaticResource AmberBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="18" Background="#B20A1820" BorderBrush="#426C80" BorderThickness="1" CornerRadius="7" Padding="12,10">
+                                <StackPanel>
+                                    <TextBlock Text="HOME must rotate to FOUP before blade extension" Foreground="{StaticResource InkBrush}" FontSize="13" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding BladePose.HomeReference}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                    <TextBlock Text="{Binding BladePose.Wafer}" Foreground="{StaticResource CyanBrush}" FontSize="12" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
 
                     <Grid Grid.Row="2" Margin="0,14,0,0">
                         <Grid.ColumnDefinitions>

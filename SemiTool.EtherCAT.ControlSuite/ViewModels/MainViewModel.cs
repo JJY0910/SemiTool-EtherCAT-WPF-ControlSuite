@@ -260,6 +260,8 @@ public sealed class MainViewModel : ObservableObject
         set => SetProperty(ref _equipmentState, value);
     }
 
+    public bool AreChamberDoorsClosed => _snapshot.ChamberDoorsClosed;
+
     private bool ApprovedTeachingLoaded => TeachingPoints.Count > 0;
 
     private void StartCycle()
@@ -483,6 +485,7 @@ public sealed class MainViewModel : ObservableObject
         UpdateInterlocks();
         UpdateBladePose(snapshot);
         UpdateTransferStationStatus(snapshot);
+        OnPropertyChanged(nameof(AreChamberDoorsClosed));
 
         if (addEvent)
         {
@@ -599,7 +602,8 @@ public sealed class MainViewModel : ObservableObject
         BladePose.BladeLength = phase switch
         {
             TransferPhase.ExtendToSource or TransferPhase.VacuumPickup or TransferPhase.ExtendToDestination or TransferPhase.ReleaseAtDestination => 226,
-            TransferPhase.RetractFromSource or TransferPhase.RotateToSource or TransferPhase.RotateToDestination => 96,
+            TransferPhase.RetractFromSource => 126,
+            TransferPhase.RotateToSource or TransferPhase.RotateToDestination => 86,
             _ => 86
         };
         BladePose.CurrentStation = phase switch
@@ -616,11 +620,13 @@ public sealed class MainViewModel : ObservableObject
         BladePose.Vacuum = phase is TransferPhase.VacuumPickup or TransferPhase.RetractFromSource or TransferPhase.RotateToDestination or TransferPhase.ExtendToDestination
             ? "Vacuum ON"
             : "Vacuum OFF";
+        BladePose.VacuumOn = phase is TransferPhase.VacuumPickup or TransferPhase.RetractFromSource or TransferPhase.RotateToDestination or TransferPhase.ExtendToDestination;
         BladePose.Wafer = phase is TransferPhase.RetractFromSource or TransferPhase.RotateToDestination or TransferPhase.ExtendToDestination
             ? "Wafer on blade"
             : phase == TransferPhase.ReleaseAtDestination || phase == TransferPhase.Complete
                 ? "Wafer placed"
                 : "No wafer on blade";
+        BladePose.WaferOnBlade = phase is TransferPhase.RetractFromSource or TransferPhase.RotateToDestination or TransferPhase.ExtendToDestination;
         BladePose.State = snapshot.EmergencyStop
             ? EquipmentState.Fault
             : snapshot.SequenceProgress > 0 ? EquipmentState.Active : EquipmentState.Warning;

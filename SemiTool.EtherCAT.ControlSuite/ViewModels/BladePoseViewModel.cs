@@ -15,6 +15,8 @@ public sealed class BladePoseViewModel : ObservableObject
     private string _wafer = "No wafer on blade";
     private double _visualAngle;
     private double _bladeLength = 86;
+    private bool _vacuumOn;
+    private bool _waferOnBlade;
     private TransferPhase _transferPhase = TransferPhase.HomeReady;
     private EquipmentState _state = EquipmentState.Warning;
 
@@ -72,18 +74,30 @@ public sealed class BladePoseViewModel : ObservableObject
         set => SetProperty(ref _wafer, value);
     }
 
-    // Visual-only angle for the 2.5D machine twin. This is not a motor teaching value.
+    // 3D 화면용 회전 각도입니다. 실제 모터 티칭값을 저장하거나 덮어쓰지 않습니다.
     public double VisualAngle
     {
         get => _visualAngle;
         set => SetProperty(ref _visualAngle, value);
     }
 
-    // Visual-only extension length. This is not a linear-axis position value.
+    // 3D 화면용 블레이드 전진 길이입니다. 실제 직선축 위치값이 아닙니다.
     public double BladeLength
     {
         get => _bladeLength;
         set => SetProperty(ref _bladeLength, value);
+    }
+
+    public bool VacuumOn
+    {
+        get => _vacuumOn;
+        set => SetProperty(ref _vacuumOn, value);
+    }
+
+    public bool WaferOnBlade
+    {
+        get => _waferOnBlade;
+        set => SetProperty(ref _waferOnBlade, value);
     }
 
     public TransferPhase TransferPhase
