@@ -304,6 +304,7 @@ public sealed class MainViewModel : ObservableObject
 
     private void ConnectOfflineSimulator()
     {
+        AppendCommandAudit(EquipmentCommandType.CheckConnection, allowedFallback: true);
         _snapshot = _offlineSimulator.ConnectOfflineRig();
         ConnectionMode = "OFFLINE SIM";
         OperationMode = "SIM READY";
@@ -342,6 +343,8 @@ public sealed class MainViewModel : ObservableObject
 
     private void RequestHomeCheck()
     {
+        AppendCommandAudit(EquipmentCommandType.CheckHome, allowedFallback: true);
+
         foreach (var axis in AxisStatuses)
         {
             axis.Home = _snapshot.AxisHomed ? "HOME OK" : "CHECK REQUESTED";

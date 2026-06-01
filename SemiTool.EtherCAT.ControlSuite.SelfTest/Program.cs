@@ -4,6 +4,8 @@ using SemiTool.EtherCAT.ControlSuite.Services;
 var simulator = new OfflineEquipmentSimulator();
 var evaluator = new SafetyInterlockEvaluator();
 var commandGate = new CommandGate(evaluator);
+var auditLog = new CommandAuditLog();
+var scenarioRunner = new OfflineScenarioRunner(commandGate);
 var teachingProvider = new ReadOnlyTeachingValueProvider();
 
 var teachingPoints = teachingProvider.LoadApprovedTeachingPoints();
@@ -27,6 +29,12 @@ var realMotionCommand = EquipmentCommand.Create(EquipmentCommandType.IssueRealMo
 var realMotionDecision = commandGate.Evaluate(realMotionCommand, connected, approvedTeachingLoaded: false);
 Assert(!realMotionDecision.IsAllowed, "실제 이동 명령은 승인 티칭값 없이는 차단되어야 합니다.");
 
+auditLog.Append(offlineDecision);
+auditLog.Append(realMotionDecision);
+Assert(auditLog.Records.Count == 2, "명령 감사 로그는 허용/차단 이력을 유지해야 합니다.");
+Assert(auditLog.Records.Any(record => record.Allowed), "명령 감사 로그에는 허용 이력이 있어야 합니다.");
+Assert(auditLog.Records.Any(record => !record.Allowed), "명령 감사 로그에는 차단 이력이 있어야 합니다.");
+
 var doorOpen = simulator.SetChamberDoorOpen(isOpen: true);
 var doorDecision = commandGate.Evaluate(offlineCommand, doorOpen, approvedTeachingLoaded: false);
 Assert(!doorDecision.IsAllowed, "챔버 도어가 열린 상태에서는 오프라인 이송 단계도 진행하지 않습니다.");
@@ -47,7 +55,13 @@ var emergencyPermission = evaluator.GetMotionPermission(emergency, approvedTeach
 Assert(emergency.EmergencyStop, "비상정지 입력은 스냅샷에 반영되어야 합니다.");
 Assert(!emergencyPermission.CanRunOfflineSimulation, "비상정지 중에는 오프라인 사이클도 진행하지 않습니다.");
 
-Console.WriteLine("SelfTest OK: simulator, command gate, chamber door, teaching guard");
+var nominalScenario = scenarioRunner.RunNominalTransfer("FOUP A -> CHAMBER A");
+Assert(nominalScenario.Passed, $"정상 오프라인 이송 시나리오 실패: {nominalScenario.Summary}");
+
+var doorScenario = scenarioRunner.RunDoorOpenBlock("FOUP A -> CHAMBER A");
+Assert(doorScenario.Passed, $"도어 열림 차단 시나리오 실패: {doorScenario.Summary}");
+
+Console.WriteLine("SelfTest OK: simulator, command gate, audit log, scenarios, teaching guard");
 
 static void Assert(bool condition, string message)
 {

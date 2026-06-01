@@ -648,9 +648,10 @@
 
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="38*" />
-                    <ColumnDefinition Width="34*" />
+                    <ColumnDefinition Width="30*" />
                     <ColumnDefinition Width="28*" />
+                    <ColumnDefinition Width="22*" />
+                    <ColumnDefinition Width="20*" />
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0" Style="{StaticResource PanelStyle}" Margin="0,0,14,0">
@@ -727,7 +728,7 @@
                     </DockPanel>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource PanelStyle}">
+                <Border Grid.Column="2" Style="{StaticResource PanelStyle}" Margin="0,0,14,0">
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="FOUP 슬롯맵" Style="{StaticResource SectionTitleStyle}" />
                         <ItemsControl ItemsSource="{Binding SlotMap}">
@@ -752,6 +753,43 @@
                                             <Ellipse Grid.Column="1" Style="{StaticResource StateDotStyle}" Margin="8,4,0,0" />
                                         </Grid>
                                     </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Column="3" Style="{StaticResource PanelStyle}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="명령 감사 로그" Style="{StaticResource SectionTitleStyle}" />
+                        <ItemsControl ItemsSource="{Binding CommandAudits}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="56" />
+                                            <ColumnDefinition Width="72" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding TimeText}" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+                                        <Border Grid.Column="1" CornerRadius="10" Padding="6,2" HorizontalAlignment="Left">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="{StaticResource FaultBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Allowed}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource ReadyBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding ResultText}" Foreground="White" FontSize="10" FontWeight="Bold" />
+                                        </Border>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="{Binding CommandType}" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" FontSize="11" />
+                                            <TextBlock Text="{Binding Reason}" Foreground="{StaticResource MutedBrush}" FontSize="11" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

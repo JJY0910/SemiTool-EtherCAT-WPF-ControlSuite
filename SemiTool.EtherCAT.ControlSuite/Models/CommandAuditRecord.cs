@@ -6,4 +6,9 @@ public sealed record CommandAuditRecord(
     string Route,
     bool Allowed,
     string Reason,
-    string RequestedBy);
+    string RequestedBy)
+{
+    public string TimeText => Timestamp.ToLocalTime().ToString("HH:mm:ss");
+
+    public string ResultText => Allowed ? "ALLOW" : "BLOCK";
+}
