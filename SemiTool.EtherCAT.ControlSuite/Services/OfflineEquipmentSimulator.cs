@@ -10,6 +10,7 @@ public sealed class OfflineEquipmentSimulator
     private bool _servoReady;
     private bool _axisHomed;
     private bool _emergencyStop;
+    private bool _chamberDoorsClosed = true;
     private bool _slotMapVerified;
     private bool _vacuumReady;
     private string _motionPhase = "초기 대기";
@@ -22,6 +23,7 @@ public sealed class OfflineEquipmentSimulator
         _servoReady = false;
         _axisHomed = false;
         _emergencyStop = false;
+        _chamberDoorsClosed = true;
         _slotMapVerified = false;
         _vacuumReady = false;
         _motionPhase = "전원 투입 대기";
@@ -96,6 +98,14 @@ public sealed class OfflineEquipmentSimulator
         return BuildSnapshot();
     }
 
+    public EquipmentSnapshot SetChamberDoorOpen(bool isOpen)
+    {
+        _chamberDoorsClosed = !isOpen;
+        _motionPhase = isOpen ? "챔버 도어 열림 - 이송 금지" : "챔버 도어 닫힘 - 인터록 재확인";
+
+        return BuildSnapshot();
+    }
+
     private EquipmentSnapshot BuildSnapshot()
     {
         return new EquipmentSnapshot(
@@ -104,7 +114,7 @@ public sealed class OfflineEquipmentSimulator
             _servoReady,
             _axisHomed,
             _emergencyStop,
-            ChamberDoorsClosed: true,
+            ChamberDoorsClosed: _chamberDoorsClosed,
             FoupCassettePresent: true,
             _slotMapVerified,
             _vacuumReady,

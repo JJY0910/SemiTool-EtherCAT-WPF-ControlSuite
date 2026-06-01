@@ -10,6 +10,8 @@ public sealed class MainViewModel : ObservableObject
     private readonly ITeachingValueProvider _teachingValueProvider;
     private readonly OfflineEquipmentSimulator _offlineSimulator;
     private readonly SafetyInterlockEvaluator _interlockEvaluator;
+    private readonly CommandGate _commandGate;
+    private readonly CommandAuditLog _commandAuditLog;
     private EquipmentSnapshot _snapshot;
     private string _operationMode = "MANUAL";
     private string _selectedRoute = "FOUP A -> CHAMBER A";
@@ -35,6 +37,8 @@ public sealed class MainViewModel : ObservableObject
         _teachingValueProvider = teachingValueProvider;
         _offlineSimulator = offlineSimulator;
         _interlockEvaluator = interlockEvaluator;
+        _commandGate = new CommandGate(_interlockEvaluator);
+        _commandAuditLog = new CommandAuditLog();
         _snapshot = _offlineSimulator.CreatePowerOnSnapshot();
 
         // 전면 제어반의 실제 전원/입출력 블록 상태입니다. 이후 PLC/EtherCAT 실신호와 매핑합니다.
@@ -102,6 +106,17 @@ public sealed class MainViewModel : ObservableObject
         TeachingPoints = new ObservableCollection<TeachingPoint>(_teachingValueProvider.LoadApprovedTeachingPoints());
         SlotMap = new ObservableCollection<WaferSlotViewModel>();
         Interlocks = new ObservableCollection<InterlockStatusViewModel>();
+        BladePose = new BladePoseViewModel();
+        CommandAudits = _commandAuditLog.Records;
+        TransferStations = new ObservableCollection<TransferStationViewModel>
+        {
+            new("FOUP A", TransferStationKind.Foup, "5단 슬롯 카세트", EquipmentState.Warning),
+            new("FOUP B", TransferStationKind.Foup, "5단 슬롯 카세트", EquipmentState.Warning),
+            new("CHAMBER A", TransferStationKind.Chamber, "전면 슬롯 도어", EquipmentState.Ready),
+            new("CHAMBER B", TransferStationKind.Chamber, "전면 슬롯 도어", EquipmentState.Ready),
+            new("CHAMBER C", TransferStationKind.Chamber, "전면 슬롯 도어", EquipmentState.Ready),
+            new("ROBOT HOME", TransferStationKind.RobotHome, "원점 기준", EquipmentState.Warning)
+        };
 
         TeachingStatus = TeachingPoints.Count == 0
             ? "승인된 티칭 데이터 연결 대기 - 임의 좌표 없음"
@@ -118,8 +133,10 @@ public sealed class MainViewModel : ObservableObject
         VerifySlotMapCommand = new RelayCommand(_ => VerifySlotMap());
         AdvanceSimulationCommand = new RelayCommand(_ => AdvanceSimulation());
         EmergencyStopCommand = new RelayCommand(_ => TriggerEmergencyStop());
+        ToggleChamberDoorCommand = new RelayCommand(ToggleChamberDoor);
 
         ApplySnapshot(_snapshot, addEvent: false);
+        UpdateRouteVisualState();
     }
 
     public ObservableCollection<StatusItemViewModel> StatusItems { get; }
@@ -141,6 +158,12 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<WaferSlotViewModel> SlotMap { get; }
 
     public ObservableCollection<InterlockStatusViewModel> Interlocks { get; }
+
+    public ObservableCollection<TransferStationViewModel> TransferStations { get; }
+
+    public BladePoseViewModel BladePose { get; }
+
+    public ReadOnlyObservableCollection<CommandAuditRecord> CommandAudits { get; }
 
     public string TeachingStatus { get; }
 
@@ -165,6 +188,8 @@ public sealed class MainViewModel : ObservableObject
     public ICommand AdvanceSimulationCommand { get; }
 
     public ICommand EmergencyStopCommand { get; }
+
+    public ICommand ToggleChamberDoorCommand { get; }
 
     public string OperationMode
     {
@@ -289,6 +314,7 @@ public sealed class MainViewModel : ObservableObject
 
     private void VerifySlotMap()
     {
+        AppendCommandAudit(EquipmentCommandType.ReadSlotMap, allowedFallback: _snapshot.EtherCatLink);
         _snapshot = _offlineSimulator.VerifySlotMap();
         OperatorMessage = "FOUP 5단 슬롯맵 검증 완료 - SIM 식별자는 실제 웨이퍼 ID가 아닙니다.";
         ApplySnapshot(_snapshot);
@@ -297,6 +323,16 @@ public sealed class MainViewModel : ObservableObject
 
     private void AdvanceSimulation()
     {
+        var decision = AppendCommandAudit(EquipmentCommandType.AdvanceOfflineSimulation);
+
+        if (!decision.IsAllowed)
+        {
+            OperatorMessage = decision.Reason;
+            RaiseAlarm("COMMAND", decision.Reason, EquipmentState.Warning);
+            UpdateInterlocks();
+            return;
+        }
+
         _snapshot = _offlineSimulator.AdvanceCycle(SelectedRoute);
         OperationMode = _snapshot.SequenceProgress >= 100 ? "SIM COMPLETE" : "AUTO CHECK";
         OperatorMessage = _snapshot.MotionPhase;
@@ -319,6 +355,7 @@ public sealed class MainViewModel : ObservableObject
 
     private void TriggerEmergencyStop()
     {
+        AppendCommandAudit(EquipmentCommandType.StopMotion, allowedFallback: true);
         var emgSwitch = SwitchInputs.First(input => input.Name == "EMG SW");
         emgSwitch.IsPressed = true;
         emgSwitch.State = EquipmentState.Fault;
@@ -327,6 +364,33 @@ public sealed class MainViewModel : ObservableObject
         OperatorMessage = "비상정지 테스트 입력 활성 - 모든 이송 동작 금지";
         ApplySnapshot(_snapshot);
         RaiseAlarm("SAFETY", "비상정지 테스트를 실행했습니다.", EquipmentState.Fault);
+    }
+
+    private void ToggleChamberDoor(object? parameter)
+    {
+        if (parameter is not StationViewModel chamber || !chamber.Name.StartsWith("CHAMBER", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        chamber.IsDoorOpen = !chamber.IsDoorOpen;
+        chamber.PrimaryStatus = chamber.IsDoorOpen ? "Door Open" : "Door Closed";
+        chamber.InterlockStatus = chamber.IsDoorOpen ? "Door Interlock Blocked" : "Door Interlock Ready";
+        chamber.State = chamber.IsDoorOpen ? EquipmentState.Fault : EquipmentState.Ready;
+
+        var transferStation = TransferStations.FirstOrDefault(station => station.Name == chamber.Name);
+        if (transferStation is not null)
+        {
+            transferStation.IsDoorOpen = chamber.IsDoorOpen;
+            transferStation.State = chamber.IsDoorOpen ? EquipmentState.Fault : EquipmentState.Ready;
+            transferStation.Status = chamber.IsDoorOpen ? "도어 열림 - 이송 금지" : "도어 닫힘";
+        }
+
+        var anyDoorOpen = Chambers.Any(item => item.IsDoorOpen);
+        _snapshot = _offlineSimulator.SetChamberDoorOpen(anyDoorOpen);
+        OperatorMessage = $"{chamber.Name} {(chamber.IsDoorOpen ? "도어 열림" : "도어 닫힘")} - 도어 인터록 갱신";
+        ApplySnapshot(_snapshot);
+        RaiseAlarm("CHAMBER", OperatorMessage, chamber.State);
     }
 
     private void ToggleSwitch(object? parameter)
@@ -363,6 +427,7 @@ public sealed class MainViewModel : ObservableObject
 
         SelectedRoute = route;
         OperatorMessage = $"{route} 경로 선택 - 티칭 좌표는 승인 소스 연결 전까지 표시하지 않음";
+        UpdateRouteVisualState();
         RaiseAlarm("ROUTE", $"{route} 경로를 선택했습니다.", EquipmentState.Ready);
     }
 
@@ -404,6 +469,8 @@ public sealed class MainViewModel : ObservableObject
         UpdateSequenceSteps(snapshot.SequenceProgress);
         UpdateSlotMap(snapshot.SlotMap);
         UpdateInterlocks();
+        UpdateBladePose(snapshot);
+        UpdateTransferStationStatus(snapshot);
 
         if (addEvent)
         {
@@ -455,12 +522,110 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    private void UpdateRouteVisualState()
+    {
+        var (source, target) = ParseSelectedRoute();
+
+        foreach (var station in TransferStations)
+        {
+            station.IsSource = station.Name == source;
+            station.IsTarget = station.Name == target;
+        }
+
+        BladePose.Target = target;
+        BladePose.Direction = target switch
+        {
+            "CHAMBER A" => "북쪽 챔버 A 방향",
+            "CHAMBER B" => "좌측 챔버 B 방향",
+            "CHAMBER C" => "우측 챔버 C 방향",
+            _ when source.StartsWith("FOUP A", StringComparison.Ordinal) => "좌측 FOUP A 방향",
+            _ when source.StartsWith("FOUP B", StringComparison.Ordinal) => "우측 FOUP B 방향",
+            _ => "HOME"
+        };
+        BladePose.VisualAngle = target switch
+        {
+            "CHAMBER A" => 0,
+            "CHAMBER B" => -72,
+            "CHAMBER C" => 72,
+            _ when source.StartsWith("FOUP A", StringComparison.Ordinal) => -128,
+            _ when source.StartsWith("FOUP B", StringComparison.Ordinal) => 128,
+            _ => 0
+        };
+    }
+
+    private void UpdateBladePose(EquipmentSnapshot snapshot)
+    {
+        var (_, target) = ParseSelectedRoute();
+        BladePose.Target = target;
+        BladePose.Phase = snapshot.MotionPhase;
+        BladePose.Reach = snapshot.SequenceProgress switch
+        {
+            >= 86 => "Extend to chamber slot",
+            >= 64 => "Vacuum pickup hold",
+            >= 42 => "Extend to source slot",
+            >= 20 => "Rotate to source",
+            _ => "Retracted at home"
+        };
+        BladePose.BladeLength = snapshot.SequenceProgress switch
+        {
+            >= 86 => 185,
+            >= 64 => 160,
+            >= 42 => 176,
+            >= 20 => 126,
+            _ => 118
+        };
+        BladePose.State = snapshot.EmergencyStop
+            ? EquipmentState.Fault
+            : snapshot.SequenceProgress > 0 ? EquipmentState.Active : EquipmentState.Warning;
+
+        UpdateRouteVisualState();
+    }
+
+    private void UpdateTransferStationStatus(EquipmentSnapshot snapshot)
+    {
+        foreach (var station in TransferStations)
+        {
+            if (station.Kind == TransferStationKind.Foup)
+            {
+                station.Status = snapshot.SlotMapVerified ? "슬롯맵 검증 완료" : "슬롯맵 대기";
+                station.State = snapshot.SlotMapVerified ? EquipmentState.Ready : EquipmentState.Warning;
+            }
+
+            if (station.Kind == TransferStationKind.RobotHome)
+            {
+                station.Status = snapshot.AxisHomed ? "홈 완료" : "홈 확인 대기";
+                station.State = snapshot.AxisHomed ? EquipmentState.Ready : EquipmentState.Warning;
+            }
+        }
+    }
+
+    private (string Source, string Target) ParseSelectedRoute()
+    {
+        var parts = SelectedRoute.Split(" -> ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        return parts.Length == 2 ? (parts[0], parts[1]) : ("ROBOT HOME", "ROBOT HOME");
+    }
+
     private void UpdateStatus(string name, string value, string detail, EquipmentState state)
     {
         var item = StatusItems.First(status => status.Name == name);
         item.Value = value;
         item.Detail = detail;
         item.State = state;
+    }
+
+    private CommandDecision AppendCommandAudit(EquipmentCommandType commandType, bool? allowedFallback = null)
+    {
+        var command = EquipmentCommand.Create(commandType, SelectedRoute, "UI");
+        var decision = _commandGate.Evaluate(command, _snapshot, ApprovedTeachingLoaded);
+
+        if (allowedFallback is not null)
+        {
+            decision = decision with { IsAllowed = allowedFallback.Value };
+        }
+
+        _commandAuditLog.Append(decision);
+        return decision;
     }
 
     private void RaiseAlarm(string source, string message, EquipmentState state)

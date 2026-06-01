@@ -3,10 +3,11 @@ using SemiTool.EtherCAT.ControlSuite.Services;
 
 var simulator = new OfflineEquipmentSimulator();
 var evaluator = new SafetyInterlockEvaluator();
+var commandGate = new CommandGate(evaluator);
 var teachingProvider = new ReadOnlyTeachingValueProvider();
 
 var teachingPoints = teachingProvider.LoadApprovedTeachingPoints();
-Assert(teachingPoints.Count == 0, "티칭값 공급자는 승인 소스 연결 전까지 빈 목록이어야 합니다.");
+Assert(teachingPoints.Count == 0, "승인 소스 연결 전에는 티칭값 목록이 비어 있어야 합니다.");
 
 var powerOn = simulator.CreatePowerOnSnapshot();
 var powerOnPermission = evaluator.GetMotionPermission(powerOn, approvedTeachingLoaded: false);
@@ -17,6 +18,21 @@ var connected = simulator.ConnectOfflineRig();
 var connectedPermission = evaluator.GetMotionPermission(connected, approvedTeachingLoaded: false);
 Assert(connectedPermission.CanRunOfflineSimulation, "오프라인 시뮬레이터 연결 후에는 조건 검증 사이클을 실행할 수 있어야 합니다.");
 Assert(!connectedPermission.CanIssueRealMotion, "오프라인 시뮬레이터 연결만으로 실제 이동 명령을 허용하면 안 됩니다.");
+
+var offlineCommand = EquipmentCommand.Create(EquipmentCommandType.AdvanceOfflineSimulation, "FOUP A -> CHAMBER A", "SelfTest");
+var offlineDecision = commandGate.Evaluate(offlineCommand, connected, approvedTeachingLoaded: false);
+Assert(offlineDecision.IsAllowed, "오프라인 검증 명령은 실장비 티칭값 없이도 허용되어야 합니다.");
+
+var realMotionCommand = EquipmentCommand.Create(EquipmentCommandType.IssueRealMotion, "FOUP A -> CHAMBER A", "SelfTest");
+var realMotionDecision = commandGate.Evaluate(realMotionCommand, connected, approvedTeachingLoaded: false);
+Assert(!realMotionDecision.IsAllowed, "실제 이동 명령은 승인 티칭값 없이는 차단되어야 합니다.");
+
+var doorOpen = simulator.SetChamberDoorOpen(isOpen: true);
+var doorDecision = commandGate.Evaluate(offlineCommand, doorOpen, approvedTeachingLoaded: false);
+Assert(!doorDecision.IsAllowed, "챔버 도어가 열린 상태에서는 오프라인 이송 단계도 진행하지 않습니다.");
+
+var doorClosed = simulator.SetChamberDoorOpen(isOpen: false);
+Assert(doorClosed.ChamberDoorsClosed, "챔버 도어 닫힘 상태가 스냅샷에 반영되어야 합니다.");
 
 var slotVerified = simulator.VerifySlotMap();
 Assert(slotVerified.SlotMap.Count == 10, "FOUP A/B 각각 5단 슬롯맵을 유지해야 합니다.");
@@ -31,7 +47,7 @@ var emergencyPermission = evaluator.GetMotionPermission(emergency, approvedTeach
 Assert(emergency.EmergencyStop, "비상정지 입력은 스냅샷에 반영되어야 합니다.");
 Assert(!emergencyPermission.CanRunOfflineSimulation, "비상정지 중에는 오프라인 사이클도 진행하지 않습니다.");
 
-Console.WriteLine("SelfTest OK: simulator, interlocks, teaching guard");
+Console.WriteLine("SelfTest OK: simulator, command gate, chamber door, teaching guard");
 
 static void Assert(bool condition, string message)
 {

@@ -1,0 +1,27 @@
+name: dotnet
+
+on:
+  push:
+    branches:
+      - main
+      - "codex/**"
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build
+        run: dotnet build SemiTool.EtherCAT.ControlSuite.slnx -v minimal
+
+      - name: Self test
+        run: dotnet run --project SemiTool.EtherCAT.ControlSuite.SelfTest\SemiTool.EtherCAT.ControlSuite.SelfTest.csproj

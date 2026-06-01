@@ -1,0 +1,62 @@
+{
+  "description": "Template only. Do not commit real teaching coordinates, offsets, network endpoints, or sensitive device data.",
+  "connection": {
+    "adapter": "EtherCAT",
+    "endpoint": "REPLACE_AT_SCHOOL_LAB",
+    "simulationFallback": true
+  },
+  "stations": [
+    {
+      "name": "FOUP A",
+      "kind": "Foup",
+      "slotCount": 5,
+      "slotMapSource": "PLC_TAG_PLACEHOLDER"
+    },
+    {
+      "name": "FOUP B",
+      "kind": "Foup",
+      "slotCount": 5,
+      "slotMapSource": "PLC_TAG_PLACEHOLDER"
+    },
+    {
+      "name": "CHAMBER A",
+      "kind": "Chamber",
+      "doorSensor": "PLC_TAG_PLACEHOLDER",
+      "stageReady": "PLC_TAG_PLACEHOLDER"
+    },
+    {
+      "name": "CHAMBER B",
+      "kind": "Chamber",
+      "doorSensor": "PLC_TAG_PLACEHOLDER",
+      "stageReady": "PLC_TAG_PLACEHOLDER"
+    },
+    {
+      "name": "CHAMBER C",
+      "kind": "Chamber",
+      "doorSensor": "PLC_TAG_PLACEHOLDER",
+      "stageReady": "PLC_TAG_PLACEHOLDER"
+    }
+  ],
+  "motionAxes": [
+    {
+      "name": "Theta",
+      "homeSignal": "PLC_TAG_PLACEHOLDER",
+      "positionFeedback": "PLC_TAG_PLACEHOLDER"
+    },
+    {
+      "name": "Linear",
+      "homeSignal": "PLC_TAG_PLACEHOLDER",
+      "positionFeedback": "PLC_TAG_PLACEHOLDER"
+    },
+    {
+      "name": "ZLift",
+      "homeSignal": "PLC_TAG_PLACEHOLDER",
+      "positionFeedback": "PLC_TAG_PLACEHOLDER"
+    }
+  ],
+  "teaching": {
+    "source": "APPROVED_SOURCE_ONLY",
+    "commitRealValues": false,
+    "notes": "Real teaching values must stay outside this public repository."
+  }
+}

@@ -257,6 +257,7 @@
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="96" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0" Margin="0,0,0,10">
@@ -267,7 +268,32 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Viewbox Grid.Row="1" Stretch="Uniform">
+                            <Border Grid.Row="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="블레이드 방향" Style="{StaticResource SmallLabelStyle}" />
+                                        <TextBlock Text="{Binding BladePose.Direction}" Style="{StaticResource ValueTextStyle}" />
+                                        <TextBlock Text="{Binding BladePose.Reach}" Foreground="{StaticResource BlueBrush}" FontSize="12" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="원점 기준" Style="{StaticResource SmallLabelStyle}" />
+                                        <TextBlock Text="{Binding BladePose.HomeReference}" Style="{StaticResource ValueTextStyle}" />
+                                        <TextBlock Text="실제 티칭 좌표 아님" Foreground="{StaticResource WarningBrush}" FontSize="12" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="목표 스테이션" Style="{StaticResource SmallLabelStyle}" />
+                                        <TextBlock Text="{Binding BladePose.Target}" Style="{StaticResource ValueTextStyle}" />
+                                        <TextBlock Text="{Binding BladePose.Phase}" Foreground="{StaticResource MutedBrush}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Viewbox Grid.Row="2" Stretch="Uniform">
                                 <Canvas Width="760" Height="540" Background="{StaticResource CanvasBrush}">
                                     <!-- 알루미늄 프로파일 프레임과 아크릴 안전 커버 영역입니다. -->
                                     <Rectangle Canvas.Left="70" Canvas.Top="40" Width="620" Height="420" RadiusX="6" RadiusY="6" Fill="#E2E8F0" Stroke="#94A3B8" StrokeThickness="3" />
@@ -279,14 +305,18 @@
                                     <Ellipse Canvas.Left="270" Canvas.Top="190" Width="220" Height="220" Fill="#E5E7EB" Stroke="#64748B" StrokeThickness="4" />
                                     <Ellipse Canvas.Left="300" Canvas.Top="220" Width="160" Height="160" Fill="#F8FAFC" Stroke="#94A3B8" StrokeThickness="3" />
                                     <Ellipse Canvas.Left="357" Canvas.Top="277" Width="46" Height="46" Fill="#CBD5E1" Stroke="#475569" StrokeThickness="2" />
-                                    <Rectangle Canvas.Left="338" Canvas.Top="130" Width="84" Height="175" RadiusX="6" RadiusY="6" Fill="#E2E8F0" Stroke="#475569" StrokeThickness="2" RenderTransformOrigin="0.5,0.9">
+                                    <Line X1="380" Y1="266" X2="380" Y2="334" Stroke="#DC2626" StrokeThickness="2" StrokeDashArray="3 3" />
+                                    <Line X1="346" Y1="300" X2="414" Y2="300" Stroke="#DC2626" StrokeThickness="2" StrokeDashArray="3 3" />
+                                    <TextBlock Canvas.Left="407" Canvas.Top="288" Text="HOME REF" Foreground="#DC2626" FontSize="11" FontWeight="Bold" />
+                                    <TextBlock Canvas.Left="304" Canvas.Top="344" Text="{Binding BladePose.Direction}" Foreground="{StaticResource BlueBrush}" FontSize="13" FontWeight="Bold" />
+                                    <Rectangle Canvas.Left="338" Canvas.Top="130" Width="84" Height="{Binding BladePose.BladeLength}" RadiusX="6" RadiusY="6" Fill="#E2E8F0" Stroke="#475569" StrokeThickness="2" RenderTransformOrigin="0.5,0.9">
                                         <Rectangle.RenderTransform>
-                                            <RotateTransform Angle="-10" />
+                                            <RotateTransform Angle="{Binding BladePose.VisualAngle}" />
                                         </Rectangle.RenderTransform>
                                     </Rectangle>
                                     <Rectangle Canvas.Left="352" Canvas.Top="158" Width="56" Height="106" RadiusX="4" RadiusY="4" Fill="#F8FAFC" Stroke="#64748B" StrokeThickness="1.5" RenderTransformOrigin="0.5,1">
                                         <Rectangle.RenderTransform>
-                                            <RotateTransform Angle="-10" />
+                                            <RotateTransform Angle="{Binding BladePose.VisualAngle}" />
                                         </Rectangle.RenderTransform>
                                     </Rectangle>
                                     <Ellipse Canvas.Left="362" Canvas.Top="246" Width="36" Height="36" Fill="#FFFFFF" Stroke="#2563EB" StrokeThickness="2" />
@@ -432,6 +462,15 @@
                                                     <TextBlock Text="{Binding PrimaryStatus}" FontSize="12" />
                                                     <TextBlock Text="{Binding SecondaryStatus}" FontSize="12" />
                                                     <TextBlock Text="{Binding InterlockStatus}" FontSize="12" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
+                                                    <Button Content="{Binding DoorText}"
+                                                            Command="{Binding DataContext.ToggleChamberDoorCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Height="26"
+                                                            Margin="0,8,0,0"
+                                                            FontSize="11"
+                                                            Background="#EFF6FF"
+                                                            Foreground="{StaticResource NavyBrush}"
+                                                            BorderBrush="#BFDBFE" />
                                                 </StackPanel>
                                             </Border>
                                         </DataTemplate>
@@ -490,6 +529,39 @@
                                 <Button Content="SIM STEP" Command="{Binding AdvanceSimulationCommand}" Style="{StaticResource SecondaryButtonStyle}" />
                                 <Button Content="EMG TEST" Command="{Binding EmergencyStopCommand}" Style="{StaticResource DangerButtonStyle}" />
                             </WrapPanel>
+                            <ItemsControl ItemsSource="{Binding TransferStations}" Margin="0,6,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="3" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="6" Margin="0,0,6,6">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#F8FAFC" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSource}" Value="True">
+                                                            <Setter Property="Background" Value="#DBEAFE" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsTarget}" Value="True">
+                                                            <Setter Property="Background" Value="#FEF3C7" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsDoorOpen}" Value="True">
+                                                            <Setter Property="Background" Value="#FEE2E2" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />
+                                                <TextBlock Text="{Binding Status}" FontSize="10" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </Border>
 
