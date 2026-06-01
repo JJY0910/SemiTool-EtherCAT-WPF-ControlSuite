@@ -6,10 +6,10 @@
         xmlns:models="clr-namespace:SemiTool.EtherCAT.ControlSuite.Models"
         mc:Ignorable="d"
         Title="SemiTool EtherCAT Wafer Transfer Control Trainer"
-        Width="1520"
-        Height="960"
-        MinWidth="1280"
-        MinHeight="820"
+        Width="1540"
+        Height="980"
+        MinWidth="1320"
+        MinHeight="860"
         Background="#EEF2F7"
         FontFamily="Malgun Gothic"
         TextOptions.TextFormattingMode="Display"
@@ -19,7 +19,6 @@
 
         <SolidColorBrush x:Key="NavyBrush" Color="#0B1F48" />
         <SolidColorBrush x:Key="BlueBrush" Color="#2563EB" />
-        <SolidColorBrush x:Key="SteelBrush" Color="#CBD5E1" />
         <SolidColorBrush x:Key="PanelBrush" Color="#FFFFFF" />
         <SolidColorBrush x:Key="CanvasBrush" Color="#F8FAFC" />
         <SolidColorBrush x:Key="ReadyBrush" Color="#16A34A" />
@@ -40,12 +39,14 @@
         <Style x:Key="SmallLabelStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
         <Style x:Key="ValueTextStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
         <Style x:Key="PanelStyle" TargetType="Border">
@@ -54,33 +55,6 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="14" />
-        </Style>
-
-        <Style x:Key="CardStyle" TargetType="Border" BasedOn="{StaticResource PanelStyle}">
-            <Setter Property="Padding" Value="12" />
-            <Setter Property="Margin" Value="0,0,0,10" />
-        </Style>
-
-        <Style x:Key="StatePillStyle" TargetType="Border">
-            <Setter Property="Height" Value="24" />
-            <Setter Property="MinWidth" Value="74" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Background" Value="{StaticResource ReadyBrush}" />
-            <Setter Property="Padding" Value="10,2" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding State}" Value="{x:Static models:EquipmentState.Active}">
-                    <Setter Property="Background" Value="{StaticResource ActiveBrush}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding State}" Value="{x:Static models:EquipmentState.Warning}">
-                    <Setter Property="Background" Value="{StaticResource WarningBrush}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding State}" Value="{x:Static models:EquipmentState.Fault}">
-                    <Setter Property="Background" Value="{StaticResource FaultBrush}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding State}" Value="{x:Static models:EquipmentState.Offline}">
-                    <Setter Property="Background" Value="{StaticResource OfflineBrush}" />
-                </DataTrigger>
-            </Style.Triggers>
         </Style>
 
         <Style x:Key="StateDotStyle" TargetType="Ellipse">
@@ -103,6 +77,28 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="StatePillStyle" TargetType="Border">
+            <Setter Property="Height" Value="24" />
+            <Setter Property="MinWidth" Value="72" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Background" Value="{StaticResource ReadyBrush}" />
+            <Setter Property="Padding" Value="9,2" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding State}" Value="{x:Static models:EquipmentState.Active}">
+                    <Setter Property="Background" Value="{StaticResource ActiveBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="{x:Static models:EquipmentState.Warning}">
+                    <Setter Property="Background" Value="{StaticResource WarningBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="{x:Static models:EquipmentState.Fault}">
+                    <Setter Property="Background" Value="{StaticResource FaultBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding State}" Value="{x:Static models:EquipmentState.Offline}">
+                    <Setter Property="Background" Value="{StaticResource OfflineBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="38" />
             <Setter Property="Padding" Value="14,0" />
@@ -120,9 +116,14 @@
             <Setter Property="BorderBrush" Value="#CBD5E1" />
         </Style>
 
+        <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource FaultBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource FaultBrush}" />
+        </Style>
+
         <Style x:Key="SwitchFaceStyle" TargetType="Ellipse">
-            <Setter Property="Width" Value="52" />
-            <Setter Property="Height" Value="52" />
+            <Setter Property="Width" Value="50" />
+            <Setter Property="Height" Value="50" />
             <Setter Property="Stroke" Value="#111827" />
             <Setter Property="StrokeThickness" Value="2" />
             <Setter Property="Fill" Value="#111827" />
@@ -146,11 +147,11 @@
     </Window.Resources>
 
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-        <Grid MinWidth="1430" MinHeight="880" Margin="18">
+        <Grid MinWidth="1460" MinHeight="900" Margin="18">
             <Grid.RowDefinitions>
-                <RowDefinition Height="78" />
+                <RowDefinition Height="82" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="188" />
+                <RowDefinition Height="220" />
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="{StaticResource NavyBrush}" CornerRadius="8" Padding="18,12">
@@ -170,10 +171,7 @@
                                    Margin="0,4,0,0" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border x:Name="EquipmentStateBadge"
-                                CornerRadius="16"
-                                Padding="16,6"
-                                MinWidth="128">
+                        <Border CornerRadius="16" Padding="16,6" MinWidth="126">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Setter Property="Background" Value="{StaticResource ReadyBrush}" />
@@ -195,6 +193,9 @@
                         <Border Background="#1E3A8A" CornerRadius="16" Padding="16,6" Margin="10,0,0,0">
                             <TextBlock Text="{Binding OperationMode}" Foreground="White" FontWeight="Bold" />
                         </Border>
+                        <Border Background="#0F766E" CornerRadius="16" Padding="16,6" Margin="10,0,0,0">
+                            <TextBlock Text="{Binding ConnectionMode}" Foreground="White" FontWeight="Bold" />
+                        </Border>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -203,13 +204,13 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="300" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="360" />
+                    <ColumnDefinition Width="390" />
                 </Grid.ColumnDefinitions>
 
                 <Grid Grid.Column="0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="150" />
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0" Style="{StaticResource PanelStyle}" Margin="0,0,14,10">
@@ -227,7 +228,7 @@
                                             <StackPanel Grid.Column="1">
                                                 <TextBlock Text="{Binding Name}" Style="{StaticResource ValueTextStyle}" />
                                                 <TextBlock Text="{Binding Value}" Foreground="{StaticResource NavyBrush}" FontSize="12" FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Detail}" Style="{StaticResource SmallLabelStyle}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Detail}" Style="{StaticResource SmallLabelStyle}" />
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
@@ -240,8 +241,8 @@
                         <StackPanel>
                             <TextBlock Text="티칭값 보호" Style="{StaticResource SectionTitleStyle}" />
                             <!-- 실제 티칭 좌표는 이 화면에 하드코딩하지 않습니다. 승인 소스 연결 상태만 표시합니다. -->
-                            <TextBlock Text="{Binding TeachingStatus}" Style="{StaticResource ValueTextStyle}" TextWrapping="Wrap" />
-                            <TextBlock Text="좌표/오프셋/보정값 수정 금지" Foreground="{StaticResource WarningBrush}" FontWeight="SemiBold" Margin="0,8,0,0" />
+                            <TextBlock Text="{Binding TeachingStatus}" Style="{StaticResource ValueTextStyle}" />
+                            <TextBlock Text="{Binding MotionPermissionText}" Foreground="{StaticResource WarningBrush}" FontWeight="SemiBold" Margin="0,8,0,0" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -249,7 +250,7 @@
                 <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="170" />
+                        <RowDefinition Height="172" />
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0" Style="{StaticResource PanelStyle}">
@@ -260,7 +261,10 @@
                             </Grid.RowDefinitions>
                             <Grid Grid.Row="0" Margin="0,0,0,10">
                                 <TextBlock Text="장비 구조도 기반 운전 화면" Style="{StaticResource SectionTitleStyle}" />
-                                <TextBlock Text="{Binding SelectedRoute}" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="{StaticResource BlueBrush}" FontWeight="Bold" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding SelectedRoute}" Foreground="{StaticResource BlueBrush}" FontWeight="Bold" Margin="0,0,12,0" />
+                                    <TextBlock Text="{Binding MotionPhase}" Foreground="{StaticResource MutedBrush}" FontWeight="SemiBold" />
+                                </StackPanel>
                             </Grid>
 
                             <Viewbox Grid.Row="1" Stretch="Uniform">
@@ -271,7 +275,7 @@
                                     <Rectangle Canvas.Left="90" Canvas.Top="70" Width="580" Height="360" Fill="#F8FAFC" Stroke="#CBD5E1" StrokeThickness="1.5" />
                                     <Line X1="90" Y1="430" X2="670" Y2="430" Stroke="#64748B" StrokeThickness="4" />
 
-                                    <!-- 중앙 회전/선형 이송부: 실제 축 위치는 드라이브 피드백 연결 전까지 LIVE N/A로 유지합니다. -->
+                                    <!-- 중앙 회전/선형 이송부: 실장비 좌표 대신 시뮬레이션 단계만 표시합니다. -->
                                     <Ellipse Canvas.Left="270" Canvas.Top="190" Width="220" Height="220" Fill="#E5E7EB" Stroke="#64748B" StrokeThickness="4" />
                                     <Ellipse Canvas.Left="300" Canvas.Top="220" Width="160" Height="160" Fill="#F8FAFC" Stroke="#94A3B8" StrokeThickness="3" />
                                     <Ellipse Canvas.Left="357" Canvas.Top="277" Width="46" Height="46" Fill="#CBD5E1" Stroke="#475569" StrokeThickness="2" />
@@ -287,9 +291,8 @@
                                     </Rectangle>
                                     <Ellipse Canvas.Left="362" Canvas.Top="246" Width="36" Height="36" Fill="#FFFFFF" Stroke="#2563EB" StrokeThickness="2" />
                                     <TextBlock Canvas.Left="337" Canvas.Top="408" Text="중앙 이송부" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />
-                                    <TextBlock Canvas.Left="323" Canvas.Top="430" Text="회전 베이스 / 픽업 헤드" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                                    <TextBlock Canvas.Left="313" Canvas.Top="430" Text="회전 베이스 / 진공 픽업 헤드" FontSize="11" Foreground="{StaticResource MutedBrush}" />
 
-                                    <!-- 케이블 캐리어와 공압 튜브 표시입니다. -->
                                     <Path Data="M 458,278 C 522,238 568,270 580,330 C 588,374 552,402 500,392"
                                           Stroke="#111827"
                                           StrokeThickness="18"
@@ -301,7 +304,7 @@
                                           StrokeDashArray="8 10" />
                                     <Path Data="M 442,250 C 506,188 590,210 624,256" Stroke="#93C5FD" StrokeThickness="4" StrokeEndLineCap="Round" />
 
-                                    <!-- 챔버 A/B/C: 장비 사진의 전면 슬롯, 푸시 버튼, 웨이퍼 스테이지를 단순화했습니다. -->
+                                    <!-- 챔버 A/B/C: 전면 슬롯, 푸시 버튼, 웨이퍼 스테이지를 단순화했습니다. -->
                                     <Border Canvas.Left="315" Canvas.Top="74" Width="130" Height="88" Background="White" BorderBrush="#94A3B8" BorderThickness="2" CornerRadius="5">
                                         <Grid>
                                             <Grid.RowDefinitions>
@@ -354,7 +357,6 @@
                                         </Grid>
                                     </Border>
                                     <TextBlock Canvas.Left="154" Canvas.Top="416" Text="FOUP A" Foreground="{StaticResource NavyBrush}" FontWeight="Bold" />
-
                                     <Border Canvas.Left="530" Canvas.Top="300" Width="90" Height="112" Background="#111827" BorderBrush="#475569" BorderThickness="2" CornerRadius="4">
                                         <Grid Margin="10">
                                             <Grid.RowDefinitions>
@@ -373,7 +375,6 @@
                                     </Border>
                                     <TextBlock Canvas.Left="542" Canvas.Top="416" Text="FOUP B" Foreground="{StaticResource NavyBrush}" FontWeight="Bold" />
 
-                                    <!-- 타워 라이트: 빨강/주황/초록 상태등 위치 표시입니다. -->
                                     <StackPanel Canvas.Left="102" Canvas.Top="70" Width="22">
                                         <Rectangle Height="24" RadiusX="4" RadiusY="4" Fill="#DC2626" Stroke="#7F1D1D" />
                                         <Rectangle Height="24" RadiusX="4" RadiusY="4" Fill="#F59E0B" Stroke="#92400E" Margin="0,2,0,0" />
@@ -385,7 +386,6 @@
                                         <Rectangle Height="24" RadiusX="4" RadiusY="4" Fill="#16A34A" Stroke="#14532D" Margin="0,2,0,0" />
                                     </StackPanel>
 
-                                    <!-- 전면 제어반 내부 구조: 전원, 서보 드라이브, EtherCAT I/O 위치를 블록으로 구분합니다. -->
                                     <Rectangle Canvas.Left="122" Canvas.Top="462" Width="516" Height="56" Fill="#1F2937" Stroke="#475569" StrokeThickness="2" />
                                     <Rectangle Canvas.Left="138" Canvas.Top="474" Width="58" Height="32" Fill="#EAB308" Stroke="#854D0E" />
                                     <TextBlock Canvas.Left="148" Canvas.Top="482" Text="MCCB" FontSize="11" FontWeight="Bold" Foreground="#111827" />
@@ -401,15 +401,6 @@
                                     <TextBlock Canvas.Left="455" Canvas.Top="480" Text="DRV" FontSize="10" Foreground="White" />
                                     <Rectangle Canvas.Left="505" Canvas.Top="472" Width="110" Height="36" Fill="#0F172A" Stroke="#38BDF8" />
                                     <TextBlock Canvas.Left="526" Canvas.Top="482" Text="EtherCAT I/O" FontSize="11" Foreground="White" FontWeight="Bold" />
-
-                                    <Line X1="280" Y1="150" X2="382" Y2="111" Stroke="#2563EB" StrokeThickness="1.5" />
-                                    <TextBlock Canvas.Left="212" Canvas.Top="139" Text="선형 이송 액추에이터" FontSize="11" Foreground="{StaticResource NavyBrush}" />
-                                    <Line X1="492" Y1="306" X2="594" Y2="332" Stroke="#2563EB" StrokeThickness="1.5" />
-                                    <TextBlock Canvas.Left="592" Canvas.Top="326" Text="케이블 캐리어" FontSize="11" Foreground="{StaticResource NavyBrush}" />
-                                    <Line X1="208" Y1="330" X2="318" Y2="318" Stroke="#2563EB" StrokeThickness="1.5" />
-                                    <TextBlock Canvas.Left="92" Canvas.Top="326" Text="5단 슬롯" FontSize="11" Foreground="{StaticResource NavyBrush}" />
-                                    <Line X1="555" Y1="214" X2="646" Y2="176" Stroke="#2563EB" StrokeThickness="1.5" />
-                                    <TextBlock Canvas.Left="636" Canvas.Top="164" Text="챔버 슬롯" FontSize="11" Foreground="{StaticResource NavyBrush}" />
                                 </Canvas>
                             </Viewbox>
                         </Grid>
@@ -437,7 +428,7 @@
                                                         <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />
                                                         <Ellipse Style="{StaticResource StateDotStyle}" HorizontalAlignment="Right" />
                                                     </Grid>
-                                                    <TextBlock Text="{Binding EquipmentTag}" Style="{StaticResource SmallLabelStyle}" TextWrapping="Wrap" Margin="0,4,0,6" />
+                                                    <TextBlock Text="{Binding EquipmentTag}" Style="{StaticResource SmallLabelStyle}" Margin="0,4,0,6" />
                                                     <TextBlock Text="{Binding PrimaryStatus}" FontSize="12" />
                                                     <TextBlock Text="{Binding SecondaryStatus}" FontSize="12" />
                                                     <TextBlock Text="{Binding InterlockStatus}" FontSize="12" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
@@ -465,7 +456,7 @@
                                                         <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />
                                                         <Ellipse Style="{StaticResource StateDotStyle}" HorizontalAlignment="Right" />
                                                     </Grid>
-                                                    <TextBlock Text="{Binding EquipmentTag}" Style="{StaticResource SmallLabelStyle}" TextWrapping="Wrap" Margin="0,4,0,6" />
+                                                    <TextBlock Text="{Binding EquipmentTag}" Style="{StaticResource SmallLabelStyle}" Margin="0,4,0,6" />
                                                     <TextBlock Text="{Binding PrimaryStatus}" FontSize="12" />
                                                     <TextBlock Text="{Binding SecondaryStatus}" FontSize="12" />
                                                     <TextBlock Text="{Binding InterlockStatus}" FontSize="12" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
@@ -488,11 +479,27 @@
 
                     <Border Grid.Row="0" Style="{StaticResource PanelStyle}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Text="조작 스위치 박스" Style="{StaticResource SectionTitleStyle}" />
+                            <Grid>
+                                <TextBlock Text="오프라인 시뮬레이션" Style="{StaticResource SectionTitleStyle}" />
+                                <TextBlock Text="{Binding SimulatorCycle, StringFormat=Cycle {0}}" HorizontalAlignment="Right" Foreground="{StaticResource MutedBrush}" FontWeight="SemiBold" />
+                            </Grid>
+                            <TextBlock Text="{Binding OfflineSimulationStatus}" Style="{StaticResource ValueTextStyle}" Margin="0,0,0,8" />
+                            <WrapPanel>
+                                <Button Content="SIM CONNECT" Command="{Binding ConnectOfflineSimulatorCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                                <Button Content="VERIFY SLOTS" Command="{Binding VerifySlotMapCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                                <Button Content="SIM STEP" Command="{Binding AdvanceSimulationCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                                <Button Content="EMG TEST" Command="{Binding EmergencyStopCommand}" Style="{StaticResource DangerButtonStyle}" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Style="{StaticResource PanelStyle}" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="조작 스위치 / 경로" Style="{StaticResource SectionTitleStyle}" />
                             <ItemsControl ItemsSource="{Binding SwitchInputs}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <UniformGrid Columns="2" />
+                                        <UniformGrid Columns="4" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
@@ -501,38 +508,24 @@
                                                 CommandParameter="{Binding}"
                                                 Background="Transparent"
                                                 BorderThickness="0"
-                                                Margin="0,0,10,10"
+                                                Margin="0,0,8,8"
                                                 Padding="0">
                                             <StackPanel>
-                                                <Grid Width="78" Height="62">
+                                                <Grid Width="66" Height="58">
                                                     <Ellipse Style="{StaticResource SwitchFaceStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                     <TextBlock Text="ON" Foreground="White" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                                Visibility="{Binding IsPressed, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                                 </Grid>
-                                                <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
-                                                <TextBlock Text="{Binding Detail}" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Style="{StaticResource SmallLabelStyle}" Width="132" />
+                                                <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
                                             </StackPanel>
                                         </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Row="1" Style="{StaticResource PanelStyle}" Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="이송 경로 / 운전 명령" Style="{StaticResource SectionTitleStyle}" />
                             <WrapPanel>
                                 <Button Content="FOUP A -> CHAMBER A" Command="{Binding SelectRouteCommand}" CommandParameter="FOUP A -> CHAMBER A" Style="{StaticResource SecondaryButtonStyle}" />
                                 <Button Content="FOUP A -> CHAMBER B" Command="{Binding SelectRouteCommand}" CommandParameter="FOUP A -> CHAMBER B" Style="{StaticResource SecondaryButtonStyle}" />
                                 <Button Content="FOUP B -> CHAMBER C" Command="{Binding SelectRouteCommand}" CommandParameter="FOUP B -> CHAMBER C" Style="{StaticResource SecondaryButtonStyle}" />
-                            </WrapPanel>
-                            <WrapPanel Margin="0,4,0,0">
-                                <Button Content="START CHECK" Command="{Binding StartCycleCommand}" Style="{StaticResource PrimaryButtonStyle}" />
-                                <Button Content="HOLD" Command="{Binding HoldCommand}" Style="{StaticResource SecondaryButtonStyle}" />
-                                <Button Content="RESET" Command="{Binding ResetCommand}" Style="{StaticResource SecondaryButtonStyle}" />
-                                <Button Content="SERVO READY" Command="{Binding ServoReadyCommand}" Style="{StaticResource SecondaryButtonStyle}" />
-                                <Button Content="HOME CHECK" Command="{Binding HomeRequestCommand}" Style="{StaticResource SecondaryButtonStyle}" />
                             </WrapPanel>
                         </StackPanel>
                     </Border>
@@ -543,6 +536,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <TextBlock Text="시퀀스 진행도" Style="{StaticResource SectionTitleStyle}" />
                             <StackPanel Grid.Row="1" Margin="0,0,0,12">
@@ -552,7 +546,7 @@
                             <ItemsControl Grid.Row="2" ItemsSource="{Binding SequenceSteps}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="0,0,0,9">
+                                        <Grid Margin="0,0,0,8">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="34" />
                                                 <ColumnDefinition Width="*" />
@@ -561,9 +555,7 @@
                                             <Border Width="24" Height="24" CornerRadius="12" Background="#DBEAFE" HorizontalAlignment="Left">
                                                 <TextBlock Text="{Binding StepNo}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />
                                             </Border>
-                                            <StackPanel Grid.Column="1">
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
-                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" />
                                             <Border Grid.Column="2" Style="{StaticResource StatePillStyle}">
                                                 <TextBlock Text="{Binding Status}" Foreground="White" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Border>
@@ -571,6 +563,12 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                            <WrapPanel Grid.Row="3" Margin="0,8,0,0">
+                                <Button Content="START CHECK" Command="{Binding StartCycleCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                                <Button Content="HOLD" Command="{Binding HoldCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                                <Button Content="RESET" Command="{Binding ResetCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                                <Button Content="HOME CHECK" Command="{Binding HomeRequestCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                            </WrapPanel>
                         </Grid>
                     </Border>
                 </Grid>
@@ -578,12 +576,14 @@
 
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="360" />
+                    <ColumnDefinition Width="38*" />
+                    <ColumnDefinition Width="34*" />
+                    <ColumnDefinition Width="28*" />
                 </Grid.ColumnDefinitions>
+
                 <Border Grid.Column="0" Style="{StaticResource PanelStyle}" Margin="0,0,14,0">
                     <DockPanel>
-                        <TextBlock DockPanel.Dock="Top" Text="축 상태 / 알람 이벤트" Style="{StaticResource SectionTitleStyle}" />
+                        <TextBlock DockPanel.Dock="Top" Text="축 상태 / 이벤트" Style="{StaticResource SectionTitleStyle}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="48*" />
@@ -595,8 +595,7 @@
                                         <Grid Margin="0,0,0,8">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="92" />
-                                                <ColumnDefinition Width="82" />
+                                                <ColumnDefinition Width="96" />
                                                 <ColumnDefinition Width="82" />
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal">
@@ -604,8 +603,7 @@
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding Position}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                            <TextBlock Grid.Column="2" Text="{Binding Servo}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                                            <TextBlock Grid.Column="3" Text="{Binding Home}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Home}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -613,10 +611,10 @@
                             <ItemsControl Grid.Column="1" ItemsSource="{Binding AlarmEvents}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="0,0,0,8">
+                                        <Grid Margin="0,0,0,7">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="66" />
-                                                <ColumnDefinition Width="88" />
+                                                <ColumnDefinition Width="58" />
+                                                <ColumnDefinition Width="80" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Text="{Binding TimeText}" Foreground="{StaticResource MutedBrush}" FontSize="12" />
@@ -630,14 +628,62 @@
                     </DockPanel>
                 </Border>
 
-                <Border Grid.Column="1" Style="{StaticResource PanelStyle}">
-                    <StackPanel>
-                        <TextBlock Text="개발 진행" Style="{StaticResource SectionTitleStyle}" />
-                        <TextBlock Text="UI 셸: 구현 중" Style="{StaticResource ValueTextStyle}" />
-                        <TextBlock Text="실장비 통신: 어댑터 연결 대기" Style="{StaticResource SmallLabelStyle}" Margin="0,5,0,0" />
-                        <TextBlock Text="티칭값: 읽기 전용 경계 적용" Foreground="{StaticResource WarningBrush}" FontWeight="SemiBold" Margin="0,10,0,0" />
-                        <TextBlock Text="다음 단계: EtherCAT/PLC 신호 매핑" Style="{StaticResource SmallLabelStyle}" Margin="0,5,0,0" />
-                    </StackPanel>
+                <Border Grid.Column="1" Style="{StaticResource PanelStyle}" Margin="0,0,14,0">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="안전 인터록 체크" Style="{StaticResource SectionTitleStyle}" />
+                        <ItemsControl ItemsSource="{Binding Interlocks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="72" />
+                                        </Grid.ColumnDefinitions>
+                                        <Ellipse Style="{StaticResource StateDotStyle}" VerticalAlignment="Top" Margin="0,5,10,0" />
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                                            <TextBlock Text="{Binding Detail}" Style="{StaticResource SmallLabelStyle}" />
+                                        </StackPanel>
+                                        <Border Grid.Column="2" Style="{StaticResource StatePillStyle}">
+                                            <TextBlock Text="{Binding ResultText}" Foreground="White" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource PanelStyle}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="FOUP 슬롯맵" Style="{StaticResource SectionTitleStyle}" />
+                        <ItemsControl ItemsSource="{Binding SlotMap}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="2" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,8,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding SlotLabel}" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />
+                                                <TextBlock Text="{Binding SlotState}" Style="{StaticResource SmallLabelStyle}" />
+                                                <TextBlock Text="{Binding WaferId}" FontSize="11" Foreground="{StaticResource MutedBrush}" />
+                                            </StackPanel>
+                                            <Ellipse Grid.Column="1" Style="{StaticResource StateDotStyle}" Margin="8,4,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
                 </Border>
             </Grid>
         </Grid>
