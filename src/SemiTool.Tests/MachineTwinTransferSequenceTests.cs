@@ -252,7 +252,8 @@ public sealed class MachineTwinTransferSequenceTests
         var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "Views", "MachineTwinView.xaml");
 
         Assert.Contains("Run Transfer Sequence", source);
-        Assert.Contains("Wafer Transfer Sequence Monitor", source);
+        Assert.Contains("Wafer Transfer 3D Machine Twin", source);
+        Assert.Contains("MachineTwin3DView", source);
         Assert.Contains("Current Sequence Step", source);
         Assert.Contains("Sequence Speed", source);
         Assert.Contains("OperationWafer", source);

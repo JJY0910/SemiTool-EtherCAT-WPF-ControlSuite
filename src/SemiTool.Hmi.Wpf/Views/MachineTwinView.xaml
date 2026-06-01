@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:SemiTool.Hmi.Wpf.ViewModels"
+             xmlns:controls="clr-namespace:SemiTool.Hmi.Wpf.Controls"
              xmlns:design="clr-namespace:SemiTool.Hmi.Wpf.DesignTime"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -53,11 +54,11 @@
                 Padding="18,14">
             <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Left">
-                    <TextBlock Text="Wafer Transfer Sequence Monitor"
+                    <TextBlock Text="Wafer Transfer 3D Machine Twin"
                                Foreground="{StaticResource HmiTextBrush}"
                                FontSize="28"
                                FontWeight="SemiBold" />
-                    <TextBlock Text="Machine Twin / limited theta station swing / simulator-mode sequence monitor"
+                    <TextBlock Text="Native WPF Viewport3D / simulator-mode sequence monitor / no reference photo panel"
                                Foreground="{StaticResource HmiMutedTextBrush}"
                                FontSize="13" />
                 </StackPanel>
@@ -80,44 +81,18 @@
 
         <Grid Grid.Row="1" Margin="14">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260" />
+                <ColumnDefinition Width="300" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="270" />
+                <ColumnDefinition Width="300" />
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" Style="{StaticResource HmiStatusCard}">
-                    <StackPanel>
-                        <TextBlock Text="Equipment Reference" Style="{StaticResource HmiSectionHeader}" />
-                        <Border Background="#0A1115"
-                                BorderBrush="{StaticResource HmiStrokeBrush}"
-                                BorderThickness="1"
-                                CornerRadius="6"
-                                Padding="4">
-                            <Image Source="{Binding ReferencePhotoPath}"
-                                   Stretch="Uniform"
-                                   Height="72" />
-                        </Border>
-                        <TextBlock Text="{Binding PhotoCaption}"
-                                   Foreground="{StaticResource HmiMutedTextBrush}"
-                                   TextWrapping="Wrap"
-                                   FontSize="10"
-                                   Margin="0,5,0,0" />
-                        <TextBlock Text="Approved portfolio context photo. It does not claim WPF real-hardware verification."
-                                   Foreground="{StaticResource HmiWarningBrush}"
-                                   TextWrapping="Wrap"
-                                   FontSize="10"
-                                   Margin="0,2,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Row="1" Style="{StaticResource HmiStatusCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -198,7 +173,7 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="2" Style="{StaticResource HmiAlarmBadge}">
+                <Border Grid.Row="1" Style="{StaticResource HmiAlarmBadge}">
                     <StackPanel>
                         <TextBlock Text="Alarm Summary" Foreground="White" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding AlarmSummary}" Foreground="{StaticResource HmiMutedTextBrush}" TextWrapping="Wrap" />
@@ -218,7 +193,7 @@
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,8">
                         <StackPanel>
-                            <TextBlock Text="Wafer Transfer Sequence" Style="{StaticResource HmiSectionHeader}" />
+                            <TextBlock Text="3D Wafer Transfer Sequence" Style="{StaticResource HmiSectionHeader}" />
                             <TextBlock Text="{Binding FeedbackBoundary}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
                         </StackPanel>
                         <Border Background="#1B3540"
@@ -298,7 +273,7 @@
                         </WrapPanel>
                     </StackPanel>
 
-                    <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed">
                         <Canvas Width="700" Height="540" Background="#10191F">
                             <Rectangle Canvas.Left="28" Canvas.Top="28" Width="644" Height="484" RadiusX="10" RadiusY="10"
                                        Fill="#334149" Stroke="#A9BAC3" StrokeThickness="2" />
@@ -443,6 +418,73 @@
                             </StackPanel>
                         </Canvas>
                     </Viewbox>
+
+                    <Border Grid.Row="1"
+                            Background="#071116"
+                            BorderBrush="#375B6C"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            ClipToBounds="True">
+                        <Grid>
+                            <controls:MachineTwin3DView RobotAngle="{Binding VisualThetaAngle}"
+                                                        BladeLength="{Binding BladeLength}"
+                                                        VacuumOn="{Binding IsVacuumOn}"
+                                                        WaferOnBlade="{Binding IsWaferOnBlade}"
+                                                        ChamberADoorOpen="{Binding ChamberADoorOpen}"
+                                                        ChamberBDoorOpen="{Binding ChamberBDoorOpen}"
+                                                        ChamberCDoorOpen="{Binding ChamberCDoorOpen}"
+                                                        FoupACount="{Binding FoupACount}"
+                                                        FoupBCount="{Binding FoupBCount}" />
+
+                            <Border HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Margin="18"
+                                    Background="#B30A1820"
+                                    BorderBrush="#426C80"
+                                    BorderThickness="1"
+                                    CornerRadius="7"
+                                    Padding="12,10">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding CurrentStation}"
+                                               Foreground="{StaticResource HmiTextBrush}"
+                                               FontSize="20"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding OperationCurrentStep}"
+                                               Foreground="{StaticResource HmiBlueBrush}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding CylinderState}"
+                                               Foreground="{StaticResource HmiWarningBrush}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    Margin="18"
+                                    Background="#B30A1820"
+                                    BorderBrush="#426C80"
+                                    BorderThickness="1"
+                                    CornerRadius="7"
+                                    Padding="12,10">
+                                <StackPanel>
+                                    <TextBlock Text="HOME rotates to station before blade extension"
+                                               Foreground="{StaticResource HmiTextBrush}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding ThetaTargetName, StringFormat=Theta target: {0}}"
+                                               Foreground="{StaticResource HmiMutedTextBrush}"
+                                               FontSize="12" />
+                                    <TextBlock Text="{Binding WaferSummary}"
+                                               Foreground="{StaticResource HmiBlueBrush}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
 

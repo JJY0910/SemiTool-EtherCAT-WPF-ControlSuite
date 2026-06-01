@@ -106,16 +106,6 @@ public sealed class DigitalTwinPhysicalModelTests
         Assert.DoesNotContain(transferSteps, step => step.VisualThetaAngle == step.PreservedThetaEncoderValue);
     }
 
-    [Fact]
-    public void RealEquipmentContextPhoto_IsPresentAsApprovedPortfolioContext()
-    {
-        var root = FindRepositoryRoot();
-        var photo = Path.Combine(root, "docs", "images", "real-equipment-context-top-view.jpg");
-
-        Assert.True(File.Exists(photo), "The approved real-equipment context photo should remain in docs/images.");
-        Assert.True(new FileInfo(photo).Length > 10_000);
-    }
-
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

@@ -11,8 +11,8 @@ namespace SemiTool.Hmi.Wpf.Views;
 /// <see cref="ViewModels.MachineTwinViewModel"/> so the same view model can
 /// drive both the running app and the screenshot/debug-evidence capture modes.
 ///
-/// Keeping the real UI and capture UI on this same UserControl prevents the
-/// portfolio screenshots from drifting into disconnected mockups.
+/// Keeping the real UI and capture UI on this same UserControl prevents
+/// generated visual evidence from drifting away from the runtime screen.
 /// </remarks>
 public partial class MachineTwinView : UserControl
 {

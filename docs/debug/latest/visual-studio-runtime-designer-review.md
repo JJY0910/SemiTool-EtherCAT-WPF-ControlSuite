@@ -92,7 +92,7 @@ Confirmed:
 - `xmlns:mc` is present.
 - `mc:Ignorable="d"` is present.
 - `d:DataContext` points to `DesignMachineTwinViewModel`.
-- The real-equipment context photo panel is bound through `ReferencePhotoPath`.
+- The former real-equipment context photo panel was removed from the runtime Machine Twin surface.
 - FOUP A and FOUP B are bound to 5-slot cassette collections.
 - Chamber A/B/C sample state is exposed through design-time chamber view
   models.

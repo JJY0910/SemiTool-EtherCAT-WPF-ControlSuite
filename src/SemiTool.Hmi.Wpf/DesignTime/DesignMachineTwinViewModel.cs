@@ -17,7 +17,6 @@ public sealed class DesignMachineTwinViewModel
 {
     public DesignMachineTwinViewModel()
     {
-        ReferencePhotoPath = DesignMachineTwinData.ResolveReferencePhotoPath();
         FoupASlots = DesignMachineTwinData.CreateFoupASlots();
         FoupBSlots = DesignMachineTwinData.CreateFoupBSlots();
         Stations = DesignMachineTwinData.CreateStations();
@@ -80,10 +79,8 @@ public sealed class DesignMachineTwinViewModel
     public DesignChamberPipelineViewModel ChamberB { get; }
     public DesignChamberPipelineViewModel ChamberC { get; }
 
-    public string ReferencePhotoPath { get; }
     public string ScenarioName => "Visual Studio Designer sample";
     public string EquipmentKind => "Wafer transfer robot sequence monitor";
-    public string PhotoCaption => "Real equipment context reference / designer sample data";
     public string FeedbackBoundary => "Design-time sample only. Five unique wafers total; runtime sequence animates the real ViewModel.";
     public bool IsSequenceRunning => false;
     public bool IsSimulatorMode => true;

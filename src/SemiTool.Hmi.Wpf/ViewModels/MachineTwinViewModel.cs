@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using SemiTool.Application;
 using SemiTool.Domain;
 
@@ -73,7 +72,6 @@ public sealed class MachineTwinViewModel : ObservableObject
         _physicalModel = DigitalTwinPhysicalModel.CreateDefault(runtime.Profile);
         _sequenceSteps = MachineTwinSequencePlan.CreateDefault(_physicalModel);
         _resetStep = MachineTwinSequencePlan.CreateResetStep(_physicalModel);
-        ReferencePhotoPath = ResolveRepositoryPath("docs", "images", "real-equipment-context-top-view.jpg");
         EventLogLines = new ObservableCollection<string>();
         SequenceSpeedOptions = new ObservableCollection<string>(["Normal", "Realistic", "Fast", "Step"]);
         FoupASlots = new ObservableCollection<FoupSlotChipViewModel>(CreateSlots(_sequenceSteps[0].FoupASlots));
@@ -103,11 +101,8 @@ public sealed class MachineTwinViewModel : ObservableObject
     public ChamberPipelineViewModel ChamberA { get; }
     public ChamberPipelineViewModel ChamberB { get; }
     public ChamberPipelineViewModel ChamberC { get; }
-    public string ReferencePhotoPath { get; }
-    public bool HasReferencePhoto => File.Exists(ReferencePhotoPath);
     public string ScenarioName => _physicalModel.ScenarioName;
     public string EquipmentKind => _physicalModel.EquipmentKind;
-    public string PhotoCaption => "Real equipment context reference / user-approved portfolio photo";
     public string FeedbackBoundary => IsRealHardwareMode
         ? "Commanded / last-known state. Physical feedback depends on the real adapter."
         : "Simulator state is the source of truth.";
@@ -702,21 +697,6 @@ public sealed class MachineTwinViewModel : ObservableObject
     private static string FormatChamber(ChamberPipelineSnapshot chamber) =>
         $"{chamber.ChamberName}:{chamber.ProcessState}:{chamber.WaferId}:{chamber.RecipeName}:{chamber.CurrentStep}:{chamber.RemainingSeconds}s:{chamber.ProgressPercent:F0}%";
 
-    private static string ResolveRepositoryPath(params string[] segments)
-    {
-        var directory = new DirectoryInfo(Environment.CurrentDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "SemiTool.EtherCAT.WPF.ControlSuite.sln")))
-            {
-                return Path.Combine([directory.FullName, .. segments]);
-            }
-
-            directory = directory.Parent;
-        }
-
-        return Path.Combine([AppContext.BaseDirectory, "..", "..", "..", "..", .. segments]);
-    }
 }
 
 public sealed class MachineTwinStationViewModel : ObservableObject

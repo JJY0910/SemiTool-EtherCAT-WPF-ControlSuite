@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using System.IO;
-
 namespace SemiTool.Hmi.Wpf.DesignTime;
 
 /// <summary>
@@ -50,39 +48,6 @@ public static class DesignMachineTwinData
         "[designer] Runtime motion is verified by Run Transfer Sequence, not by the static designer."
     ];
 
-    public static string ResolveReferencePhotoPath()
-    {
-        foreach (var candidate in EnumerateReferencePhotoCandidates())
-        {
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-        }
-
-        // Designer fallback: the project file links this content item as Assets/...
-        // so Visual Studio can still resolve the image when the repo root walk is
-        // unavailable in design mode.
-        return Path.Combine("Assets", "real-equipment-context-top-view.jpg");
-    }
-
-    private static IEnumerable<string> EnumerateReferencePhotoCandidates()
-    {
-        yield return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Assets", "real-equipment-context-top-view.jpg"));
-        yield return Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "docs", "images", "real-equipment-context-top-view.jpg"));
-
-        var directory = new DirectoryInfo(Environment.CurrentDirectory);
-        while (directory is not null)
-        {
-            var solutionPath = Path.Combine(directory.FullName, "SemiTool.EtherCAT.WPF.ControlSuite.sln");
-            if (File.Exists(solutionPath))
-            {
-                yield return Path.Combine(directory.FullName, "docs", "images", "real-equipment-context-top-view.jpg");
-            }
-
-            directory = directory.Parent;
-        }
-    }
 }
 
 public sealed record DesignFoupSlotChipViewModel(

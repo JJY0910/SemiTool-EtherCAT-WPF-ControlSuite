@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <None Include="..\..\config\EquipmentProfile.finaltest.json" Link="config\EquipmentProfile.finaltest.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\docs\images\real-equipment-context-top-view.jpg" Link="Assets\real-equipment-context-top-view.jpg" CopyToOutputDirectory="PreserveNewest" />
     <!--
       Local-only vendor DLL support for real equipment PCs.
       The DLL is intentionally ignored by git and is copied only when it exists,

@@ -39,7 +39,7 @@ internal static class SequenceAssetCapture
         await RenderAsync(new AlarmEventLogView { DataContext = viewModel.AlarmEventLog }, "Alarm & Event Log", "Simulator alarm and event history", IoPath.Combine(outputDirectory, "alarm-log.png"));
         await RenderAsync(new SettingsView { DataContext = viewModel.Settings }, "Settings", "Simulator-first configuration", IoPath.Combine(outputDirectory, "settings.png"));
 
-        // These portfolio assets now render the actual runtime MachineTwinView instead of a disconnected mock drawing.
+        // Generated assets render the actual runtime MachineTwinView instead of a separate drawing path.
         await CaptureMachineTwinPortfolioFramesAsync(viewModel.MachineTwin, outputDirectory);
     }
 
@@ -408,7 +408,6 @@ internal static class SequenceAssetCapture
         builder.AppendLine("- It does not prove that the new WPF app has been verified on physical equipment.");
         builder.AppendLine("- Real hardware feedback depends on the local vendor DLL, EtherCAT wiring, E-stop path, and supervised commissioning.");
         builder.AppendLine("- If the real adapter exposes only commanded state, the UI must label it as commanded or last-known state.");
-        builder.AppendLine("- The approved real-equipment photo is portfolio context, not proof of WPF real-hardware commissioning.");
         builder.AppendLine();
         builder.AppendLine("## Generated Files");
         builder.AppendLine();
