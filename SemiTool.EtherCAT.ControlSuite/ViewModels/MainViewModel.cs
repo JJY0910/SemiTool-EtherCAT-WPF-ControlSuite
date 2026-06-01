@@ -88,11 +88,14 @@ public sealed class MainViewModel : ObservableObject
         // 웨이퍼 이송 시퀀스 진행도입니다. 실장비 명령 없이도 경로 조건을 반복 검증할 수 있게 분리했습니다.
         SequenceSteps = new ObservableCollection<SequenceStepViewModel>
         {
-            new(1, "FOUP 슬롯맵 확인", "대기", EquipmentState.Ready),
-            new(2, "챔버 도어 및 스테이지 인터록", "대기", EquipmentState.Ready),
-            new(3, "픽업 헤드 진공 확인", "대기", EquipmentState.Ready),
-            new(4, "회전/선형 이송 경로 확인", "대기", EquipmentState.Ready),
-            new(5, "챔버 적재 완료 확인", "대기", EquipmentState.Ready)
+            new(1, "HOME READY", "WAIT", EquipmentState.Ready),
+            new(2, "ROTATE TO FOUP", "WAIT", EquipmentState.Ready),
+            new(3, "EXTEND INTO FOUP", "WAIT", EquipmentState.Ready),
+            new(4, "VACUUM PICKUP", "WAIT", EquipmentState.Ready),
+            new(5, "RETRACT FROM FOUP", "WAIT", EquipmentState.Ready),
+            new(6, "ROTATE TO CHAMBER", "WAIT", EquipmentState.Ready),
+            new(7, "EXTEND INTO CHAMBER", "WAIT", EquipmentState.Ready),
+            new(8, "PLACE AND RETRACT", "WAIT", EquipmentState.Ready)
         };
 
         // 운영자가 즉시 확인할 수 있는 최근 이벤트 로그입니다.
@@ -105,6 +108,8 @@ public sealed class MainViewModel : ObservableObject
         // 승인된 티칭값은 읽기 전용으로만 표시합니다. 여기서 임의 티칭 데이터를 만들지 않습니다.
         TeachingPoints = new ObservableCollection<TeachingPoint>(_teachingValueProvider.LoadApprovedTeachingPoints());
         SlotMap = new ObservableCollection<WaferSlotViewModel>();
+        FoupASlots = new ObservableCollection<WaferSlotViewModel>();
+        FoupBSlots = new ObservableCollection<WaferSlotViewModel>();
         Interlocks = new ObservableCollection<InterlockStatusViewModel>();
         BladePose = new BladePoseViewModel();
         CommandAudits = _commandAuditLog.Records;
@@ -156,6 +161,10 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<TeachingPoint> TeachingPoints { get; }
 
     public ObservableCollection<WaferSlotViewModel> SlotMap { get; }
+
+    public ObservableCollection<WaferSlotViewModel> FoupASlots { get; }
+
+    public ObservableCollection<WaferSlotViewModel> FoupBSlots { get; }
 
     public ObservableCollection<InterlockStatusViewModel> Interlocks { get; }
 
@@ -485,12 +494,15 @@ public sealed class MainViewModel : ObservableObject
     {
         var statuses = progress switch
         {
-            >= 100 => new[] { "완료", "완료", "완료", "완료", "완료" },
-            >= 86 => new[] { "완료", "완료", "완료", "확인 중", "대기" },
-            >= 64 => new[] { "완료", "완료", "확인 중", "대기", "대기" },
-            >= 42 => new[] { "완료", "확인 중", "대기", "대기", "대기" },
-            >= 20 => new[] { "확인 중", "대기", "대기", "대기", "대기" },
-            _ => new[] { "대기", "대기", "대기", "대기", "대기" }
+            >= 100 => new[] { "DONE", "DONE", "DONE", "DONE", "DONE", "DONE", "DONE", "DONE" },
+            >= 94 => new[] { "DONE", "DONE", "DONE", "DONE", "DONE", "DONE", "DONE", "ACTIVE" },
+            >= 82 => new[] { "DONE", "DONE", "DONE", "DONE", "DONE", "DONE", "ACTIVE", "WAIT" },
+            >= 68 => new[] { "DONE", "DONE", "DONE", "DONE", "DONE", "ACTIVE", "WAIT", "WAIT" },
+            >= 52 => new[] { "DONE", "DONE", "DONE", "DONE", "ACTIVE", "WAIT", "WAIT", "WAIT" },
+            >= 38 => new[] { "DONE", "DONE", "DONE", "ACTIVE", "WAIT", "WAIT", "WAIT", "WAIT" },
+            >= 25 => new[] { "DONE", "DONE", "ACTIVE", "WAIT", "WAIT", "WAIT", "WAIT", "WAIT" },
+            >= 12 => new[] { "DONE", "ACTIVE", "WAIT", "WAIT", "WAIT", "WAIT", "WAIT", "WAIT" },
+            _ => new[] { "ACTIVE", "WAIT", "WAIT", "WAIT", "WAIT", "WAIT", "WAIT", "WAIT" }
         };
 
         for (var index = 0; index < SequenceSteps.Count; index++)
@@ -498,8 +510,8 @@ public sealed class MainViewModel : ObservableObject
             SequenceSteps[index].Status = statuses[index];
             SequenceSteps[index].State = statuses[index] switch
             {
-                "완료" => EquipmentState.Ready,
-                "확인 중" => EquipmentState.Active,
+                "DONE" => EquipmentState.Ready,
+                "ACTIVE" => EquipmentState.Active,
                 _ => EquipmentState.Ready
             };
         }
@@ -508,10 +520,22 @@ public sealed class MainViewModel : ObservableObject
     private void UpdateSlotMap(IReadOnlyList<WaferSlotSnapshot> snapshots)
     {
         SlotMap.Clear();
+        FoupASlots.Clear();
+        FoupBSlots.Clear();
 
         foreach (var snapshot in snapshots)
         {
-            SlotMap.Add(new WaferSlotViewModel(snapshot));
+            var slot = new WaferSlotViewModel(snapshot);
+            SlotMap.Add(slot);
+
+            if (slot.FoupName == "FOUP A")
+            {
+                FoupASlots.Add(slot);
+            }
+            else if (slot.FoupName == "FOUP B")
+            {
+                FoupBSlots.Add(slot);
+            }
         }
     }
 
@@ -535,48 +559,68 @@ public sealed class MainViewModel : ObservableObject
             station.IsTarget = station.Name == target;
         }
 
+        BladePose.Source = source;
         BladePose.Target = target;
-        BladePose.Direction = target switch
-        {
-            "CHAMBER A" => "북쪽 챔버 A 방향",
-            "CHAMBER B" => "좌측 챔버 B 방향",
-            "CHAMBER C" => "우측 챔버 C 방향",
-            _ when source.StartsWith("FOUP A", StringComparison.Ordinal) => "좌측 FOUP A 방향",
-            _ when source.StartsWith("FOUP B", StringComparison.Ordinal) => "우측 FOUP B 방향",
-            _ => "HOME"
-        };
-        BladePose.VisualAngle = target switch
-        {
-            "CHAMBER A" => 0,
-            "CHAMBER B" => -72,
-            "CHAMBER C" => 72,
-            _ when source.StartsWith("FOUP A", StringComparison.Ordinal) => -128,
-            _ when source.StartsWith("FOUP B", StringComparison.Ordinal) => 128,
-            _ => 0
-        };
     }
 
     private void UpdateBladePose(EquipmentSnapshot snapshot)
     {
-        var (_, target) = ParseSelectedRoute();
+        var (source, target) = ParseSelectedRoute();
+        var phase = GetTransferPhase(snapshot.SequenceProgress, snapshot.EmergencyStop, snapshot.RouteClear);
+
+        BladePose.Source = source;
         BladePose.Target = target;
         BladePose.Phase = snapshot.MotionPhase;
-        BladePose.Reach = snapshot.SequenceProgress switch
+        BladePose.TransferPhase = phase;
+        BladePose.Direction = phase switch
         {
-            >= 86 => "Extend to chamber slot",
-            >= 64 => "Vacuum pickup hold",
-            >= 42 => "Extend to source slot",
-            >= 20 => "Rotate to source",
-            _ => "Retracted at home"
+            TransferPhase.RotateToSource or TransferPhase.ExtendToSource or TransferPhase.VacuumPickup or TransferPhase.RetractFromSource => $"Facing {source}",
+            TransferPhase.RotateToDestination or TransferPhase.ExtendToDestination or TransferPhase.ReleaseAtDestination => $"Facing {target}",
+            TransferPhase.Complete or TransferPhase.RetractToHome => "Facing HOME",
+            TransferPhase.Blocked => "Motion blocked",
+            _ => "Facing HOME"
         };
-        BladePose.BladeLength = snapshot.SequenceProgress switch
+        BladePose.Reach = phase switch
         {
-            >= 86 => 185,
-            >= 64 => 160,
-            >= 42 => 176,
-            >= 20 => 126,
-            _ => 118
+            TransferPhase.ExtendToSource => $"Extending into {source}",
+            TransferPhase.VacuumPickup => $"Blade extended at {source}",
+            TransferPhase.RetractFromSource => $"Retracting from {source}",
+            TransferPhase.ExtendToDestination => $"Extending into {target}",
+            TransferPhase.ReleaseAtDestination => $"Blade extended at {target}",
+            TransferPhase.RotateToSource or TransferPhase.RotateToDestination => "Retracted while rotating",
+            _ => "Retracted at HOME"
         };
+        BladePose.VisualAngle = phase switch
+        {
+            TransferPhase.RotateToSource or TransferPhase.ExtendToSource or TransferPhase.VacuumPickup or TransferPhase.RetractFromSource => GetStationAngle(source),
+            TransferPhase.RotateToDestination or TransferPhase.ExtendToDestination or TransferPhase.ReleaseAtDestination => GetStationAngle(target),
+            _ => 0
+        };
+        BladePose.BladeLength = phase switch
+        {
+            TransferPhase.ExtendToSource or TransferPhase.VacuumPickup or TransferPhase.ExtendToDestination or TransferPhase.ReleaseAtDestination => 226,
+            TransferPhase.RetractFromSource or TransferPhase.RotateToSource or TransferPhase.RotateToDestination => 96,
+            _ => 86
+        };
+        BladePose.CurrentStation = phase switch
+        {
+            TransferPhase.RotateToSource => $"HOME -> {source}",
+            TransferPhase.ExtendToSource or TransferPhase.VacuumPickup => source,
+            TransferPhase.RetractFromSource => $"{source} -> HOME ARC",
+            TransferPhase.RotateToDestination => $"HOME ARC -> {target}",
+            TransferPhase.ExtendToDestination or TransferPhase.ReleaseAtDestination => target,
+            TransferPhase.Complete => "HOME",
+            TransferPhase.Blocked => "BLOCKED",
+            _ => "HOME"
+        };
+        BladePose.Vacuum = phase is TransferPhase.VacuumPickup or TransferPhase.RetractFromSource or TransferPhase.RotateToDestination or TransferPhase.ExtendToDestination
+            ? "Vacuum ON"
+            : "Vacuum OFF";
+        BladePose.Wafer = phase is TransferPhase.RetractFromSource or TransferPhase.RotateToDestination or TransferPhase.ExtendToDestination
+            ? "Wafer on blade"
+            : phase == TransferPhase.ReleaseAtDestination || phase == TransferPhase.Complete
+                ? "Wafer placed"
+                : "No wafer on blade";
         BladePose.State = snapshot.EmergencyStop
             ? EquipmentState.Fault
             : snapshot.SequenceProgress > 0 ? EquipmentState.Active : EquipmentState.Warning;
@@ -600,6 +644,40 @@ public sealed class MainViewModel : ObservableObject
                 station.State = snapshot.AxisHomed ? EquipmentState.Ready : EquipmentState.Warning;
             }
         }
+    }
+
+    private static TransferPhase GetTransferPhase(int progress, bool emergencyStop, bool routeClear)
+    {
+        if (emergencyStop || !routeClear)
+        {
+            return TransferPhase.Blocked;
+        }
+
+        return progress switch
+        {
+            >= 100 => TransferPhase.Complete,
+            >= 94 => TransferPhase.ReleaseAtDestination,
+            >= 82 => TransferPhase.ExtendToDestination,
+            >= 68 => TransferPhase.RotateToDestination,
+            >= 52 => TransferPhase.RetractFromSource,
+            >= 38 => TransferPhase.VacuumPickup,
+            >= 25 => TransferPhase.ExtendToSource,
+            >= 12 => TransferPhase.RotateToSource,
+            _ => TransferPhase.HomeReady
+        };
+    }
+
+    private static double GetStationAngle(string station)
+    {
+        return station switch
+        {
+            "FOUP A" => 146,
+            "FOUP B" => 34,
+            "CHAMBER A" => -90,
+            "CHAMBER B" => -159,
+            "CHAMBER C" => -21,
+            _ => 0
+        };
     }
 
     private (string Source, string Target) ParseSelectedRoute()

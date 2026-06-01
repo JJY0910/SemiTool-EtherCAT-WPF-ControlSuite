@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SemiTool.EtherCAT.ControlSuite\SemiTool.EtherCAT.ControlSuite.csproj" />
+    <Compile Include="..\SemiTool.EtherCAT.ControlSuite\Models\**\*.cs" LinkBase="Shared\Models" />
+    <Compile Include="..\SemiTool.EtherCAT.ControlSuite\Services\**\*.cs" LinkBase="Shared\Services" />
   </ItemGroup>
 
 </Project>

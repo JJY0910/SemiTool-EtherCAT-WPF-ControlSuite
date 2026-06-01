@@ -22,16 +22,16 @@ public sealed class CommandGate
             EquipmentCommandType.CheckServoReady => true,
             EquipmentCommandType.CheckHome => true,
             EquipmentCommandType.ReadSlotMap => snapshot.EtherCatLink,
-            EquipmentCommandType.AdvanceOfflineSimulation => permission.CanRunOfflineSimulation,
+            EquipmentCommandType.AdvanceOfflineSimulation => permission.CanRunOfflineSimulation && snapshot.SlotMapVerified,
             EquipmentCommandType.IssueRealMotion => permission.CanIssueRealMotion,
             EquipmentCommandType.StopMotion => true,
             _ => false
         };
 
-        return new CommandDecision(command, isAllowed, BuildReason(command, isAllowed, permission), checks);
+        return new CommandDecision(command, isAllowed, BuildReason(command, snapshot, isAllowed, permission), checks);
     }
 
-    private static string BuildReason(EquipmentCommand command, bool isAllowed, MotionPermission permission)
+    private static string BuildReason(EquipmentCommand command, EquipmentSnapshot snapshot, bool isAllowed, MotionPermission permission)
     {
         if (isAllowed)
         {
@@ -42,6 +42,10 @@ public sealed class CommandGate
 
         return command.Type == EquipmentCommandType.IssueRealMotion
             ? $"실제 이동 명령 차단: {permission.Reason}"
+            : command.Type == EquipmentCommandType.AdvanceOfflineSimulation
+                ? !snapshot.SlotMapVerified
+                    ? "명령 차단: FOUP 슬롯맵 검증 후 이송 시퀀스 실행"
+                    : $"명령 차단: {permission.Reason}"
             : $"명령 차단: {permission.Reason}";
     }
 }

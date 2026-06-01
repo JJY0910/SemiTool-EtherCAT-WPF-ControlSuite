@@ -21,14 +21,14 @@ public sealed class OfflineScenarioRunner
         stepsRun++;
 
         var command = EquipmentCommand.Create(EquipmentCommandType.AdvanceOfflineSimulation, route, "ScenarioRunner");
+        snapshot = simulator.VerifySlotMap();
+        stepsRun++;
+
         var decision = _commandGate.Evaluate(command, snapshot, approvedTeachingLoaded: false);
         if (!decision.IsAllowed)
         {
             findings.Add($"Initial command blocked: {decision.Reason}");
         }
-
-        snapshot = simulator.VerifySlotMap();
-        stepsRun++;
 
         while (snapshot.SequenceProgress < 100 && findings.Count == 0)
         {
