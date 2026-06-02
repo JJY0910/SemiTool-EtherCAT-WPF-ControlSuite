@@ -301,6 +301,7 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("ChamberAProgressPercent=\"{Binding ChamberA.ProgressPercent}\"", source);
         Assert.Contains("ChamberBProgressPercent=\"{Binding ChamberB.ProgressPercent}\"", source);
         Assert.Contains("ChamberCProgressPercent=\"{Binding ChamberC.ProgressPercent}\"", source);
+        Assert.Contains("ConnectionKindLabel", source);
         Assert.Contains("Current Sequence Step", source);
         Assert.Contains("Sequence Speed", source);
         Assert.Contains("OperationWafer", source);
@@ -356,6 +357,16 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("var step = _sequenceSteps[index]", source);
         Assert.Contains("Task.Delay(GetManualStepVisualDelay(step)", source);
         Assert.Contains("Math.Clamp(GetRuntimeDelayForSelectedSpeed(step), 650, 1100)", source);
+    }
+
+    [Fact]
+    public void MachineTwinViewModel_DoesNotLabelSimulatorConnectionAsEtherCatReady()
+    {
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "ViewModels", "MachineTwinViewModel.cs");
+
+        Assert.Contains("ConnectionKindLabel => IsSimulatorMode ? \"Sim Link\" : \"EtherCAT\"", source);
+        Assert.Contains("? IsConnected ? \"Sim Ready\" : \"Sim Idle\"", source);
+        Assert.Contains("RaiseConnectionLabels()", source);
     }
 
     [Fact]

@@ -528,7 +528,7 @@
                             </Border>
                             <Border Style="{StaticResource HmiStatusCard}" Padding="8">
                                 <StackPanel>
-                                    <TextBlock Text="EtherCAT" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                                    <TextBlock Text="{Binding ConnectionKindLabel}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
                                     <TextBlock Text="{Binding ConnectionLabel}" Foreground="{StaticResource HmiTextBrush}" FontWeight="SemiBold" />
                                 </StackPanel>
                             </Border>

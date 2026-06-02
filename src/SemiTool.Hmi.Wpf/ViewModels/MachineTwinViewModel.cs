@@ -187,7 +187,10 @@ public sealed class MachineTwinViewModel : ObservableObject
         }
     }
     public string ModeLabel => IsSimulatorMode ? "SIMULATOR" : "REAL HARDWARE";
-    public string ConnectionLabel => IsConnected ? "Connected" : "Disconnected";
+    public string ConnectionKindLabel => IsSimulatorMode ? "Sim Link" : "EtherCAT";
+    public string ConnectionLabel => IsSimulatorMode
+        ? IsConnected ? "Sim Ready" : "Sim Idle"
+        : IsConnected ? "Connected" : "Disconnected";
     public double BladeLength => IsBladeExtended ? 245 : 92;
     public double BladeScaleY => IsBladeExtended ? 1.0 : 0.38;
     public string CylinderState => $"{BladeSequenceState} / {(IsCylinderForward ? "Cylinder forward" : "Cylinder backward")}";
@@ -223,8 +226,7 @@ public sealed class MachineTwinViewModel : ObservableObject
         IsConnected = status.IsConnected;
         MachineState = status.MachineState.ToString();
         AlarmSummary = status.AlarmSummary;
-        OnPropertyChanged(nameof(ModeLabel));
-        OnPropertyChanged(nameof(ConnectionLabel));
+        RaiseConnectionLabels();
         OnPropertyChanged(nameof(FeedbackBoundary));
 
         if (IsSequenceRunning)
@@ -467,6 +469,7 @@ public sealed class MachineTwinViewModel : ObservableObject
         IsSimulatorMode = true;
         IsRealHardwareMode = false;
         MachineState = SemiTool.Domain.MachineState.Manual.ToString();
+        RaiseConnectionLabels();
     }
 
     private async Task ApplySimulatorStepAsync(MachineTwinSequenceStep step, CancellationToken cancellationToken)
@@ -673,6 +676,13 @@ public sealed class MachineTwinViewModel : ObservableObject
         OnPropertyChanged(nameof(FoupASlotMask));
         OnPropertyChanged(nameof(FoupBSlotMask));
         OnPropertyChanged(nameof(FeedbackBoundary));
+    }
+
+    private void RaiseConnectionLabels()
+    {
+        OnPropertyChanged(nameof(ModeLabel));
+        OnPropertyChanged(nameof(ConnectionKindLabel));
+        OnPropertyChanged(nameof(ConnectionLabel));
     }
 
     private void SelectStation(string displayName)
