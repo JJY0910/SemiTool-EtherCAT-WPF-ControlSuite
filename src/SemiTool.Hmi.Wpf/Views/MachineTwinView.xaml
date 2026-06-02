@@ -51,16 +51,16 @@
                 Background="#111E25"
                 BorderBrush="{StaticResource HmiStrokeBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="18,14">
+                Padding="14,9">
             <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Left">
                     <TextBlock Text="Wafer Transfer 3D Machine Twin"
                                Foreground="{StaticResource HmiTextBrush}"
-                               FontSize="28"
+                               FontSize="24"
                                FontWeight="SemiBold" />
                     <TextBlock Text="Native WPF Viewport3D / simulator-mode sequence monitor / no reference photo panel"
                                Foreground="{StaticResource HmiMutedTextBrush}"
-                               FontSize="13" />
+                               FontSize="11" />
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
@@ -79,11 +79,11 @@
             </DockPanel>
         </Border>
 
-        <Grid Grid.Row="1" Margin="14">
+        <Grid Grid.Row="1" Margin="8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="220" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="230" />
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
@@ -183,25 +183,26 @@
 
                 <Border Grid.Column="1"
                     Style="{StaticResource HmiStatusCard}"
-                    Padding="8"
-                    Margin="0,0,8,8">
+                    Padding="6"
+                    Margin="0,0,6,6">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                    <StackPanel Grid.Row="0" Margin="0,0,0,4">
                         <StackPanel>
                             <TextBlock Text="3D Wafer Transfer Sequence" Style="{StaticResource HmiSectionHeader}" />
-                            <TextBlock Text="{Binding FeedbackBoundary}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
+                            <TextBlock Text="{Binding FeedbackBoundary}" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="10" />
                         </StackPanel>
                         <Border Background="#1B3540"
                                 BorderBrush="{StaticResource HmiAccentBrush}"
                                 BorderThickness="1"
                                 CornerRadius="6"
                                 Padding="10,6"
-                                Margin="0,6,0,0">
+                                Margin="0,4,0,0"
+                                Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock Text="Current Sequence Step"
                                            Foreground="{StaticResource HmiMutedTextBrush}"
@@ -214,7 +215,7 @@
                                            TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
-                        <UniformGrid Columns="5" Height="62" Margin="0,6,0,0">
+                        <UniformGrid Columns="5" Height="62" Margin="0,6,0,0" Visibility="Collapsed">
                             <Border Style="{StaticResource HmiStatusCard}" Padding="6" Margin="0,0,5,0">
                                 <StackPanel>
                                     <TextBlock Text="Wafer" Foreground="{StaticResource HmiMutedTextBrush}" FontSize="11" />
@@ -246,7 +247,7 @@
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
-                        <WrapPanel Margin="0,6,0,0">
+                        <WrapPanel Margin="0,4,0,0">
                             <Button Content="Run Transfer Sequence"
                                     Command="{Binding RunTransferSequenceCommand}"
                                     Style="{StaticResource HmiPrimaryButton}" />
@@ -268,8 +269,8 @@
                             <TextBlock Text="Sequence Speed" Foreground="{StaticResource HmiMutedTextBrush}" VerticalAlignment="Center" Margin="12,0,4,0" />
                             <ComboBox ItemsSource="{Binding SequenceSpeedOptions}"
                                       SelectedItem="{Binding SelectedSequenceSpeed}"
-                                      Width="98"
-                                      MinHeight="34" />
+                                      Width="92"
+                                      MinHeight="30" />
                         </WrapPanel>
                     </StackPanel>
 
@@ -436,26 +437,35 @@
                                                         FoupACount="{Binding FoupACount}"
                                                         FoupBCount="{Binding FoupBCount}" />
 
+                            <Grid Margin="14" IsHitTestVisible="False">
+                                <TextBlock Text="CHAMBER A" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="70,8,0,0" Foreground="{StaticResource HmiTextBrush}" FontSize="11" FontWeight="SemiBold" />
+                                <TextBlock Text="CHAMBER B" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,5,0,0" Foreground="{StaticResource HmiTextBrush}" FontSize="11" FontWeight="SemiBold" />
+                                <TextBlock Text="CHAMBER C" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,70,0" Foreground="{StaticResource HmiTextBrush}" FontSize="11" FontWeight="SemiBold" />
+                                <TextBlock Text="FOUP A / 5 Slots" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="60,0,0,12" Foreground="{StaticResource HmiGreenBrush}" FontSize="11" FontWeight="SemiBold" />
+                                <TextBlock Text="FOUP B / 5 Slots" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,60,12" Foreground="{StaticResource HmiWarningBrush}" FontSize="11" FontWeight="SemiBold" />
+                            </Grid>
+
                             <Border HorizontalAlignment="Left"
                                     VerticalAlignment="Top"
-                                    Margin="18"
-                                    Background="#B30A1820"
+                                    Margin="12"
+                                    Background="#900A1820"
                                     BorderBrush="#426C80"
                                     BorderThickness="1"
                                     CornerRadius="7"
-                                    Padding="12,10">
+                                    Padding="8,7"
+                                    Visibility="Collapsed">
                                 <StackPanel>
                                     <TextBlock Text="{Binding CurrentStation}"
                                                Foreground="{StaticResource HmiTextBrush}"
-                                               FontSize="20"
+                                               FontSize="17"
                                                FontWeight="SemiBold" />
                                     <TextBlock Text="{Binding OperationCurrentStep}"
                                                Foreground="{StaticResource HmiBlueBrush}"
-                                               FontSize="14"
+                                               FontSize="12"
                                                FontWeight="SemiBold" />
                                     <TextBlock Text="{Binding CylinderState}"
                                                Foreground="{StaticResource HmiWarningBrush}"
-                                               FontSize="13"
+                                               FontSize="11"
                                                FontWeight="SemiBold"
                                                Margin="0,4,0,0" />
                                 </StackPanel>
@@ -468,7 +478,8 @@
                                     BorderBrush="#426C80"
                                     BorderThickness="1"
                                     CornerRadius="7"
-                                    Padding="12,10">
+                                    Padding="12,10"
+                                    Visibility="Collapsed">
                                 <StackPanel>
                                     <TextBlock Text="HOME rotates to station before blade extension"
                                                Foreground="{StaticResource HmiTextBrush}"
@@ -556,7 +567,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="1" Style="{StaticResource HmiStatusCard}">
+                <Border Grid.Row="1" Style="{StaticResource HmiStatusCard}" Visibility="Collapsed">
                     <StackPanel>
                         <TextBlock Text="Station Detents" Style="{StaticResource HmiSectionHeader}" />
                         <ItemsControl ItemsSource="{Binding Stations}">
@@ -586,7 +597,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="2" Style="{StaticResource HmiStatusCard}">
+                <Border Grid.Row="2" Style="{StaticResource HmiStatusCard}" Visibility="Collapsed">
                     <StackPanel>
                         <TextBlock Text="Runtime Event Trace" Style="{StaticResource HmiSectionHeader}" />
                         <ItemsControl ItemsSource="{Binding EventLogLines}">

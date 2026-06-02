@@ -26,37 +26,37 @@ public sealed class DesignMachineTwinViewModel
         ChamberA = new DesignChamberPipelineViewModel(
             "Chamber A",
             "Pre-Clean",
-            true,
-            "W04",
-            "Processing",
+            false,
+            string.Empty,
+            "Empty",
             "PreClean_Default",
-            "Chem Clean",
-            6,
-            55,
+            "Ready",
+            0,
+            0,
             false);
 
         ChamberB = new DesignChamberPipelineViewModel(
             "Chamber B",
             "CMP Main",
-            true,
-            "W03",
-            "Processing",
+            false,
+            string.Empty,
+            "Empty",
             "CMP_Main",
-            "Bulk Polish",
-            12,
-            60,
+            "Ready",
+            0,
+            0,
             false);
 
         ChamberC = new DesignChamberPipelineViewModel(
             "Chamber C",
             "Post-Clean & Dry",
-            true,
-            "W02",
-            "Processing",
+            false,
+            string.Empty,
+            "Empty",
             "PostClean_Dry",
-            "Dry Rinse",
-            4,
-            70,
+            "Ready",
+            0,
+            0,
             false);
 
         RunTransferSequenceCommand = CreateNoOpCommand();
@@ -87,36 +87,36 @@ public sealed class DesignMachineTwinViewModel
     public bool IsRealHardwareMode => false;
     public bool IsConnected => false;
     public string MachineState => "DesignerPreview";
-    public string CurrentStation => "Chamber C";
-    public string PreviousStation => "Chamber B";
-    public string NextStation => "FOUP B";
-    public string CurrentStepName => "Designer sample: five unique wafers / pipeline mid-drain";
-    public string CurrentAction => "Blade is extended into Chamber C after the door-open interlock.";
-    public string OperationWafer => "W02";
-    public string OperationSource => "Chamber B";
-    public string OperationDestination => "Chamber C";
-    public string OperationCurrentStep => "Blade extended";
-    public string OperationNextStep => "Vacuum release / place wafer";
-    public string RobotSequenceState => "Placing";
-    public string BladeSequenceState => "Extended";
-    public string VacuumDisplayState => "ExhaustOrRelease";
+    public string CurrentStation => "Home / Start";
+    public string PreviousStation => "-";
+    public string NextStation => "FOUP A";
+    public string CurrentStepName => "Designer sample: startup simulator state";
+    public string CurrentAction => "Pipeline ready: FOUP A 5 wafers, FOUP B empty";
+    public string OperationWafer => "-";
+    public string OperationSource => "Home / Start";
+    public string OperationDestination => "FOUP A";
+    public string OperationCurrentStep => "Ready";
+    public string OperationNextStep => "Move theta to FOUP A";
+    public string RobotSequenceState => "Idle";
+    public string BladeSequenceState => "Retracted";
+    public string VacuumDisplayState => "Off";
     public string ChamberADoorState => "Closed";
     public string ChamberBDoorState => "Closed";
     public string ChamberCDoorState => "Open";
-    public double VisualThetaAngle => 75;
-    public string ThetaTargetName => "Chamber C";
-    public long PreservedThetaEncoderValue => -322000;
-    public string ZState => "Z Work";
-    public bool IsBladeExtended => true;
-    public bool IsCylinderForward => true;
-    public bool IsCylinderBackward => false;
+    public double VisualThetaAngle => 0;
+    public string ThetaTargetName => "Home / Start";
+    public long PreservedThetaEncoderValue => 0;
+    public string ZState => "Z Safe";
+    public bool IsBladeExtended => false;
+    public bool IsCylinderForward => false;
+    public bool IsCylinderBackward => true;
     public bool IsVacuumOn => false;
     public bool IsWaferOnBlade => false;
     public bool IsWaferInFoupA1 => true;
-    public bool IsWaferInChamberA => true;
-    public bool IsWaferInChamberB => true;
-    public bool IsWaferInChamberC => true;
-    public bool IsWaferInFoupB1 => true;
+    public bool IsWaferInChamberA => false;
+    public bool IsWaferInChamberB => false;
+    public bool IsWaferInChamberC => false;
+    public bool IsWaferInFoupB1 => false;
     public bool ChamberADoorOpen => false;
     public bool ChamberBDoorOpen => false;
     public bool ChamberCDoorOpen => true;
@@ -125,23 +125,23 @@ public sealed class DesignMachineTwinViewModel
     public bool TowerGreen => true;
     public string AlarmSummary => "Designer preview: no active alarms";
     public string SelectedSequenceSpeed { get; set; } = "Normal";
-    public string PipelineState => "Running";
-    public int FoupACount => 1;
-    public int FoupBCount => 1;
-    public int CompletedCount => 1;
-    public string CurrentTransferDescription => "Static preview: W01 complete, W02-W04 in chambers, W05 waiting.";
-    public string ActiveWaferId => "W02";
+    public string PipelineState => "Ready";
+    public int FoupACount => 5;
+    public int FoupBCount => 0;
+    public int CompletedCount => 0;
+    public string CurrentTransferDescription => "Ready";
+    public string ActiveWaferId => string.Empty;
     public string WaferIdOnBlade => string.Empty;
     public string TimingProfileName => "Normal";
     public string ModeLabel => "SIMULATOR";
     public string ConnectionLabel => "Designer";
-    public double BladeLength => 245;
-    public double BladeScaleY => 1.0;
-    public string CylinderState => "Extended / Cylinder forward";
-    public string VacuumState => "Exhaust / release active";
-    public string WaferSummary => "5 unique wafers: W01 B1, W02 C, W03 B, W04 A, W05 FOUP A";
-    public string FoupASummary => "FOUP A: 1/5 waiting";
-    public string FoupBSummary => "FOUP B: 1/5 completed";
+    public double BladeLength => 92;
+    public double BladeScaleY => 0.38;
+    public string CylinderState => "Retracted / Cylinder backward";
+    public string VacuumState => "Vacuum OFF";
+    public string WaferSummary => "5/5 in FOUP A, 0/5 in FOUP B";
+    public string FoupASummary => "FOUP A: 5/5";
+    public string FoupBSummary => "FOUP B: 0/5";
 
     public ICommand RunTransferSequenceCommand { get; }
     public ICommand PauseCommand { get; }

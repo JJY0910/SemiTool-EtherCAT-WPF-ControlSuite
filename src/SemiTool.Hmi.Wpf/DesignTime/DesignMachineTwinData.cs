@@ -14,16 +14,16 @@ public static class DesignMachineTwinData
 {
     public static ObservableCollection<DesignFoupSlotChipViewModel> CreateFoupASlots() =>
     [
-        new("A1", false, string.Empty, "Empty", false),
-        new("A2", false, string.Empty, "Empty", false),
-        new("A3", false, string.Empty, "Empty", false),
-        new("A4", false, string.Empty, "Empty", false),
-        new("A5", true, "W05", "Waiting", true)
+        new("A1", true, "W01", "Waiting", true),
+        new("A2", true, "W02", "Waiting", false),
+        new("A3", true, "W03", "Waiting", false),
+        new("A4", true, "W04", "Waiting", false),
+        new("A5", true, "W05", "Waiting", false)
     ];
 
     public static ObservableCollection<DesignFoupSlotChipViewModel> CreateFoupBSlots() =>
     [
-        new("B1", true, "W01", "Completed", false),
+        new("B1", false, string.Empty, "Empty", false),
         new("B2", false, string.Empty, "Empty", false),
         new("B3", false, string.Empty, "Empty", false),
         new("B4", false, string.Empty, "Empty", false),
@@ -43,8 +43,8 @@ public static class DesignMachineTwinData
     [
         "[designer] Static five-wafer preview loaded. No real hardware connection.",
         "[designer] Exactly five unique wafers are shown: W01-W05.",
-        "[designer] W01 is completed in FOUP B; W02/W03/W04 are in Chamber C/B/A.",
-        "[designer] W05 remains waiting in FOUP A; blade is shown without duplicating a wafer.",
+        "[designer] W01-W05 start in FOUP A; FOUP B starts empty.",
+        "[designer] Blade is retracted at HOME before station rotation.",
         "[designer] Runtime motion is verified by Run Transfer Sequence, not by the static designer."
     ];
 

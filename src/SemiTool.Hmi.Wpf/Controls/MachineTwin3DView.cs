@@ -61,10 +61,10 @@ public sealed class MachineTwin3DView : Viewport3D
     {
         ClipToBounds = true;
         Camera = new PerspectiveCamera(
-            new Point3D(8.2, 5.9, 8.7),
-            new Vector3D(-8.2, -5.0, -8.7),
+            new Point3D(0, 8.7, 11.2),
+            new Vector3D(0, -8.0, -11.2),
             new Vector3D(0, 1, 0),
-            36);
+            48);
 
         Children.Add(new ModelVisual3D { Content = _scene });
         BuildScene();
@@ -194,11 +194,11 @@ public sealed class MachineTwin3DView : Viewport3D
 
     private void AddStations()
     {
-        AddChamber("A", new Point3D(-1.35, 0.56, -2.05), -18);
-        AddChamber("B", new Point3D(0.7, 0.56, -2.18), 0);
-        AddChamber("C", new Point3D(2.95, 0.56, -0.72), 46);
-        AddFoup("A", new Point3D(-3.05, 0.52, 1.75), "#44F091", _foupAWafers);
-        AddFoup("B", new Point3D(3.05, 0.52, 1.75), "#F6C453", _foupBWafers);
+        AddChamber("A", new Point3D(-2.9, 0.56, -0.75), -55);
+        AddChamber("B", new Point3D(0, 0.56, -2.15), 0);
+        AddChamber("C", new Point3D(2.9, 0.56, -0.75), 55);
+        AddFoup("A", new Point3D(-3.18, 0.52, 1.78), 27, "#44F091", _foupAWafers);
+        AddFoup("B", new Point3D(3.18, 0.52, 1.78), -27, "#F6C453", _foupBWafers);
 
         _scene.Children.Add(CreateTowerLight(new Point3D(-3.9, 1.05, -2.0)));
         _scene.Children.Add(CreateTowerLight(new Point3D(3.9, 1.05, -2.0)));
@@ -211,6 +211,8 @@ public sealed class MachineTwin3DView : Viewport3D
         chamber.Children.Add(CreateBox(new Point3D(0, -0.05, 0.58), new Size3D(0.96, 0.43, 0.08), Material("#1E2D35"), null));
         chamber.Children.Add(CreateCylinder(new Point3D(0, -0.2, 0.04), 0.32, 0.09, 36, Material("#B9C8D0"), Material("#EDF6FA")));
         chamber.Children.Add(CreateBox(new Point3D(0.54, 0.05, 0.43), new Size3D(0.12, 0.12, 0.05), Material("#2FDB72"), null));
+        chamber.Children.Add(CreateBox(new Point3D(-0.45, 0.36, 0.57), new Size3D(0.28, 0.06, 0.04), Material("#D7E5EB", 0.85), null));
+        chamber.Children.Add(CreateBox(new Point3D(0.45, 0.36, 0.57), new Size3D(0.28, 0.06, 0.04), Material("#D7E5EB", 0.85), null));
 
         var door = CreateBox(new Point3D(0, 0.03, 0.67), new Size3D(0.84, 0.33, 0.04), Material("#C9DAE2", 0.76), Material("#FFFFFF", 0.82));
         chamber.Children.Add(door);
@@ -238,23 +240,32 @@ public sealed class MachineTwin3DView : Viewport3D
         _scene.Children.Add(chamber);
     }
 
-    private void AddFoup(string name, Point3D center, string accent, ICollection<GeometryModel3D> waferSlots)
+    private void AddFoup(string name, Point3D center, double angle, string accent, ICollection<GeometryModel3D> waferSlots)
     {
         var foup = new Model3DGroup();
-        foup.Children.Add(CreateBox(new Point3D(0, 0, 0), new Size3D(0.96, 1.1, 0.8), Material("#070B10"), Material("#2A353D")));
+        foup.Children.Add(CreateBox(new Point3D(0, 0, 0), new Size3D(1.02, 1.18, 0.86), Material("#070B10"), Material("#2A353D")));
         foup.Children.Add(CreateBox(new Point3D(0, -0.5, 0), new Size3D(1.2, 0.12, 0.96), Material("#BBC4CA"), null));
+        foup.Children.Add(CreateBox(new Point3D(-0.6, -0.03, 0.02), new Size3D(0.08, 1.0, 0.8), Material("#111820"), null));
+        foup.Children.Add(CreateBox(new Point3D(0.6, -0.03, 0.02), new Size3D(0.08, 1.0, 0.8), Material("#111820"), null));
 
         for (var index = 0; index < 5; index++)
         {
             var y = -0.32 + index * 0.16;
             foup.Children.Add(CreateBox(new Point3D(0, y, 0.43), new Size3D(0.82, 0.05, 0.08), Material(accent), null));
-            var wafer = CreateBox(new Point3D(0, y + 0.04, 0.18), new Size3D(0.72, 0.025, 0.38), Material("#A4F5D8", 0.72), null);
+            var wafer = CreateCylinder(new Point3D(0, y + 0.04, 0.12), 0.34, 0.026, 48, Material("#A4F5D8", 0.74), Material("#E9FFF8", 0.78));
             waferSlots.Add(wafer);
             foup.Children.Add(wafer);
         }
 
         foup.Children.Add(CreateBox(new Point3D(0, 0.67, 0.42), new Size3D(0.78, 0.08, 0.1), Material(accent), null));
-        foup.Transform = new TranslateTransform3D(center.X, center.Y, center.Z);
+        foup.Transform = new Transform3DGroup
+        {
+            Children =
+            {
+                new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), angle)),
+                new TranslateTransform3D(center.X, center.Y, center.Z)
+            }
+        };
         _scene.Children.Add(foup);
     }
 

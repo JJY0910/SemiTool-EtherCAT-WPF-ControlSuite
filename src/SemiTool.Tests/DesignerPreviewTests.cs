@@ -59,11 +59,11 @@ public sealed class DesignerPreviewTests
     {
         var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinData.cs");
 
-        Assert.Contains("new(\"A1\", false, string.Empty, \"Empty\", false)", source);
-        Assert.Contains("new(\"A2\", false, string.Empty, \"Empty\", false)", source);
-        Assert.Contains("new(\"A3\", false, string.Empty, \"Empty\", false)", source);
-        Assert.Contains("new(\"A4\", false, string.Empty, \"Empty\", false)", source);
-        Assert.Contains("new(\"A5\", true, \"W05\", \"Waiting\", true)", source);
+        Assert.Contains("new(\"A1\", true, \"W01\", \"Waiting\", true)", source);
+        Assert.Contains("new(\"A2\", true, \"W02\", \"Waiting\", false)", source);
+        Assert.Contains("new(\"A3\", true, \"W03\", \"Waiting\", false)", source);
+        Assert.Contains("new(\"A4\", true, \"W04\", \"Waiting\", false)", source);
+        Assert.Contains("new(\"A5\", true, \"W05\", \"Waiting\", false)", source);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class DesignerPreviewTests
     {
         var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinData.cs");
 
-        Assert.Contains("new(\"B1\", true, \"W01\", \"Completed\", false)", source);
+        Assert.Contains("new(\"B1\", false, string.Empty, \"Empty\", false)", source);
         Assert.Contains("new(\"B2\", false, string.Empty, \"Empty\", false)", source);
         Assert.Contains("new(\"B3\", false, string.Empty, \"Empty\", false)", source);
         Assert.Contains("new(\"B4\", false, string.Empty, \"Empty\", false)", source);
@@ -86,9 +86,9 @@ public sealed class DesignerPreviewTests
         Assert.Contains("\"PreClean_Default\"", source);
         Assert.Contains("\"CMP_Main\"", source);
         Assert.Contains("\"PostClean_Dry\"", source);
-        Assert.Contains("\"W04\"", source);
-        Assert.Contains("\"W03\"", source);
-        Assert.Contains("\"W02\"", source);
+        Assert.Contains("public string CurrentStation => \"Home / Start\";", source);
+        Assert.Contains("public int FoupACount => 5;", source);
+        Assert.Contains("public int FoupBCount => 0;", source);
     }
 
     [Fact]
@@ -97,14 +97,14 @@ public sealed class DesignerPreviewTests
         var dataSource = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinData.cs");
         var viewModelSource = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "DesignTime", "DesignMachineTwinViewModel.cs");
 
-        Assert.Contains("new(\"B1\", true, \"W01\", \"Completed\", false)", dataSource);
-        Assert.Contains("\"W02\"", viewModelSource);
-        Assert.Contains("\"W03\"", viewModelSource);
-        Assert.Contains("\"W04\"", viewModelSource);
-        Assert.Contains("new(\"A5\", true, \"W05\", \"Waiting\", true)", dataSource);
+        Assert.Contains("new(\"A1\", true, \"W01\", \"Waiting\", true)", dataSource);
+        Assert.Contains("new(\"A2\", true, \"W02\", \"Waiting\", false)", dataSource);
+        Assert.Contains("new(\"A3\", true, \"W03\", \"Waiting\", false)", dataSource);
+        Assert.Contains("new(\"A4\", true, \"W04\", \"Waiting\", false)", dataSource);
+        Assert.Contains("new(\"A5\", true, \"W05\", \"Waiting\", false)", dataSource);
         Assert.Contains("public bool IsWaferOnBlade => false;", viewModelSource);
         Assert.Contains("public string WaferIdOnBlade => string.Empty;", viewModelSource);
-        Assert.Contains("Five unique wafers total", viewModelSource);
+        Assert.Contains("public string WaferSummary => \"5/5 in FOUP A, 0/5 in FOUP B\";", viewModelSource);
     }
 
     [Fact]

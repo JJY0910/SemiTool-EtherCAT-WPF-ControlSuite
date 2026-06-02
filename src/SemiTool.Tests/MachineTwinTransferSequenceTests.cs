@@ -254,6 +254,9 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("Run Transfer Sequence", source);
         Assert.Contains("Wafer Transfer 3D Machine Twin", source);
         Assert.Contains("MachineTwin3DView", source);
+        Assert.Contains("FoupACount=\"{Binding FoupACount}\"", source);
+        Assert.Contains("FoupBCount=\"{Binding FoupBCount}\"", source);
+        Assert.Contains("WaferOnBlade=\"{Binding IsWaferOnBlade}\"", source);
         Assert.Contains("Current Sequence Step", source);
         Assert.Contains("Sequence Speed", source);
         Assert.Contains("OperationWafer", source);
