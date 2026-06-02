@@ -49,6 +49,16 @@ public sealed class MachineTwin3DView : Viewport3D
     public static readonly DependencyProperty WaferInChamberCProperty =
         DependencyProperty.Register(nameof(WaferInChamberC), typeof(bool), typeof(MachineTwin3DView), new PropertyMetadata(false, OnMotionChanged));
 
+    // 챔버별 공정 진행률을 전면 5분할 인디케이터로 표시하는 HMI 전용 값입니다.
+    public static readonly DependencyProperty ChamberAProgressPercentProperty =
+        DependencyProperty.Register(nameof(ChamberAProgressPercent), typeof(double), typeof(MachineTwin3DView), new PropertyMetadata(0d, OnMotionChanged));
+
+    public static readonly DependencyProperty ChamberBProgressPercentProperty =
+        DependencyProperty.Register(nameof(ChamberBProgressPercent), typeof(double), typeof(MachineTwin3DView), new PropertyMetadata(0d, OnMotionChanged));
+
+    public static readonly DependencyProperty ChamberCProgressPercentProperty =
+        DependencyProperty.Register(nameof(ChamberCProgressPercent), typeof(double), typeof(MachineTwin3DView), new PropertyMetadata(0d, OnMotionChanged));
+
     public static readonly DependencyProperty FoupACountProperty =
         DependencyProperty.Register(nameof(FoupACount), typeof(int), typeof(MachineTwin3DView), new PropertyMetadata(5, OnMotionChanged));
 
@@ -79,6 +89,9 @@ public sealed class MachineTwin3DView : Viewport3D
     private readonly List<GeometryModel3D> _foupBWafers = [];
     private readonly List<GeometryModel3D> _foupASlotRails = [];
     private readonly List<GeometryModel3D> _foupBSlotRails = [];
+    private readonly List<GeometryModel3D> _chamberAProgressSegments = [];
+    private readonly List<GeometryModel3D> _chamberBProgressSegments = [];
+    private readonly List<GeometryModel3D> _chamberCProgressSegments = [];
     private GeometryModel3D? _suctionPad;
     private GeometryModel3D? _bladeWafer;
     private GeometryModel3D? _chamberADoor;
@@ -165,6 +178,24 @@ public sealed class MachineTwin3DView : Viewport3D
         set => SetValue(WaferInChamberCProperty, value);
     }
 
+    public double ChamberAProgressPercent
+    {
+        get => (double)GetValue(ChamberAProgressPercentProperty);
+        set => SetValue(ChamberAProgressPercentProperty, value);
+    }
+
+    public double ChamberBProgressPercent
+    {
+        get => (double)GetValue(ChamberBProgressPercentProperty);
+        set => SetValue(ChamberBProgressPercentProperty, value);
+    }
+
+    public double ChamberCProgressPercent
+    {
+        get => (double)GetValue(ChamberCProgressPercentProperty);
+        set => SetValue(ChamberCProgressPercentProperty, value);
+    }
+
     public int FoupACount
     {
         get => (int)GetValue(FoupACountProperty);
@@ -211,6 +242,9 @@ public sealed class MachineTwin3DView : Viewport3D
         _foupBWafers.Clear();
         _foupASlotRails.Clear();
         _foupBSlotRails.Clear();
+        _chamberAProgressSegments.Clear();
+        _chamberBProgressSegments.Clear();
+        _chamberCProgressSegments.Clear();
 
         _scene.Children.Add(new AmbientLight(Color.FromRgb(33, 47, 57)));
         _scene.Children.Add(new DirectionalLight(Color.FromRgb(245, 251, 255), new Vector3D(-0.65, -1.1, -0.5)));
@@ -301,6 +335,18 @@ public sealed class MachineTwin3DView : Viewport3D
         var wafer = CreateCylinder(new Point3D(0, -0.12, 0.72), 0.26, 0.035, 56, Material("#B8F2FF", 0), Material("#FFFFFF", 0));
         chamber.Children.Add(wafer);
 
+        var progressSegments = new List<GeometryModel3D>();
+        for (var index = 0; index < 5; index++)
+        {
+            var segment = CreateBox(
+                new Point3D(-0.32 + index * 0.16, 0.24, 0.63),
+                new Size3D(0.115, 0.035, 0.045),
+                Material("#253842", 0.45),
+                null);
+            progressSegments.Add(segment);
+            chamber.Children.Add(segment);
+        }
+
         var button = CreateChamberButton();
         chamber.Children.Add(button);
 
@@ -312,16 +358,19 @@ public sealed class MachineTwin3DView : Viewport3D
                 _chamberADoor = door;
                 _chamberAButton = button;
                 _chamberAWafer = wafer;
+                _chamberAProgressSegments.AddRange(progressSegments);
                 break;
             case "B":
                 _chamberBDoor = door;
                 _chamberBButton = button;
                 _chamberBWafer = wafer;
+                _chamberBProgressSegments.AddRange(progressSegments);
                 break;
             case "C":
                 _chamberCDoor = door;
                 _chamberCButton = button;
                 _chamberCWafer = wafer;
+                _chamberCProgressSegments.AddRange(progressSegments);
                 break;
         }
 
@@ -472,6 +521,9 @@ public sealed class MachineTwin3DView : Viewport3D
         UpdateChamberWafer(_chamberAWafer, WaferInChamberA, ChamberADoorOpen);
         UpdateChamberWafer(_chamberBWafer, WaferInChamberB, ChamberBDoorOpen);
         UpdateChamberWafer(_chamberCWafer, WaferInChamberC, ChamberCDoorOpen);
+        UpdateChamberProgress(_chamberAProgressSegments, WaferInChamberA, ChamberAProgressPercent);
+        UpdateChamberProgress(_chamberBProgressSegments, WaferInChamberB, ChamberBProgressPercent);
+        UpdateChamberProgress(_chamberCProgressSegments, WaferInChamberC, ChamberCProgressPercent);
         UpdateFoupWafers(_foupAWafers, FoupASlotMask, FoupACount);
         UpdateFoupWafers(_foupBWafers, FoupBSlotMask, FoupBCount);
         UpdateFoupRails(_foupASlotRails, "FoupA", FoupASlotMask, FoupACount, "#44F091");
@@ -562,6 +614,25 @@ public sealed class MachineTwin3DView : Viewport3D
             : Material("#B8F2FF", 0);
         wafer.Material = material;
         wafer.BackMaterial = material;
+    }
+
+    private static void UpdateChamberProgress(IReadOnlyList<GeometryModel3D> segments, bool hasWafer, double progressPercent)
+    {
+        var progress = Math.Clamp(progressPercent, 0, 100);
+        var activeSegments = hasWafer
+            ? Math.Max(1, (int)Math.Ceiling(progress / 20d))
+            : 0;
+
+        for (var index = 0; index < segments.Count; index++)
+        {
+            var isActive = index < activeSegments;
+            var color = isActive
+                ? (progress >= 100 ? "#44F091" : "#F6C453")
+                : "#253842";
+            var material = Material(color, isActive ? 0.96 : 0.42);
+            segments[index].Material = material;
+            segments[index].BackMaterial = material;
+        }
     }
 
     private void UpdateFoupRails(IReadOnlyList<GeometryModel3D> rails, string stationKey, string slotMask, int visibleCount, string accent)

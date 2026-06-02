@@ -298,6 +298,9 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("WaferInChamberA=\"{Binding IsWaferInChamberA}\"", source);
         Assert.Contains("WaferInChamberB=\"{Binding IsWaferInChamberB}\"", source);
         Assert.Contains("WaferInChamberC=\"{Binding IsWaferInChamberC}\"", source);
+        Assert.Contains("ChamberAProgressPercent=\"{Binding ChamberA.ProgressPercent}\"", source);
+        Assert.Contains("ChamberBProgressPercent=\"{Binding ChamberB.ProgressPercent}\"", source);
+        Assert.Contains("ChamberCProgressPercent=\"{Binding ChamberC.ProgressPercent}\"", source);
         Assert.Contains("Current Sequence Step", source);
         Assert.Contains("Sequence Speed", source);
         Assert.Contains("OperationWafer", source);
@@ -340,6 +343,9 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("WaferInChamberAProperty", source);
         Assert.Contains("_chamberAWafer", source);
         Assert.Contains("UpdateChamberWafer(_chamberAWafer, WaferInChamberA, ChamberADoorOpen)", source);
+        Assert.Contains("ChamberAProgressPercentProperty", source);
+        Assert.Contains("_chamberAProgressSegments", source);
+        Assert.Contains("UpdateChamberProgress(_chamberAProgressSegments, WaferInChamberA, ChamberAProgressPercent)", source);
     }
 
     [Fact]
