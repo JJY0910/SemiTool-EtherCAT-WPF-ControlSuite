@@ -2,7 +2,7 @@
   {
     "StepIndex": 0,
     "StepName": "Startup Simulator",
-    "Timestamp": "2026-05-30T13:58:51.112344+09:00",
+    "Timestamp": "2026-06-02T14:45:29.2816012+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -19,7 +19,7 @@
     "ChamberBDoorState": "Closed",
     "ChamberCDoorState": "Closed",
     "ThetaTargetName": "Home / Start",
-    "VisualThetaAngle": 0,
+    "VisualThetaAngle": -130,
     "PreservedThetaEncoderValue": 0,
     "ZState": "Z Safe",
     "IsBladeExtended": false,
@@ -61,7 +61,7 @@
   {
     "StepIndex": 1,
     "StepName": "Move To FOUP A Slot A1",
-    "Timestamp": "2026-05-30T13:58:51.1745494+09:00",
+    "Timestamp": "2026-06-02T14:45:29.8072158+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -120,7 +120,7 @@
   {
     "StepIndex": 2,
     "StepName": "Z Work At FOUP A Slot A1",
-    "Timestamp": "2026-05-30T13:58:51.245933+09:00",
+    "Timestamp": "2026-06-02T14:45:30.172958+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -179,7 +179,7 @@
   {
     "StepIndex": 5,
     "StepName": "W01 On Blade From FOUP A Slot A1",
-    "Timestamp": "2026-05-30T13:58:51.3034947+09:00",
+    "Timestamp": "2026-06-02T14:45:30.6234249+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -238,7 +238,7 @@
   {
     "StepIndex": 9,
     "StepName": "Chamber A Door Opening",
-    "Timestamp": "2026-05-30T13:58:51.3629311+09:00",
+    "Timestamp": "2026-06-02T14:45:30.9986361+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -297,7 +297,7 @@
   {
     "StepIndex": 12,
     "StepName": "Blade Entering Chamber A",
-    "Timestamp": "2026-05-30T13:58:51.4617768+09:00",
+    "Timestamp": "2026-06-02T14:45:31.3579697+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -356,7 +356,7 @@
   {
     "StepIndex": 14,
     "StepName": "W01 Placed At Chamber A",
-    "Timestamp": "2026-05-30T13:58:51.5290699+09:00",
+    "Timestamp": "2026-06-02T14:45:31.8369093+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -415,7 +415,7 @@
   {
     "StepIndex": 15,
     "StepName": "Blade Retracting Empty From Chamber A",
-    "Timestamp": "2026-05-30T13:58:51.5943654+09:00",
+    "Timestamp": "2026-06-02T14:45:32.2069192+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -474,7 +474,7 @@
   {
     "StepIndex": 19,
     "StepName": "Chamber A Processing W01",
-    "Timestamp": "2026-05-30T13:58:51.6686392+09:00",
+    "Timestamp": "2026-06-02T14:45:32.5421797+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -533,7 +533,7 @@
   {
     "StepIndex": 25,
     "StepName": "Blade Extending Into Chamber A",
-    "Timestamp": "2026-05-30T13:58:51.7410484+09:00",
+    "Timestamp": "2026-06-02T14:45:32.8966073+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -592,7 +592,7 @@
   {
     "StepIndex": 431,
     "StepName": "Sequence Complete - FOUP B 5/5",
-    "Timestamp": "2026-05-30T13:58:51.8956452+09:00",
+    "Timestamp": "2026-06-02T14:45:34.2421853+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -651,7 +651,7 @@
   {
     "StepIndex": 432,
     "StepName": "Reset Safe State",
-    "Timestamp": "2026-05-30T13:58:51.9624379+09:00",
+    "Timestamp": "2026-06-02T14:45:34.5845039+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -668,7 +668,7 @@
     "ChamberBDoorState": "Closed",
     "ChamberCDoorState": "Closed",
     "ThetaTargetName": "Home / Start",
-    "VisualThetaAngle": 0,
+    "VisualThetaAngle": -130,
     "PreservedThetaEncoderValue": 0,
     "ZState": "Z Safe",
     "IsBladeExtended": false,

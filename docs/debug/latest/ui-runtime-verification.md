@@ -89,7 +89,6 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 - It does not prove that the new WPF app has been verified on physical equipment.
 - Real hardware feedback depends on the local vendor DLL, EtherCAT wiring, E-stop path, and supervised commissioning.
 - If the real adapter exposes only commanded state, the UI must label it as commanded or last-known state.
-- The approved real-equipment photo is portfolio context, not proof of WPF real-hardware commissioning.
 
 ## Generated Files
 
