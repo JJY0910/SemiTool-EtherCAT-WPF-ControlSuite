@@ -46,7 +46,7 @@ public sealed class ThetaSwingLayout
         VisualSweepApproxDegrees = 300,
         Stations =
         [
-            new RobotSwingStation(0, "Home", "Home / Start", "Safe startup orientation before approaching a FOUP slot", profile.GetPose("Home").Theta, 0),
+            new RobotSwingStation(0, "Home", "Home / Start", "Safe startup orientation beside the FOUP A approach path", profile.GetPose("Home").Theta, -130),
             new RobotSwingStation(1, "FoupA", "FOUP A", "Source cassette / lower-left station", profile.GetPose("FoupA").Theta, -150),
             new RobotSwingStation(2, "ChamberA", "Chamber A", "Pre-Clean station / left side", profile.GetPose("ChamberA").Theta, -75),
             new RobotSwingStation(3, "ChamberB", "Chamber B (CMP)", "CMP_Main simulator station / top side", profile.GetPose("ChamberB").Theta, 0),

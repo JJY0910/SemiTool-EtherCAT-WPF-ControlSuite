@@ -30,17 +30,23 @@ public sealed class MachineTwinTransferSequenceTests
     public void TransferSequence_StartsHomeThenMovesZToFoupSlotBeforeBladeExtends()
     {
         var steps = CreateTransferSteps();
-        var firstFoupMove = steps.First(step => step.StepName == "Move To FOUP A Slot A1");
-        var zWorkAtSlot = steps.First(step => step.StepName == "Z Work At FOUP A Slot A1");
-        var bladeEnteringSlot = steps.First(step => step.StepName == "Blade Extending Into FOUP A Slot A1");
 
         Assert.Equal("Home / Start", steps[0].CurrentStation);
-        Assert.Equal("Z Safe", firstFoupMove.ZState);
-        Assert.Equal(nameof(BladeSequenceState.Retracted), firstFoupMove.BladeState);
-        Assert.Equal("Z Work / FOUP A Slot A1", zWorkAtSlot.ZState);
-        Assert.Equal(nameof(BladeSequenceState.Retracted), zWorkAtSlot.BladeState);
-        Assert.True(zWorkAtSlot.StepIndex < bladeEnteringSlot.StepIndex);
-        Assert.Equal(nameof(BladeSequenceState.Extending), bladeEnteringSlot.BladeState);
+        Assert.Equal(-130, steps[0].VisualThetaAngle);
+
+        for (var slot = 1; slot <= 5; slot++)
+        {
+            var moveToFoup = steps.First(step => step.StepName == $"Move To FOUP A Slot A{slot}");
+            var zWorkAtSlot = steps.First(step => step.StepName == $"Z Work At FOUP A Slot A{slot}");
+            var bladeEnteringSlot = steps.First(step => step.StepName == $"Blade Extending Into FOUP A Slot A{slot}");
+
+            Assert.Equal("Z Safe", moveToFoup.ZState);
+            Assert.Equal(nameof(BladeSequenceState.Retracted), moveToFoup.BladeState);
+            Assert.Equal($"Z Work / FOUP A Slot A{slot}", zWorkAtSlot.ZState);
+            Assert.Equal(nameof(BladeSequenceState.Retracted), zWorkAtSlot.BladeState);
+            Assert.True(zWorkAtSlot.StepIndex < bladeEnteringSlot.StepIndex);
+            Assert.Equal(nameof(BladeSequenceState.Extending), bladeEnteringSlot.BladeState);
+        }
     }
 
     [Fact]
@@ -256,6 +262,10 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("MachineTwin3DView", source);
         Assert.Contains("FoupACount=\"{Binding FoupACount}\"", source);
         Assert.Contains("FoupBCount=\"{Binding FoupBCount}\"", source);
+        Assert.Contains("FoupASlotMask=\"{Binding FoupASlotMask}\"", source);
+        Assert.Contains("FoupBSlotMask=\"{Binding FoupBSlotMask}\"", source);
+        Assert.Contains("ActiveStationKey=\"{Binding ActiveStationKey}\"", source);
+        Assert.Contains("ActiveSlotLevel=\"{Binding ActiveSlotLevel}\"", source);
         Assert.Contains("WaferOnBlade=\"{Binding IsWaferOnBlade}\"", source);
         Assert.Contains("Current Sequence Step", source);
         Assert.Contains("Sequence Speed", source);
@@ -268,6 +278,20 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("CurrentAction", source);
         Assert.DoesNotContain("Run " + "Teach" + "ing " + "Demo", source);
         Assert.DoesNotContain("Run Simulator " + "Demo", source);
+    }
+
+    [Fact]
+    public void MachineTwin3DView_AlignsStationDirectionAndFoupSlotHeight()
+    {
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "Controls", "MachineTwin3DView.cs");
+
+        Assert.Contains("90 - RobotAngle", source);
+        Assert.Contains("AngleFacingOrigin(chamberA)", source);
+        Assert.Contains("AngleFacingOrigin(foupA)", source);
+        Assert.Contains("0.32 - index * 0.16", source);
+        Assert.Contains("SlotLiftOffset(ActiveSlotLevel)", source);
+        Assert.Contains("UpdateFoupWafers(_foupAWafers, FoupASlotMask, FoupACount)", source);
+        Assert.Contains("UpdateChamberButton(_chamberAButton, ChamberADoorOpen)", source);
     }
 
     [Fact]

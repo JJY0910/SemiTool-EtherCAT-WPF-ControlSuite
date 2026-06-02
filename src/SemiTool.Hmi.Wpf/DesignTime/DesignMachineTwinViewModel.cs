@@ -103,7 +103,7 @@ public sealed class DesignMachineTwinViewModel
     public string ChamberADoorState => "Closed";
     public string ChamberBDoorState => "Closed";
     public string ChamberCDoorState => "Open";
-    public double VisualThetaAngle => 0;
+    public double VisualThetaAngle => -130;
     public string ThetaTargetName => "Home / Start";
     public long PreservedThetaEncoderValue => 0;
     public string ZState => "Z Safe";
@@ -129,6 +129,10 @@ public sealed class DesignMachineTwinViewModel
     public int FoupACount => 5;
     public int FoupBCount => 0;
     public int CompletedCount => 0;
+    public string ActiveStationKey => "Home";
+    public int ActiveSlotLevel => 0;
+    public string FoupASlotMask => "11111";
+    public string FoupBSlotMask => "00000";
     public string CurrentTransferDescription => "Ready";
     public string ActiveWaferId => string.Empty;
     public string WaferIdOnBlade => string.Empty;

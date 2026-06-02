@@ -58,6 +58,8 @@ public sealed class MachineTwinViewModel : ObservableObject
     private int _foupACount = 5;
     private int _foupBCount;
     private int _completedCount;
+    private string _activeStationKey = "Home";
+    private int _activeSlotLevel;
     private string _currentTransferDescription = "Ready";
     private string _activeWaferId = string.Empty;
     private string _waferIdOnBlade = string.Empty;
@@ -166,6 +168,8 @@ public sealed class MachineTwinViewModel : ObservableObject
     public int FoupACount { get => _foupACount; private set => SetProperty(ref _foupACount, value); }
     public int FoupBCount { get => _foupBCount; private set => SetProperty(ref _foupBCount, value); }
     public int CompletedCount { get => _completedCount; private set => SetProperty(ref _completedCount, value); }
+    public string ActiveStationKey { get => _activeStationKey; private set => SetProperty(ref _activeStationKey, value); }
+    public int ActiveSlotLevel { get => _activeSlotLevel; private set => SetProperty(ref _activeSlotLevel, value); }
     public string CurrentTransferDescription { get => _currentTransferDescription; private set => SetProperty(ref _currentTransferDescription, value); }
     public string ActiveWaferId { get => _activeWaferId; private set => SetProperty(ref _activeWaferId, value); }
     public string WaferIdOnBlade { get => _waferIdOnBlade; private set => SetProperty(ref _waferIdOnBlade, value); }
@@ -199,6 +203,8 @@ public sealed class MachineTwinViewModel : ObservableObject
         : $"{FoupACount}/5 in FOUP A, {FoupBCount}/5 in FOUP B";
     public string FoupASummary => $"FOUP A: {FoupACount}/5";
     public string FoupBSummary => $"FOUP B: {FoupBCount}/5";
+    public string FoupASlotMask => BuildSlotMask(FoupASlots);
+    public string FoupBSlotMask => BuildSlotMask(FoupBSlots);
 
     public AsyncRelayCommand RunTransferSequenceCommand { get; }
     public RelayCommand PauseCommand { get; }
@@ -506,6 +512,8 @@ public sealed class MachineTwinViewModel : ObservableObject
         FoupACount = step.FoupACount;
         FoupBCount = step.FoupBCount;
         CompletedCount = step.CompletedCount;
+        ActiveStationKey = step.StationKey;
+        ActiveSlotLevel = ResolveActiveSlotLevel(step);
         CurrentTransferDescription = step.CurrentTransferDescription;
         ActiveWaferId = step.ActiveWaferId;
         WaferIdOnBlade = step.WaferIdOnBlade;
@@ -660,6 +668,8 @@ public sealed class MachineTwinViewModel : ObservableObject
         OnPropertyChanged(nameof(WaferSummary));
         OnPropertyChanged(nameof(FoupASummary));
         OnPropertyChanged(nameof(FoupBSummary));
+        OnPropertyChanged(nameof(FoupASlotMask));
+        OnPropertyChanged(nameof(FoupBSlotMask));
         OnPropertyChanged(nameof(FeedbackBoundary));
     }
 
@@ -690,6 +700,38 @@ public sealed class MachineTwinViewModel : ObservableObject
             target[i].Update(source[i]);
         }
     }
+
+    private static int ResolveActiveSlotLevel(MachineTwinSequenceStep step)
+    {
+        if (!step.IsZWorkPosition ||
+            !step.StationKey.StartsWith("Foup", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        return ParseSlotLevel(step.ZState);
+    }
+
+    private static int ParseSlotLevel(string text)
+    {
+        foreach (var prefix in new[] { "Slot A", "Slot B" })
+        {
+            var start = text.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+            var digitIndex = start + prefix.Length;
+            if (start >= 0 &&
+                digitIndex < text.Length &&
+                char.IsDigit(text[digitIndex]) &&
+                text[digitIndex] is >= '1' and <= '5')
+            {
+                return text[digitIndex] - '0';
+            }
+        }
+
+        return 0;
+    }
+
+    private static string BuildSlotMask(IEnumerable<FoupSlotChipViewModel> slots) =>
+        string.Concat(slots.Select(slot => slot.HasWafer ? '1' : '0'));
 
     private static string FormatSlots(IEnumerable<WaferPipelineSlot> slots) =>
         string.Join("; ", slots.Select(slot => $"{slot.SlotName}:{(slot.HasWafer ? slot.WaferId : "Empty")}:{slot.State}"));

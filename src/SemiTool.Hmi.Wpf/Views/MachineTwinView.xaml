@@ -435,7 +435,11 @@
                                                         ChamberBDoorOpen="{Binding ChamberBDoorOpen}"
                                                         ChamberCDoorOpen="{Binding ChamberCDoorOpen}"
                                                         FoupACount="{Binding FoupACount}"
-                                                        FoupBCount="{Binding FoupBCount}" />
+                                                        FoupBCount="{Binding FoupBCount}"
+                                                        FoupASlotMask="{Binding FoupASlotMask}"
+                                                        FoupBSlotMask="{Binding FoupBSlotMask}"
+                                                        ActiveStationKey="{Binding ActiveStationKey}"
+                                                        ActiveSlotLevel="{Binding ActiveSlotLevel}" />
 
                             <Grid Margin="14" IsHitTestVisible="False">
                                 <TextBlock Text="CHAMBER A" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="70,8,0,0" Foreground="{StaticResource HmiTextBrush}" FontSize="11" FontWeight="SemiBold" />
