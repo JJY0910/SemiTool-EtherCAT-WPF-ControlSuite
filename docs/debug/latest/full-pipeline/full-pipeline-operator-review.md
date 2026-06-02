@@ -15,6 +15,7 @@
 
 ## 핵심 캡처 확인점
 
+- `full-pipeline-contact-sheet.png`: 대표 14장 캡처를 한 장으로 묶은 전체 파이프라인 검증 이미지.
 - `screenshots/000-startup-simulator.png`: 초기 상태. FOUP A 5장 적재, FOUP B 비어 있음, 블레이드 Retracted.
 - `screenshots/001-move-to-foup-a-slot-a1.png`: Home에서 바로 전진하지 않고 FOUP A A1 방향으로 먼저 회전한 상태.
 - `screenshots/005-w01-on-blade-from-foup-a-slot-a1.png`: A1 웨이퍼가 FOUP A에서 빠지고 블레이드 위에 안착한 상태.
