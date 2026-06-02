@@ -39,6 +39,16 @@ public sealed class MachineTwin3DView : Viewport3D
     public static readonly DependencyProperty ChamberCDoorOpenProperty =
         DependencyProperty.Register(nameof(ChamberCDoorOpen), typeof(bool), typeof(MachineTwin3DView), new PropertyMetadata(false, OnMotionChanged));
 
+    // 챔버 내부 스테이지에 웨이퍼가 안착되어 있는지 표시하는 HMI 전용 상태값입니다.
+    public static readonly DependencyProperty WaferInChamberAProperty =
+        DependencyProperty.Register(nameof(WaferInChamberA), typeof(bool), typeof(MachineTwin3DView), new PropertyMetadata(false, OnMotionChanged));
+
+    public static readonly DependencyProperty WaferInChamberBProperty =
+        DependencyProperty.Register(nameof(WaferInChamberB), typeof(bool), typeof(MachineTwin3DView), new PropertyMetadata(false, OnMotionChanged));
+
+    public static readonly DependencyProperty WaferInChamberCProperty =
+        DependencyProperty.Register(nameof(WaferInChamberC), typeof(bool), typeof(MachineTwin3DView), new PropertyMetadata(false, OnMotionChanged));
+
     public static readonly DependencyProperty FoupACountProperty =
         DependencyProperty.Register(nameof(FoupACount), typeof(int), typeof(MachineTwin3DView), new PropertyMetadata(5, OnMotionChanged));
 
@@ -77,6 +87,9 @@ public sealed class MachineTwin3DView : Viewport3D
     private GeometryModel3D? _chamberAButton;
     private GeometryModel3D? _chamberBButton;
     private GeometryModel3D? _chamberCButton;
+    private GeometryModel3D? _chamberAWafer;
+    private GeometryModel3D? _chamberBWafer;
+    private GeometryModel3D? _chamberCWafer;
 
     public MachineTwin3DView()
     {
@@ -132,6 +145,24 @@ public sealed class MachineTwin3DView : Viewport3D
     {
         get => (bool)GetValue(ChamberCDoorOpenProperty);
         set => SetValue(ChamberCDoorOpenProperty, value);
+    }
+
+    public bool WaferInChamberA
+    {
+        get => (bool)GetValue(WaferInChamberAProperty);
+        set => SetValue(WaferInChamberAProperty, value);
+    }
+
+    public bool WaferInChamberB
+    {
+        get => (bool)GetValue(WaferInChamberBProperty);
+        set => SetValue(WaferInChamberBProperty, value);
+    }
+
+    public bool WaferInChamberC
+    {
+        get => (bool)GetValue(WaferInChamberCProperty);
+        set => SetValue(WaferInChamberCProperty, value);
     }
 
     public int FoupACount
@@ -266,6 +297,10 @@ public sealed class MachineTwin3DView : Viewport3D
         chamber.Children.Add(CreateBox(new Point3D(-0.45, 0.36, 0.57), new Size3D(0.28, 0.06, 0.04), Material("#D7E5EB", 0.85), null));
         chamber.Children.Add(CreateBox(new Point3D(0.45, 0.36, 0.57), new Size3D(0.28, 0.06, 0.04), Material("#D7E5EB", 0.85), null));
 
+        // 내부 웨이퍼 디스크는 공정 중 챔버 점유가 화면에서 사라지지 않도록 문 슬롯 근처에 둡니다.
+        var wafer = CreateCylinder(new Point3D(0, -0.12, 0.72), 0.26, 0.035, 56, Material("#B8F2FF", 0), Material("#FFFFFF", 0));
+        chamber.Children.Add(wafer);
+
         var button = CreateChamberButton();
         chamber.Children.Add(button);
 
@@ -276,14 +311,17 @@ public sealed class MachineTwin3DView : Viewport3D
             case "A":
                 _chamberADoor = door;
                 _chamberAButton = button;
+                _chamberAWafer = wafer;
                 break;
             case "B":
                 _chamberBDoor = door;
                 _chamberBButton = button;
+                _chamberBWafer = wafer;
                 break;
             case "C":
                 _chamberCDoor = door;
                 _chamberCButton = button;
+                _chamberCWafer = wafer;
                 break;
         }
 
@@ -431,6 +469,9 @@ public sealed class MachineTwin3DView : Viewport3D
         UpdateChamberButton(_chamberAButton, ChamberADoorOpen);
         UpdateChamberButton(_chamberBButton, ChamberBDoorOpen);
         UpdateChamberButton(_chamberCButton, ChamberCDoorOpen);
+        UpdateChamberWafer(_chamberAWafer, WaferInChamberA, ChamberADoorOpen);
+        UpdateChamberWafer(_chamberBWafer, WaferInChamberB, ChamberBDoorOpen);
+        UpdateChamberWafer(_chamberCWafer, WaferInChamberC, ChamberCDoorOpen);
         UpdateFoupWafers(_foupAWafers, FoupASlotMask, FoupACount);
         UpdateFoupWafers(_foupBWafers, FoupBSlotMask, FoupBCount);
         UpdateFoupRails(_foupASlotRails, "FoupA", FoupASlotMask, FoupACount, "#44F091");
@@ -506,6 +547,21 @@ public sealed class MachineTwin3DView : Viewport3D
 
         button.Material = isOpen ? Material("#39FF8A") : Material("#246A45");
         button.BackMaterial = button.Material;
+    }
+
+    private static void UpdateChamberWafer(GeometryModel3D? wafer, bool hasWafer, bool isDoorOpen)
+    {
+        if (wafer is null)
+        {
+            return;
+        }
+
+        // 문이 열렸을 때는 웨이퍼를 더 밝게 보여서 블레이드 입출고 타이밍을 캡처에서 확인하기 쉽게 합니다.
+        var material = hasWafer
+            ? Material(isDoorOpen ? "#E8FDFF" : "#8EEBFF", isDoorOpen ? 0.96 : 0.72)
+            : Material("#B8F2FF", 0);
+        wafer.Material = material;
+        wafer.BackMaterial = material;
     }
 
     private void UpdateFoupRails(IReadOnlyList<GeometryModel3D> rails, string stationKey, string slotMask, int visibleCount, string accent)

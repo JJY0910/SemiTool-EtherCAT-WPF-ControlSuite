@@ -267,6 +267,9 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("ActiveStationKey=\"{Binding ActiveStationKey}\"", source);
         Assert.Contains("ActiveSlotLevel=\"{Binding ActiveSlotLevel}\"", source);
         Assert.Contains("WaferOnBlade=\"{Binding IsWaferOnBlade}\"", source);
+        Assert.Contains("WaferInChamberA=\"{Binding IsWaferInChamberA}\"", source);
+        Assert.Contains("WaferInChamberB=\"{Binding IsWaferInChamberB}\"", source);
+        Assert.Contains("WaferInChamberC=\"{Binding IsWaferInChamberC}\"", source);
         Assert.Contains("Current Sequence Step", source);
         Assert.Contains("Sequence Speed", source);
         Assert.Contains("OperationWafer", source);
@@ -306,6 +309,9 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("\"ChamberB\" => 1.14", source);
         Assert.Contains("UpdateFoupWafers(_foupAWafers, FoupASlotMask, FoupACount)", source);
         Assert.Contains("UpdateChamberButton(_chamberAButton, ChamberADoorOpen)", source);
+        Assert.Contains("WaferInChamberAProperty", source);
+        Assert.Contains("_chamberAWafer", source);
+        Assert.Contains("UpdateChamberWafer(_chamberAWafer, WaferInChamberA, ChamberADoorOpen)", source);
     }
 
     [Fact]
