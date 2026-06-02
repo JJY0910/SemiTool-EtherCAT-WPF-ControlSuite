@@ -383,8 +383,10 @@ public sealed class MachineTwinViewModel : ObservableObject
 
         await EnsureSimulatorReadyAsync(CancellationToken.None).ConfigureAwait(true);
         var index = Math.Clamp(_manualStepIndex, 0, _sequenceSteps.Count - 1);
-        await ApplySimulatorStepAsync(_sequenceSteps[index], CancellationToken.None).ConfigureAwait(true);
+        var step = _sequenceSteps[index];
+        await ApplySimulatorStepAsync(step, CancellationToken.None).ConfigureAwait(true);
         _manualStepIndex = Math.Min(index + 1, _sequenceSteps.Count - 1);
+        await Task.Delay(GetManualStepVisualDelay(step), CancellationToken.None).ConfigureAwait(true);
     }
 
     private async Task<bool> WaitForSequenceGateAsync(CancellationToken cancellationToken)
@@ -689,6 +691,10 @@ public sealed class MachineTwinViewModel : ObservableObject
             "Step" => 1200,
             _ => Math.Max(800, step.DelayMs)
         };
+
+    private int GetManualStepVisualDelay(MachineTwinSequenceStep step) =>
+        // Step Once에서도 회전 -> Z -> 블레이드 전진 순서가 눈에 보이도록 최소 표시 시간을 보장합니다.
+        Math.Clamp(GetRuntimeDelayForSelectedSpeed(step), 650, 1100);
 
     private static IEnumerable<FoupSlotChipViewModel> CreateSlots(IEnumerable<WaferPipelineSlot> slots) =>
         slots.Select(FoupSlotChipViewModel.From);

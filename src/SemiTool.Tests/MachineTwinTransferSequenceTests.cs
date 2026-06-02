@@ -292,12 +292,30 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("SlotLiftOffset(ActiveSlotLevel)", source);
         Assert.Contains("ResolveBladeExtensionScale()", source);
         Assert.Contains("CanVisuallyExtendIntoStation()", source);
+        Assert.Contains("_motionRevision", source);
+        Assert.Contains("isStationTurn", source);
+        Assert.Contains("liftDelay = isStationTurn ? 520 : 0", source);
+        Assert.Contains("extensionDelay = liftDelay + (needsSlotLift ? 380 : 0)", source);
+        Assert.Contains("RunMotionStage(motionRevision, animated ? liftDelay : 0", source);
+        Assert.Contains("RunMotionStage(motionRevision, animated ? extensionDelay : 0", source);
+        Assert.Contains("if (motionRevision != _motionRevision)", source);
+        Assert.Contains("AngleDelta(", source);
         Assert.Contains("string.Equals(ActiveStationKey, \"Home\"", source);
         Assert.Contains("\"FoupA\" or \"FoupB\" => 2.08", source);
         Assert.Contains("\"ChamberA\" or \"ChamberC\" => 1.66", source);
         Assert.Contains("\"ChamberB\" => 1.14", source);
         Assert.Contains("UpdateFoupWafers(_foupAWafers, FoupASlotMask, FoupACount)", source);
         Assert.Contains("UpdateChamberButton(_chamberAButton, ChamberADoorOpen)", source);
+    }
+
+    [Fact]
+    public void MachineTwinViewModel_HoldsManualStepLongEnoughToShowMotionOrder()
+    {
+        var source = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "ViewModels", "MachineTwinViewModel.cs");
+
+        Assert.Contains("var step = _sequenceSteps[index]", source);
+        Assert.Contains("Task.Delay(GetManualStepVisualDelay(step)", source);
+        Assert.Contains("Math.Clamp(GetRuntimeDelayForSelectedSpeed(step), 650, 1100)", source);
     }
 
     [Fact]

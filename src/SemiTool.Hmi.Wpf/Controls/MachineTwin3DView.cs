@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Media3D;
+using System.Windows.Threading;
 
 namespace SemiTool.Hmi.Wpf.Controls;
 
@@ -63,6 +64,7 @@ public sealed class MachineTwin3DView : Viewport3D
     private readonly TranslateTransform3D _armLift = new();
     private readonly TranslateTransform3D _suctionPadOffset = new();
     private readonly TranslateTransform3D _waferOffset = new();
+    private int _motionRevision;
     private readonly List<GeometryModel3D> _foupAWafers = [];
     private readonly List<GeometryModel3D> _foupBWafers = [];
     private readonly List<GeometryModel3D> _foupASlotRails = [];
@@ -401,13 +403,26 @@ public sealed class MachineTwin3DView : Viewport3D
     private void UpdateMotion(bool animated)
     {
         // VisualThetaAngle은 탑뷰 스테이션 좌표계이고, 3D 블레이드는 +X 방향으로 모델링되어 있어 90도 보정이 필요합니다.
-        Animate(_robotRotation, AxisAngleRotation3D.AngleProperty, 90 - RobotAngle, animated ? 420 : 0);
+        // 실제 장비 화면 순서: 원점/안전 위치 -> FOUP/챔버 각도 정렬 -> 슬롯 Z 높이 -> 블레이드 전진.
+        var motionRevision = ++_motionRevision;
+        var targetRobotAngle = 90 - RobotAngle;
+        var targetLift = SlotLiftOffset(ActiveSlotLevel);
+        var isStationTurn = animated && AngleDelta(_robotRotation.Angle, targetRobotAngle) > 5;
+        var needsSlotLift = Math.Abs(_armLift.OffsetY - targetLift) > 0.02;
+        var liftDelay = isStationTurn ? 520 : 0;
+        var extensionDelay = liftDelay + (needsSlotLift ? 380 : 0);
+
+        Animate(_robotRotation, AxisAngleRotation3D.AngleProperty, targetRobotAngle, animated ? 420 : 0);
 
         var extensionScale = ResolveBladeExtensionScale();
-        Animate(_bladeScale, ScaleTransform3D.ScaleXProperty, extensionScale, animated ? 360 : 0);
-        Animate(_armLift, TranslateTransform3D.OffsetYProperty, SlotLiftOffset(ActiveSlotLevel), animated ? 360 : 0);
-        Animate(_suctionPadOffset, TranslateTransform3D.OffsetXProperty, EndEffectorOffset(extensionScale), animated ? 360 : 0);
-        Animate(_waferOffset, TranslateTransform3D.OffsetXProperty, EndEffectorOffset(extensionScale), animated ? 360 : 0);
+        RunMotionStage(motionRevision, animated ? liftDelay : 0, () =>
+            Animate(_armLift, TranslateTransform3D.OffsetYProperty, targetLift, animated ? 360 : 0));
+        RunMotionStage(motionRevision, animated ? extensionDelay : 0, () =>
+        {
+            Animate(_bladeScale, ScaleTransform3D.ScaleXProperty, extensionScale, animated ? 360 : 0);
+            Animate(_suctionPadOffset, TranslateTransform3D.OffsetXProperty, EndEffectorOffset(extensionScale), animated ? 360 : 0);
+            Animate(_waferOffset, TranslateTransform3D.OffsetXProperty, EndEffectorOffset(extensionScale), animated ? 360 : 0);
+        });
 
         UpdatePadAndWafer();
         UpdateDoor(_chamberADoor, ChamberADoorOpen);
@@ -518,6 +533,32 @@ public sealed class MachineTwin3DView : Viewport3D
             wafers[index].Material = material;
             wafers[index].BackMaterial = material;
         }
+    }
+
+    private void RunMotionStage(int motionRevision, int delayMs, Action action)
+    {
+        if (delayMs <= 0)
+        {
+            action();
+            return;
+        }
+
+        var timer = new DispatcherTimer(DispatcherPriority.Render, Dispatcher)
+        {
+            Interval = TimeSpan.FromMilliseconds(delayMs)
+        };
+
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            if (motionRevision != _motionRevision)
+            {
+                return;
+            }
+
+            action();
+        };
+        timer.Start();
     }
 
     private static void Animate(Animatable target, DependencyProperty property, double to, int milliseconds)
@@ -657,6 +698,12 @@ public sealed class MachineTwin3DView : Viewport3D
         : 0;
 
     private static double EndEffectorOffset(double extensionScale) => 1.52 * extensionScale;
+
+    private static double AngleDelta(double current, double target)
+    {
+        var delta = Math.Abs(current - target) % 360;
+        return delta > 180 ? 360 - delta : delta;
+    }
 
     private static double AngleFacingOrigin(Point3D center) =>
         Math.Atan2(-center.X, -center.Z) * 180 / Math.PI;
