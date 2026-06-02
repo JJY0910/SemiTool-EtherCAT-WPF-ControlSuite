@@ -61,6 +61,7 @@ public sealed class MachineTwin3DView : Viewport3D
     private readonly AxisAngleRotation3D _robotRotation = new(new Vector3D(0, 1, 0), 0);
     private readonly ScaleTransform3D _bladeScale = new(1, 1, 1);
     private readonly TranslateTransform3D _armLift = new();
+    private readonly TranslateTransform3D _suctionPadOffset = new();
     private readonly TranslateTransform3D _waferOffset = new();
     private readonly List<GeometryModel3D> _foupAWafers = [];
     private readonly List<GeometryModel3D> _foupBWafers = [];
@@ -375,7 +376,8 @@ public sealed class MachineTwin3DView : Viewport3D
         bladeGroup.Children.Add(CreateBox(new Point3D(0.92, 0.66, 0.18), new Size3D(1.05, 0.05, 0.06), Material("#94A7B1"), null));
         armGroup.Children.Add(bladeGroup);
 
-        _suctionPad = CreateCylinder(new Point3D(1.56, 0.61, 0), 0.18, 0.055, 36, Material("#5FF0C9"), Material("#D7FFF4"));
+        _suctionPad = CreateCylinder(new Point3D(0, 0.61, 0), 0.18, 0.055, 36, Material("#5FF0C9"), Material("#D7FFF4"));
+        _suctionPad.Transform = _suctionPadOffset;
         armGroup.Children.Add(_suctionPad);
 
         _bladeWafer = CreateCylinder(new Point3D(0, 0.67, 0), 0.31, 0.035, 56, Material("#B8F2FF", 0), Material("#FFFFFF", 0));
@@ -401,10 +403,11 @@ public sealed class MachineTwin3DView : Viewport3D
         // VisualThetaAngle은 탑뷰 스테이션 좌표계이고, 3D 블레이드는 +X 방향으로 모델링되어 있어 90도 보정이 필요합니다.
         Animate(_robotRotation, AxisAngleRotation3D.AngleProperty, 90 - RobotAngle, animated ? 420 : 0);
 
-        var extensionScale = Math.Clamp(BladeLength / 92d, 1d, 2.65d);
+        var extensionScale = ResolveBladeExtensionScale();
         Animate(_bladeScale, ScaleTransform3D.ScaleXProperty, extensionScale, animated ? 360 : 0);
         Animate(_armLift, TranslateTransform3D.OffsetYProperty, SlotLiftOffset(ActiveSlotLevel), animated ? 360 : 0);
-        Animate(_waferOffset, TranslateTransform3D.OffsetXProperty, 1.52 * extensionScale, animated ? 360 : 0);
+        Animate(_suctionPadOffset, TranslateTransform3D.OffsetXProperty, EndEffectorOffset(extensionScale), animated ? 360 : 0);
+        Animate(_waferOffset, TranslateTransform3D.OffsetXProperty, EndEffectorOffset(extensionScale), animated ? 360 : 0);
 
         UpdatePadAndWafer();
         UpdateDoor(_chamberADoor, ChamberADoorOpen);
@@ -417,6 +420,38 @@ public sealed class MachineTwin3DView : Viewport3D
         UpdateFoupWafers(_foupBWafers, FoupBSlotMask, FoupBCount);
         UpdateFoupRails(_foupASlotRails, "FoupA", FoupASlotMask, FoupACount, "#44F091");
         UpdateFoupRails(_foupBSlotRails, "FoupB", FoupBSlotMask, FoupBCount, "#F6C453");
+    }
+
+    private double ResolveBladeExtensionScale()
+    {
+        var requestedExtended = BladeLength > 120;
+        if (!requestedExtended || !CanVisuallyExtendIntoStation())
+        {
+            return 1;
+        }
+
+        return ActiveStationKey switch
+        {
+            "FoupA" or "FoupB" => 2.08,
+            "ChamberA" or "ChamberC" => 1.66,
+            "ChamberB" => 1.14,
+            _ => 1
+        };
+    }
+
+    private bool CanVisuallyExtendIntoStation()
+    {
+        if (string.Equals(ActiveStationKey, "Home", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (ActiveStationKey is "FoupA" or "FoupB")
+        {
+            return ActiveSlotLevel is >= 1 and <= 5;
+        }
+
+        return ActiveStationKey is "ChamberA" or "ChamberB" or "ChamberC";
     }
 
     private void UpdatePadAndWafer()
@@ -620,6 +655,8 @@ public sealed class MachineTwin3DView : Viewport3D
     private static double SlotLiftOffset(int slotLevel) => slotLevel is >= 1 and <= 5
         ? 0.27 - (slotLevel - 1) * 0.16
         : 0;
+
+    private static double EndEffectorOffset(double extensionScale) => 1.52 * extensionScale;
 
     private static double AngleFacingOrigin(Point3D center) =>
         Math.Atan2(-center.X, -center.Z) * 180 / Math.PI;

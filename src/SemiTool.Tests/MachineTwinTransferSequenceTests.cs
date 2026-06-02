@@ -290,6 +290,12 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("AngleFacingOrigin(foupA)", source);
         Assert.Contains("0.32 - index * 0.16", source);
         Assert.Contains("SlotLiftOffset(ActiveSlotLevel)", source);
+        Assert.Contains("ResolveBladeExtensionScale()", source);
+        Assert.Contains("CanVisuallyExtendIntoStation()", source);
+        Assert.Contains("string.Equals(ActiveStationKey, \"Home\"", source);
+        Assert.Contains("\"FoupA\" or \"FoupB\" => 2.08", source);
+        Assert.Contains("\"ChamberA\" or \"ChamberC\" => 1.66", source);
+        Assert.Contains("\"ChamberB\" => 1.14", source);
         Assert.Contains("UpdateFoupWafers(_foupAWafers, FoupASlotMask, FoupACount)", source);
         Assert.Contains("UpdateChamberButton(_chamberAButton, ChamberADoorOpen)", source);
     }
