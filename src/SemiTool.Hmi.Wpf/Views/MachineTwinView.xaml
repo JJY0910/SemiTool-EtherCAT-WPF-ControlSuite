@@ -81,7 +81,7 @@
 
         <Grid Grid.Row="1" Margin="8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="215" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="230" />
             </Grid.ColumnDefinitions>
@@ -515,7 +515,7 @@
 
                 <Border Grid.Row="0" Style="{StaticResource HmiStatusCard}">
                     <StackPanel>
-                        <TextBlock Text="Motion / Actuator State" Style="{StaticResource HmiSectionHeader}" />
+                        <TextBlock Text="Motion State" Style="{StaticResource HmiSectionHeader}" />
                         <UniformGrid Columns="2" Margin="0,0,0,8">
                             <Border Style="{StaticResource HmiStatusCard}" Padding="8" Margin="0,0,6,0">
                                 <StackPanel>
