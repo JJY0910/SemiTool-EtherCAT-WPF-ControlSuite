@@ -98,6 +98,61 @@ internal static class SequenceAssetCapture
         await WriteDebugReportAsync(debugDirectory, trace);
     }
 
+    // 전체 5장 파이프라인 캡처는 실제 EtherCAT 장비를 연결하지 않는 시뮬레이터 검증 전용 경로다.
+    public static async Task CaptureFullPipelineQaAsync(RuntimeCoordinator runtime, MainViewModel viewModel)
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var fullPipelineDirectory = IoPath.Combine(repositoryRoot, "docs", "debug", "latest", "full-pipeline");
+        var screenshotDirectory = IoPath.Combine(fullPipelineDirectory, "screenshots");
+        if (Directory.Exists(screenshotDirectory))
+        {
+            Directory.Delete(screenshotDirectory, recursive: true);
+        }
+
+        Directory.CreateDirectory(screenshotDirectory);
+        foreach (var fileName in new[]
+        {
+            "full-machine-twin-state-trace.json",
+            "full-pipeline-qa-summary.md"
+        })
+        {
+            var filePath = IoPath.Combine(fullPipelineDirectory, fileName);
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        await viewModel.RefreshAsync();
+
+        var trace = new List<MachineTwinStateTraceEntry>();
+        await viewModel.MachineTwin.RunTransferSequenceForCaptureAsync(async step =>
+        {
+            if (!ShouldCaptureFullPipelineStep(step))
+            {
+                return;
+            }
+
+            var fileName = BuildFullPipelineScreenshotName(step);
+            var path = IoPath.Combine(screenshotDirectory, fileName);
+            if (step.StepIndex == 0)
+            {
+                await RenderMainWindowAsync(viewModel, path);
+            }
+            else
+            {
+                await RenderMachineTwinAsync(viewModel.MachineTwin, "Full Pipeline QA", step.StepName, path);
+            }
+
+            var relativePath = $"docs/debug/latest/full-pipeline/screenshots/{fileName}";
+            trace.Add(viewModel.MachineTwin.CreateTraceEntry(step, relativePath));
+        });
+
+        var json = JsonSerializer.Serialize(trace, new JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(IoPath.Combine(fullPipelineDirectory, "full-machine-twin-state-trace.json"), json, Encoding.UTF8);
+        await File.WriteAllTextAsync(IoPath.Combine(fullPipelineDirectory, "full-pipeline-qa-summary.md"), BuildFullPipelineQaSummary(trace), Encoding.UTF8);
+    }
+
     private static async Task CaptureMachineTwinPortfolioFramesAsync(MachineTwinViewModel machineTwin, string outputDirectory)
     {
         await machineTwin.RunTransferSequenceForCaptureAsync(async step =>
@@ -135,6 +190,109 @@ internal static class SequenceAssetCapture
             "08-chamber-a-unload-after-process-complete.png" or
             "09-final-foup-b-5-completed.png" or
             "10-reset-safe-state.png";
+
+    private static bool ShouldCaptureFullPipelineStep(MachineTwinSequenceStep step)
+    {
+        var name = step.StepName;
+        return step.StepIndex == 0 ||
+            string.Equals(name, MachineTwinSequencePlan.ResetStepName, StringComparison.Ordinal) ||
+            string.Equals(name, MachineTwinSequencePlan.CompletedStepName, StringComparison.Ordinal) ||
+            name.StartsWith("Move To FOUP A Slot", StringComparison.Ordinal) ||
+            name.Contains("On Blade From FOUP A Slot", StringComparison.Ordinal) ||
+            name.Contains("Blade Entering Chamber", StringComparison.Ordinal) ||
+            name.Contains("Placed At Chamber", StringComparison.Ordinal) ||
+            name.Contains("Processing W", StringComparison.Ordinal) ||
+            name.Contains("Placed At FOUP B Slot", StringComparison.Ordinal);
+    }
+
+    private static string BuildFullPipelineScreenshotName(MachineTwinSequenceStep step) =>
+        $"{step.StepIndex:000}-{SlugForFileName(step.StepName)}.png";
+
+    private static string BuildFullPipelineQaSummary(IReadOnlyList<MachineTwinStateTraceEntry> trace)
+    {
+        var builder = new StringBuilder();
+        var final = trace.LastOrDefault(item => string.Equals(item.StepName, MachineTwinSequencePlan.CompletedStepName, StringComparison.Ordinal));
+        builder.AppendLine("# Full Pipeline QA Summary");
+        builder.AppendLine();
+        builder.AppendLine("- Capture command: `dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-full-pipeline-qa`");
+        builder.AppendLine("- Verification boundary: Simulator-mode WPF render capture only. No real EtherCAT hardware connection is attempted.");
+        builder.AppendLine($"- Total sequence steps checked: {trace.Count}");
+        builder.AppendLine($"- Screenshots captured: {trace.Count}");
+        builder.AppendLine($"- Final FOUP A count: {final?.FoupACount ?? 0}/5");
+        builder.AppendLine($"- Final FOUP B count: {final?.FoupBCount ?? 0}/5");
+        builder.AppendLine($"- Final completed count: {final?.CompletedCount ?? 0}/5");
+        builder.AppendLine();
+        builder.AppendLine("## Pass Criteria");
+        builder.AppendLine();
+        builder.AppendLine("- FOUP A starts at 5/5 and drains to 0/5.");
+        builder.AppendLine("- FOUP B starts at 0/5 and fills to 5/5.");
+        builder.AppendLine("- W01-W05 each pass FOUP A, Chamber A, Chamber B, Chamber C, and FOUP B in order.");
+        builder.AppendLine("- Home / Start captures remain blade-retracted; extension captures occur after station targeting.");
+        builder.AppendLine("- Chamber captures include placed and processing frames for A/B/C.");
+        builder.AppendLine();
+        builder.AppendLine("## Wafer Movement Evidence");
+        builder.AppendLine();
+        builder.AppendLine("| Wafer | FOUP A Pick | Chamber A | Chamber B | Chamber C | FOUP B Place |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- |");
+
+        for (var wafer = 1; wafer <= 5; wafer++)
+        {
+            var waferId = $"W{wafer:00}";
+            builder.AppendLine(string.Join(" | ", new[]
+            {
+                $"| {waferId}",
+                LinkFor(trace, $"{waferId} On Blade From FOUP A Slot"),
+                LinkFor(trace, $"{waferId} Placed At Chamber A"),
+                LinkFor(trace, $"{waferId} Placed At Chamber B"),
+                LinkFor(trace, $"{waferId} Placed At Chamber C"),
+                LinkFor(trace, $"{waferId} Placed At FOUP B Slot")
+            }) + " |");
+        }
+
+        builder.AppendLine();
+        builder.AppendLine("## Captured Screenshot Files");
+        builder.AppendLine();
+        foreach (var item in trace)
+        {
+            builder.AppendLine($"- `{item.ScreenshotPath}`");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string LinkFor(IReadOnlyList<MachineTwinStateTraceEntry> trace, string stepNamePart)
+    {
+        var match = trace.FirstOrDefault(item => item.StepName.Contains(stepNamePart, StringComparison.Ordinal));
+        if (match is null)
+        {
+            return "-";
+        }
+
+        return $"[{IoPath.GetFileName(match.ScreenshotPath)}]({match.ScreenshotPath.Replace("docs/debug/latest/full-pipeline/", string.Empty, StringComparison.Ordinal)})";
+    }
+
+    private static string SlugForFileName(string value)
+    {
+        var builder = new StringBuilder();
+        var previousWasDash = false;
+        foreach (var character in value.ToLowerInvariant())
+        {
+            if (char.IsAsciiLetterOrDigit(character))
+            {
+                builder.Append(character);
+                previousWasDash = false;
+                continue;
+            }
+
+            if (!previousWasDash)
+            {
+                builder.Append('-');
+                previousWasDash = true;
+            }
+        }
+
+        return builder.ToString().Trim('-');
+    }
 
     private static Task RenderMachineTwinAsync(MachineTwinViewModel machineTwin, string title, string subtitle, string path) =>
         RenderAsync(new MachineTwinView { DataContext = machineTwin }, title, subtitle, path);

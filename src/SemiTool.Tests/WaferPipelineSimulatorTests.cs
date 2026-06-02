@@ -148,7 +148,8 @@ public sealed class WaferPipelineSimulatorTests
 
         Assert.Contains("--capture-demo-assets", source);
         Assert.Contains("--capture-ui-debug-report", source);
-        Assert.Equal(2, CountOccurrences(source, "Shutdown();"));
+        Assert.Contains("--capture-full-pipeline-qa", source);
+        Assert.Equal(3, CountOccurrences(source, "Shutdown();"));
     }
 
     [Fact]

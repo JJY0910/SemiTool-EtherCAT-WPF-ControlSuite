@@ -370,6 +370,21 @@ public sealed class MachineTwinTransferSequenceTests
     }
 
     [Fact]
+    public void SequenceAssetCapture_ExposesFullPipelineQaCaptureMode()
+    {
+        var appSource = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "App.xaml.cs");
+        var captureSource = ReadRepositoryFile("src", "SemiTool.Hmi.Wpf", "SequenceAssetCapture.cs");
+
+        Assert.Contains("--capture-full-pipeline-qa", appSource);
+        Assert.Contains("CaptureFullPipelineQaAsync(runtime, viewModel)", appSource);
+        Assert.Contains("public static async Task CaptureFullPipelineQaAsync", captureSource);
+        Assert.Contains("ShouldCaptureFullPipelineStep", captureSource);
+        Assert.Contains("BuildFullPipelineQaSummary", captureSource);
+        Assert.Contains("W01-W05 each pass FOUP A", captureSource);
+        Assert.Contains("No real EtherCAT hardware connection is attempted", captureSource);
+    }
+
+    [Fact]
     public void SequenceStepsPopulateCurrentActionAndTransferFields()
     {
         var representativeSteps = CreateTransferSteps()
