@@ -182,6 +182,34 @@ public sealed class MachineTwinTransferSequenceTests
     }
 
     [Fact]
+    public void EveryWaferTraversesFoupAChambersAndFoupBInOrder()
+    {
+        var steps = CreateTransferSteps();
+
+        foreach (var waferId in new[] { "W01", "W02", "W03", "W04", "W05" })
+        {
+            var foupA = FirstIndex(steps, step => IsInFoup(step.FoupASlots, waferId), $"{waferId} starts in FOUP A.");
+            var bladeFromFoupA = FirstIndexAfter(steps, foupA, step => IsOnBladeDuring(step, waferId, "FOUP A"), $"{waferId} leaves FOUP A on the blade.");
+            var chamberA = FirstIndexAfter(steps, bladeFromFoupA, step => IsInChamber(step.ChamberA, waferId), $"{waferId} reaches Chamber A.");
+            var bladeFromChamberA = FirstIndexAfter(steps, chamberA, step => IsOnBladeDuring(step, waferId, "Chamber A -> Chamber B"), $"{waferId} leaves Chamber A on the blade.");
+            var chamberB = FirstIndexAfter(steps, bladeFromChamberA, step => IsInChamber(step.ChamberB, waferId), $"{waferId} reaches Chamber B.");
+            var bladeFromChamberB = FirstIndexAfter(steps, chamberB, step => IsOnBladeDuring(step, waferId, "Chamber B -> Chamber C"), $"{waferId} leaves Chamber B on the blade.");
+            var chamberC = FirstIndexAfter(steps, bladeFromChamberB, step => IsInChamber(step.ChamberC, waferId), $"{waferId} reaches Chamber C.");
+            var bladeFromChamberC = FirstIndexAfter(steps, chamberC, step => IsOnBladeDuring(step, waferId, "Chamber C -> FOUP B"), $"{waferId} leaves Chamber C on the blade.");
+            var foupB = FirstIndexAfter(steps, bladeFromChamberC, step => IsInFoup(step.FoupBSlots, waferId), $"{waferId} reaches FOUP B.");
+
+            Assert.True(foupA < bladeFromFoupA);
+            Assert.True(bladeFromFoupA < chamberA);
+            Assert.True(chamberA < bladeFromChamberA);
+            Assert.True(bladeFromChamberA < chamberB);
+            Assert.True(chamberB < bladeFromChamberB);
+            Assert.True(bladeFromChamberB < chamberC);
+            Assert.True(chamberC < bladeFromChamberC);
+            Assert.True(bladeFromChamberC < foupB);
+        }
+    }
+
+    [Fact]
     public void FinalTransferStateCompletesAllFiveWafersInFoupB()
     {
         var complete = CreateTransferSteps().Single(step => step.PipelineState == PipelineStateKind.Completed.ToString());
@@ -377,6 +405,41 @@ public sealed class MachineTwinTransferSequenceTests
         MachineTwinSequencePlan.Create(
             DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()),
             SimulatorTimingProfile.Normal);
+
+    private static bool IsInFoup(IEnumerable<WaferPipelineSlot> slots, string waferId) =>
+        slots.Any(slot => slot.HasWafer && string.Equals(slot.WaferId, waferId, StringComparison.Ordinal));
+
+    private static bool IsInChamber(ChamberPipelineSnapshot chamber, string waferId) =>
+        chamber.HasWafer && string.Equals(chamber.WaferId, waferId, StringComparison.Ordinal);
+
+    private static bool IsOnBladeDuring(MachineTwinSequenceStep step, string waferId, string route) =>
+        step.IsWaferOnBlade &&
+        string.Equals(step.WaferIdOnBlade, waferId, StringComparison.Ordinal) &&
+        step.CurrentTransferDescription.Contains(route, StringComparison.Ordinal);
+
+    private static int FirstIndex(
+        IReadOnlyList<MachineTwinSequenceStep> steps,
+        Func<MachineTwinSequenceStep, bool> predicate,
+        string expectedState) =>
+        FirstIndexAfter(steps, -1, predicate, expectedState);
+
+    private static int FirstIndexAfter(
+        IReadOnlyList<MachineTwinSequenceStep> steps,
+        int previousIndex,
+        Func<MachineTwinSequenceStep, bool> predicate,
+        string expectedState)
+    {
+        for (var index = previousIndex + 1; index < steps.Count; index++)
+        {
+            if (predicate(steps[index]))
+            {
+                return index;
+            }
+        }
+
+        Assert.Fail($"{expectedState} Not found after step index {previousIndex}.");
+        return -1;
+    }
 
     private static MachineTwinSequenceStep CreateResetStep() =>
         MachineTwinSequencePlan.CreateResetStep(
