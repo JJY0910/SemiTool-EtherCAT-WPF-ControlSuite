@@ -187,6 +187,9 @@ internal static class WaferTransferSequence
                 waferId,
                 _timing.ZSafeToWorkMs);
 
+            // FOUP/챔버 높이 보정이 끝난 뒤에는 Z 이동 상태를 계속 표시하지 않는다.
+            // 작업 화면에서는 이 순간이 블레이드 전진 픽업 단계임을 분명하게 보여야 한다.
+            _robotState = RobotSequenceState.Picking;
             _bladeState = BladeSequenceState.Extending;
             _vacuumState = VacuumSequenceState.Off;
             Add(
@@ -224,7 +227,7 @@ internal static class WaferTransferSequence
                 waferId,
                 _timing.VacuumSuctionSettleMs);
 
-            _robotState = RobotSequenceState.MovingZ;
+            _robotState = RobotSequenceState.Picking;
             _bladeState = BladeSequenceState.Retracting;
             Add(
                 $"Blade Retracting With {waferId}",
@@ -236,6 +239,7 @@ internal static class WaferTransferSequence
                 waferId,
                 _timing.BladeRetractMs);
 
+            _robotState = RobotSequenceState.MovingZ;
             _bladeState = BladeSequenceState.Retracted;
             _zState = "Z Safe";
             Add(
@@ -291,6 +295,9 @@ internal static class WaferTransferSequence
                 waferId,
                 _timing.ZSafeToWorkMs);
 
+            // 목표 스테이션 높이 보정 이후의 전진은 배치 동작이다.
+            // MovingZ로 남겨두면 UI상에서 원점/Z 동작과 블레이드 전진이 섞여 보인다.
+            _robotState = RobotSequenceState.Placing;
             _bladeState = BladeSequenceState.Extending;
             Add(
                 $"Blade Entering {targetName}",
@@ -327,7 +334,7 @@ internal static class WaferTransferSequence
                 waferId,
                 _timing.VacuumExhaustSettleMs);
 
-            _robotState = RobotSequenceState.MovingZ;
+            _robotState = RobotSequenceState.Placing;
             _vacuumState = VacuumSequenceState.Off;
             _bladeState = BladeSequenceState.Retracting;
             Add(
@@ -340,6 +347,7 @@ internal static class WaferTransferSequence
                 waferId,
                 _timing.BladeRetractMs);
 
+            _robotState = RobotSequenceState.MovingZ;
             _bladeState = BladeSequenceState.Retracted;
             _zState = "Z Safe";
             Add(

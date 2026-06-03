@@ -11,6 +11,8 @@ public sealed class WaferPipelineSimulatorTests
 
         Assert.Equal(5, state.FoupACount);
         Assert.Equal(0, state.FoupBCount);
+        Assert.Equal("Home", state.CurrentStationKey);
+        Assert.Equal("FOUP A", state.NextStation);
         Assert.Equal(["A1", "A2", "A3", "A4", "A5"], state.FoupASlots.Select(slot => slot.SlotName).ToArray());
         Assert.Equal(["B1", "B2", "B3", "B4", "B5"], state.FoupBSlots.Select(slot => slot.SlotName).ToArray());
         Assert.Equal(["W01", "W02", "W03", "W04", "W05"], state.FoupASlots.Select(slot => slot.WaferId).ToArray());

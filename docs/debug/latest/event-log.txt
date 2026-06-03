@@ -1,12 +1,12 @@
-﻿2026-06-03T11:38:33.5288264+09:00 | Home/start position. FOUP A starts with W01-W05 waiting. Blade retracted, vacuum off, all chamber doors closed.
-2026-06-03T11:38:36.5819992+09:00 | Theta target FOUP A Slot A1; preparing to pick W01.
-2026-06-03T11:38:39.2154537+09:00 | Z reaches the selected slot/stage before blade extension.
-2026-06-03T11:38:41.6096021+09:00 | W01 is now held on the blade; source slot/stage is empty.
-2026-06-03T11:38:43.7416527+09:00 | Chamber A door opening; blade remains retracted.
-2026-06-03T11:38:45.8522831+09:00 | Blade enters Chamber A only while the chamber door is open.
-2026-06-03T11:38:47.7539833+09:00 | W01 moved from blade to Chamber A; blade is now empty.
-2026-06-03T11:38:49.6720453+09:00 | Door close is blocked until the blade is fully retracted.
-2026-06-03T11:38:51.6541497+09:00 | Chamber A process starts only after wafer is on the stage and door is closed.
-2026-06-03T11:38:53.7607491+09:00 | Blade enters Chamber A only after the target path is safe.
-2026-06-03T11:38:56.0197421+09:00 | All 5 wafers completed in FOUP B. Tower yellow complete alarm enabled.
-2026-06-03T11:38:58.1575803+09:00 | Reset returns FOUP A to W01-W05 waiting, FOUP B empty, blade retracted, vacuum off, all doors closed.
+﻿2026-06-03T16:05:29.1438485+09:00 | Home/start position. FOUP A starts with W01-W05 waiting. Blade retracted, vacuum off, all chamber doors closed.
+2026-06-03T16:05:31.1269617+09:00 | Theta target FOUP A Slot A1; preparing to pick W01.
+2026-06-03T16:05:33.3832000+09:00 | Z reaches the selected slot/stage before blade extension.
+2026-06-03T16:05:35.5163161+09:00 | W01 is now held on the blade; source slot/stage is empty.
+2026-06-03T16:05:37.4974885+09:00 | Chamber A door opening; blade remains retracted.
+2026-06-03T16:05:39.4500431+09:00 | Blade enters Chamber A only while the chamber door is open.
+2026-06-03T16:05:41.4962979+09:00 | W01 moved from blade to Chamber A; blade is now empty.
+2026-06-03T16:05:43.4957845+09:00 | Door close is blocked until the blade is fully retracted.
+2026-06-03T16:05:45.4711474+09:00 | Chamber A process starts only after wafer is on the stage and door is closed.
+2026-06-03T16:05:47.5577646+09:00 | Blade enters Chamber A only after the target path is safe.
+2026-06-03T16:05:49.6580503+09:00 | All 5 wafers completed in FOUP B. Tower yellow complete alarm enabled.
+2026-06-03T16:05:51.7815384+09:00 | Reset returns FOUP A to W01-W05 waiting, FOUP B empty, blade retracted, vacuum off, all doors closed.

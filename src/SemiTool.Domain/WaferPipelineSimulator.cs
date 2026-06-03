@@ -229,7 +229,7 @@ public static class WaferPipelineSimulator
             EmptyChamber("Chamber A", "Pre-Clean", "PreClean_Default"),
             EmptyChamber("Chamber B", "CMP Main", "CMP_Main"),
             EmptyChamber("Chamber C", "Post-Clean & Dry", "PostClean_Dry"),
-            "FoupA",
+            "Home",
             "-",
             "FOUP A",
             "Pipeline ready: FOUP A 5 wafers, FOUP B empty",

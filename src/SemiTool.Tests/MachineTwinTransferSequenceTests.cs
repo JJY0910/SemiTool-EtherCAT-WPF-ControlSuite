@@ -52,6 +52,28 @@ public sealed class MachineTwinTransferSequenceTests
     }
 
     [Fact]
+    public void TransferSequence_BladeExtensionIsNotReportedAsZMotion()
+    {
+        var steps = CreateTransferSteps();
+        var foupBladeSteps = steps.Where(step => step.StepName.StartsWith("Blade Extending Into FOUP A Slot A", StringComparison.Ordinal)).ToArray();
+        var chamberBladeSteps = steps.Where(step => step.StepName.StartsWith("Blade Entering Chamber", StringComparison.Ordinal)).ToArray();
+
+        Assert.NotEmpty(foupBladeSteps);
+        Assert.NotEmpty(chamberBladeSteps);
+        Assert.All(foupBladeSteps, step =>
+        {
+            Assert.Equal(nameof(RobotSequenceState.Picking), step.RobotState);
+            Assert.Equal(nameof(BladeSequenceState.Extending), step.BladeState);
+            Assert.Equal(-120, step.VisualThetaAngle);
+        });
+        Assert.All(chamberBladeSteps, step =>
+        {
+            Assert.Equal(nameof(RobotSequenceState.Placing), step.RobotState);
+            Assert.Equal(nameof(BladeSequenceState.Extending), step.BladeState);
+        });
+    }
+
+    [Fact]
     public void BladeCanEnterChamberOnlyWhenDoorIsOpen()
     {
         var steps = CreateTransferSteps();
@@ -120,7 +142,9 @@ public sealed class MachineTwinTransferSequenceTests
     [Fact]
     public void WaferPickupRequiresVacuumSuction()
     {
-        var pickingSteps = CreateTransferSteps().Where(step => step.RobotState == nameof(RobotSequenceState.Picking));
+        var pickingSteps = CreateTransferSteps().Where(step =>
+            step.StepName.StartsWith("Vacuum Suction ", StringComparison.Ordinal) ||
+            step.StepName.Contains(" On Blade From ", StringComparison.Ordinal));
 
         Assert.NotEmpty(pickingSteps);
         Assert.All(pickingSteps, step => Assert.Equal(nameof(VacuumSequenceState.SuctionOn), step.VacuumSequenceState));
@@ -129,7 +153,9 @@ public sealed class MachineTwinTransferSequenceTests
     [Fact]
     public void WaferPlacementRequiresVacuumReleaseOrExhaust()
     {
-        var placingSteps = CreateTransferSteps().Where(step => step.RobotState == nameof(RobotSequenceState.Placing));
+        var placingSteps = CreateTransferSteps().Where(step =>
+            step.StepName.StartsWith("Vacuum Release ", StringComparison.Ordinal) ||
+            step.StepName.Contains(" Placed At ", StringComparison.Ordinal));
 
         Assert.NotEmpty(placingSteps);
         Assert.All(placingSteps, step => Assert.Equal(nameof(VacuumSequenceState.ExhaustOrRelease), step.VacuumSequenceState));

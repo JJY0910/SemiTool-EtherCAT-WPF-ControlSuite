@@ -497,7 +497,9 @@ public sealed class MachineTwinViewModel : ObservableObject
         ChamberBDoorState = step.ChamberBDoorState;
         ChamberCDoorState = step.ChamberCDoorState;
         ThetaTargetName = step.CurrentStation;
-        VisualThetaAngle = step.VisualThetaAngle;
+        // 런타임 화면은 항상 DigitalTwinPhysicalModel의 HMI 전용 각도를 사용한다.
+        // 실제 엔코더 티칭값은 PreservedThetaEncoderValue에 그대로 남기고 UI 각도로 해석하지 않는다.
+        VisualThetaAngle = ResolveRuntimeVisualThetaAngle(step);
         PreservedThetaEncoderValue = step.PreservedThetaEncoderValue;
         ZState = step.ZState;
         IsBladeExtended = step.IsBladeExtended;
@@ -556,6 +558,14 @@ public sealed class MachineTwinViewModel : ObservableObject
         var pose = _runtime.Profile.GetPose(step.StationKey);
         var z = step.IsZWorkPosition ? pose.ZWork : pose.ZSafe;
         await _runtime.Controller.MoveAxisAbsoluteAsync(AxisId.Z, z, cancellationToken).ConfigureAwait(true);
+    }
+
+    private double ResolveRuntimeVisualThetaAngle(MachineTwinSequenceStep step)
+    {
+        var station = _physicalModel.ThetaSwing.Stations
+            .FirstOrDefault(candidate => string.Equals(candidate.PoseKey, step.StationKey, StringComparison.OrdinalIgnoreCase));
+
+        return station?.VisualArcPositionDegrees ?? step.VisualThetaAngle;
     }
 
     private void UpdateTowerAndAlarmForPlayback()
