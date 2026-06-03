@@ -32,11 +32,11 @@ public static class DesignMachineTwinData
 
     public static ObservableCollection<DesignMachineTwinStationViewModel> CreateStations() =>
     [
-        new("FOUP A", "Source cassette", 14140, -150, false),
+        new("FOUP A", "Source cassette", 14140, -120, false),
         new("Chamber A", "Pre-Clean", -59064, -75, true),
         new("Chamber B (CMP)", "CMP Main", -190823, 0, false),
         new("Chamber C", "Post-Clean & Dry", -322000, 75, false),
-        new("FOUP B", "Destination cassette", -394293, 150, false)
+        new("FOUP B", "Destination cassette", -394293, 120, false)
     ];
 
     public static ObservableCollection<string> CreateEventLogLines() =>

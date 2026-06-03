@@ -47,6 +47,19 @@ public sealed class DigitalTwinPhysicalModelTests
     }
 
     [Fact]
+    public void ThetaSwingModel_UsesOperatorViewAnglesForActualStationLayout()
+    {
+        var stations = DigitalTwinPhysicalModel.CreateDefault(CreateVisualLayoutProfile()).ThetaSwing.Stations;
+
+        Assert.Equal(-180, stations.Single(station => station.PoseKey == "Home").VisualArcPositionDegrees);
+        Assert.Equal(-120, stations.Single(station => station.PoseKey == "FoupA").VisualArcPositionDegrees);
+        Assert.Equal(-75, stations.Single(station => station.PoseKey == "ChamberA").VisualArcPositionDegrees);
+        Assert.Equal(0, stations.Single(station => station.PoseKey == "ChamberB").VisualArcPositionDegrees);
+        Assert.Equal(75, stations.Single(station => station.PoseKey == "ChamberC").VisualArcPositionDegrees);
+        Assert.Equal(120, stations.Single(station => station.PoseKey == "FoupB").VisualArcPositionDegrees);
+    }
+
+    [Fact]
     public void BladeMechanism_MapsCylinderAndVacuumToEndEffectorBehavior()
     {
         var mechanism = DigitalTwinPhysicalModel.CreateDefault(TestProfile.Load()).BladeMechanism;
@@ -121,4 +134,17 @@ public sealed class DigitalTwinPhysicalModelTests
 
         throw new DirectoryNotFoundException("Could not locate repository root for test asset check.");
     }
+
+    private static EquipmentProfile CreateVisualLayoutProfile() => new()
+    {
+        Poses = new Dictionary<string, RobotPose>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Home"] = new() { Theta = 0 },
+            ["FoupA"] = new() { Theta = 14140 },
+            ["ChamberA"] = new() { Theta = -59064 },
+            ["ChamberB"] = new() { Theta = -190823 },
+            ["ChamberC"] = new() { Theta = -322000 },
+            ["FoupB"] = new() { Theta = -394293 }
+        }
+    };
 }

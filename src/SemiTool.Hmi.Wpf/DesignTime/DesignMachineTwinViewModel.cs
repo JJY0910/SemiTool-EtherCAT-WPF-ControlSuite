@@ -103,7 +103,7 @@ public sealed class DesignMachineTwinViewModel
     public string ChamberADoorState => "Closed";
     public string ChamberBDoorState => "Closed";
     public string ChamberCDoorState => "Open";
-    public double VisualThetaAngle => -130;
+    public double VisualThetaAngle => -180;
     public string ThetaTargetName => "Home / Start";
     public long PreservedThetaEncoderValue => 0;
     public string ZState => "Z Safe";
@@ -122,7 +122,7 @@ public sealed class DesignMachineTwinViewModel
     public bool ChamberCDoorOpen => true;
     public bool TowerRed => false;
     public bool TowerYellow => false;
-    public bool TowerGreen => true;
+    public bool TowerGreen => false;
     public string AlarmSummary => "Designer preview: no active alarms";
     public string SelectedSequenceSpeed { get; set; } = "Normal";
     public string PipelineState => "Ready";

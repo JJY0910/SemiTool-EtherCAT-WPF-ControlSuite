@@ -16,14 +16,14 @@ public sealed class MachineTwinViewModel : ObservableObject
     private bool _isRealHardwareMode;
     private bool _isConnected;
     private string _machineState = SemiTool.Domain.MachineState.Offline.ToString();
-    private string _currentStation = "FOUP A";
+    private string _currentStation = "Home / Start";
     private string _previousStation = "-";
     private string _nextStation = "Chamber A";
     private string _currentStepName = "Simulator startup / safe state";
     private string _currentAction = "Pipeline ready: FOUP A 5 wafers, FOUP B empty";
     private string _operationWafer = "-";
-    private string _operationSource = "FOUP A";
-    private string _operationDestination = "Chamber A";
+    private string _operationSource = "Home / Start";
+    private string _operationDestination = "FOUP A";
     private string _operationCurrentStep = "Ready";
     private string _operationNextStep = "Move theta to FOUP A";
     private string _robotSequenceState = SemiTool.Domain.RobotSequenceState.Idle.ToString();
@@ -32,9 +32,9 @@ public sealed class MachineTwinViewModel : ObservableObject
     private string _chamberADoorState = SemiTool.Domain.ChamberDoorSequenceState.Closed.ToString();
     private string _chamberBDoorState = SemiTool.Domain.ChamberDoorSequenceState.Closed.ToString();
     private string _chamberCDoorState = SemiTool.Domain.ChamberDoorSequenceState.Closed.ToString();
-    private double _visualThetaAngle = -150;
-    private string _thetaTargetName = "FOUP A";
-    private long _preservedThetaEncoderValue = 14140;
+    private double _visualThetaAngle = -180;
+    private string _thetaTargetName = "Home / Start";
+    private long _preservedThetaEncoderValue;
     private string _zState = "Z Safe";
     private bool _isBladeExtended;
     private bool _isCylinderForward;
@@ -183,6 +183,7 @@ public sealed class MachineTwinViewModel : ObservableObject
             {
                 PauseCommand.RaiseCanExecuteChanged();
                 ResumeCommand.RaiseCanExecuteChanged();
+                UpdateTowerAndAlarmForPlayback();
             }
         }
     }
@@ -225,15 +226,17 @@ public sealed class MachineTwinViewModel : ObservableObject
         IsRealHardwareMode = status.Mode == OperatingMode.RealHardware;
         IsConnected = status.IsConnected;
         MachineState = status.MachineState.ToString();
-        AlarmSummary = status.AlarmSummary;
         RaiseConnectionLabels();
         OnPropertyChanged(nameof(FeedbackBoundary));
 
-        if (IsSequenceRunning)
+        if (IsSequenceRunning || PipelineState == PipelineStateKind.Completed.ToString())
         {
+            // 재생 중/완료 상태의 경광봉은 파이프라인 상태가 기준입니다. 주기 상태 갱신이 완료 알람을 덮지 않게 막습니다.
+            UpdateTowerAndAlarmForPlayback();
             return;
         }
 
+        AlarmSummary = status.AlarmSummary;
         TowerRed = status.Outputs.TryGetValue(IoPoint.TowerRed, out var red) && red;
         TowerYellow = status.Outputs.TryGetValue(IoPoint.TowerYellow, out var yellow) && yellow;
         TowerGreen = status.Outputs.TryGetValue(IoPoint.TowerGreen, out var green) && green;
@@ -510,9 +513,6 @@ public sealed class MachineTwinViewModel : ObservableObject
         ChamberADoorOpen = step.ChamberADoorOpen;
         ChamberBDoorOpen = step.ChamberBDoorOpen;
         ChamberCDoorOpen = step.ChamberCDoorOpen;
-        TowerRed = false;
-        TowerYellow = false;
-        TowerGreen = step.TowerGreen;
         PipelineState = step.PipelineState;
         FoupACount = step.FoupACount;
         FoupBCount = step.FoupBCount;
@@ -529,6 +529,7 @@ public sealed class MachineTwinViewModel : ObservableObject
         ChamberB.Update(step.ChamberB);
         ChamberC.Update(step.ChamberC);
         SelectStation(step.CurrentStation);
+        UpdateTowerAndAlarmForPlayback();
         UpdateComputedProperties();
     }
 
@@ -544,7 +545,10 @@ public sealed class MachineTwinViewModel : ObservableObject
         await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.CylinderBackward, step.IsCylinderBackward, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.VacuumSuction, step.IsVacuumSuctionOutputOn, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.VacuumExhaust, step.IsVacuumExhaustOutputOn, cancellationToken).ConfigureAwait(true);
-        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.TowerGreen, step.TowerGreen, cancellationToken).ConfigureAwait(true);
+        var (towerRed, towerYellow, towerGreen) = ResolveTowerState();
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.TowerRed, towerRed, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.TowerYellow, towerYellow, cancellationToken).ConfigureAwait(true);
+        await _runtime.Controller.WriteDigitalOutputAsync(IoPoint.TowerGreen, towerGreen, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberADoorOpenSensor, step.ChamberADoorOpen, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberBDoorOpenSensor, step.ChamberBDoorOpen, cancellationToken).ConfigureAwait(true);
         await _runtime.Controller.SetSimulatorInputAsync(IoPoint.ChamberCDoorOpenSensor, step.ChamberCDoorOpen, cancellationToken).ConfigureAwait(true);
@@ -552,6 +556,39 @@ public sealed class MachineTwinViewModel : ObservableObject
         var pose = _runtime.Profile.GetPose(step.StationKey);
         var z = step.IsZWorkPosition ? pose.ZWork : pose.ZSafe;
         await _runtime.Controller.MoveAxisAbsoluteAsync(AxisId.Z, z, cancellationToken).ConfigureAwait(true);
+    }
+
+    private void UpdateTowerAndAlarmForPlayback()
+    {
+        var (red, yellow, green) = ResolveTowerState();
+        TowerRed = red;
+        TowerYellow = yellow;
+        TowerGreen = green;
+
+        AlarmSummary = red
+            ? "Sequence paused - operator attention required"
+            : yellow ? "Cycle complete alarm: FOUP B 5/5"
+            : "No active alarms";
+    }
+
+    private (bool Red, bool Yellow, bool Green) ResolveTowerState()
+    {
+        if (IsSequencePaused)
+        {
+            return (true, false, false);
+        }
+
+        if (PipelineState == PipelineStateKind.Completed.ToString())
+        {
+            return (false, true, false);
+        }
+
+        if (PipelineState == PipelineStateKind.Running.ToString())
+        {
+            return (false, false, true);
+        }
+
+        return (false, false, false);
     }
 
     private void AddEvent(string message)

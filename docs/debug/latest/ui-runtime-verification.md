@@ -58,7 +58,7 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 | Cylinder forward extends the telescopic blade. | Steps with `BladeState=Extending/Extended` also show `IsCylinderForward=true`. |
 | Vacuum suction attaches the wafer to the blade. | Pickup steps show `VacuumDisplayState=SuctionOn` before the wafer appears on the blade. |
 | Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps show `VacuumDisplayState=ExhaustOrRelease` before the wafer moves to the target. |
-| Tower green indicates simulator sequence completion. | The final complete state shows `TowerGreen=true` with FOUP B 5/5. |
+| Tower yellow indicates simulator sequence completion. | The final complete state shows `TowerYellow=true` with FOUP B 5/5 and the completion alarm text. |
 | Reset returns the visual to a safe simulator state. | Reset returns to FOUP A loaded, blade retracted, vacuum off, all chamber doors closed, and Z Safe. |
 | FOUP A count decreases from 5 to 0. | Captured states show FOUP A 5/5 at startup, 4/5 after W01 pick, and 0/5 while the pipeline drains. |
 | FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |
@@ -80,7 +80,7 @@ dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuratio
 | [06-blade-retracted-before-chamber-a-door-closes.png](screenshots/06-blade-retracted-before-chamber-a-door-closes.png) | Door close is blocked until the blade is fully retracted. |
 | [07-chamber-a-processing-door-closed.png](screenshots/07-chamber-a-processing-door-closed.png) | Chamber A process starts only after wafer is on the stage and door is closed. |
 | [08-chamber-a-unload-after-process-complete.png](screenshots/08-chamber-a-unload-after-process-complete.png) | Blade enters Chamber A only after the target path is safe. |
-| [09-final-foup-b-5-completed.png](screenshots/09-final-foup-b-5-completed.png) | All 5 wafers completed in FOUP B. Tower green blink enabled. |
+| [09-final-foup-b-5-completed.png](screenshots/09-final-foup-b-5-completed.png) | All 5 wafers completed in FOUP B. Tower yellow complete alarm enabled. |
 | [10-reset-safe-state.png](screenshots/10-reset-safe-state.png) | Reset returns FOUP A to W01-W05 waiting, FOUP B empty, blade retracted, vacuum off, all doors closed. |
 
 ## Known Limitations

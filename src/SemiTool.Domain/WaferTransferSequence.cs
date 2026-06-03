@@ -82,13 +82,13 @@ internal static class WaferTransferSequence
             _bladeState = BladeSequenceState.Retracted;
             _vacuumState = VacuumSequenceState.Off;
             _robotState = RobotSequenceState.Idle;
-            _towerGreen = true;
+            _towerGreen = false;
             Add(
                 MachineTwinSequencePlan.CompletedStepName,
                 "09-final-foup-b-5-completed.png",
                 PipelineStateKind.Completed,
                 "All 5 wafers complete in FOUP B",
-                "All 5 wafers completed in FOUP B. Tower green blink enabled.",
+                "All 5 wafers completed in FOUP B. Tower yellow complete alarm enabled.",
                 "Complete",
                 activeWafer: "W05",
                 delayMs: _timing.TowerBlinkMs * 2);

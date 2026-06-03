@@ -295,7 +295,7 @@ internal static class SequenceAssetCapture
     }
 
     private static Task RenderMachineTwinAsync(MachineTwinViewModel machineTwin, string title, string subtitle, string path) =>
-        RenderAsync(new MachineTwinView { DataContext = machineTwin }, title, subtitle, path);
+        RenderAsync(new MachineTwinView { DataContext = machineTwin }, title, subtitle, path, motionSettleDelayMs: 1700);
 
     private static async Task RenderMainWindowAsync(MainViewModel viewModel, string path)
     {
@@ -540,7 +540,7 @@ internal static class SequenceAssetCapture
         builder.AppendLine("| Cylinder forward extends the telescopic blade. | Steps with `BladeState=Extending/Extended` also show `IsCylinderForward=true`. |");
         builder.AppendLine("| Vacuum suction attaches the wafer to the blade. | Pickup steps show `VacuumDisplayState=SuctionOn` before the wafer appears on the blade. |");
         builder.AppendLine("| Vacuum exhaust/release places the wafer into the chamber or FOUP. | Placement steps show `VacuumDisplayState=ExhaustOrRelease` before the wafer moves to the target. |");
-        builder.AppendLine("| Tower green indicates simulator sequence completion. | The final complete state shows `TowerGreen=true` with FOUP B 5/5. |");
+        builder.AppendLine("| Tower yellow indicates simulator sequence completion. | The final complete state shows `TowerYellow=true` with FOUP B 5/5 and the completion alarm text. |");
         builder.AppendLine("| Reset returns the visual to a safe simulator state. | Reset returns to FOUP A loaded, blade retracted, vacuum off, all chamber doors closed, and Z Safe. |");
         builder.AppendLine("| FOUP A count decreases from 5 to 0. | Captured states show FOUP A 5/5 at startup, 4/5 after W01 pick, and 0/5 while the pipeline drains. |");
         builder.AppendLine("| FOUP B count increases from 0 to 5. | Captured states show B1 filled after W01 and all B1-B5 filled at completion. |");
@@ -627,13 +627,20 @@ internal static class SequenceAssetCapture
         runtime.Events.Info(nameof(SequenceAssetCapture), "Real hardware mode was not selected or connected.");
     }
 
-    private static async Task RenderAsync(FrameworkElement content, string title, string subtitle, string path)
+    private static async Task RenderAsync(FrameworkElement content, string title, string subtitle, string path, int motionSettleDelayMs = 0)
     {
         var surface = CreateSurface(content, title, subtitle);
         surface.Measure(new Size(CaptureWidth, CaptureHeight));
         surface.Arrange(new Rect(0, 0, CaptureWidth, CaptureHeight));
         surface.UpdateLayout();
         await surface.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+        if (motionSettleDelayMs > 0)
+        {
+            // 캡처용 새 Viewport3D도 회전/Z/블레이드 애니메이션을 끝낸 뒤 렌더링해야 실제 화면 순서와 맞습니다.
+            await Task.Delay(motionSettleDelayMs);
+            surface.UpdateLayout();
+            await surface.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+        }
 
         var bitmap = new RenderTargetBitmap(CapturePixelWidth, CapturePixelHeight, Dpi, Dpi, PixelFormats.Pbgra32);
         bitmap.Render(surface);
@@ -734,7 +741,7 @@ internal static class SequenceAssetCapture
         var stationPoints = BuildStationPoints();
         DrawStationArc(canvas, model, stationPoints);
         DrawStations(canvas, model, stationPoints, state.CurrentTargetKey);
-        DrawTowerLamp(canvas, state.TowerGreen);
+        DrawTowerLamp(canvas, state.TowerYellow);
         DrawThetaBaseAndBlade(canvas, center, stationPoints[state.CurrentTargetKey], state);
 
         var status = CreateStatusPanel(model, state);
@@ -806,12 +813,12 @@ internal static class SequenceAssetCapture
         }
     }
 
-    private static void DrawTowerLamp(Canvas canvas, bool greenOn)
+    private static void DrawTowerLamp(Canvas canvas, bool yellowOn)
     {
         AddText(canvas, "Tower Lamp", 690, 70, 13, Brushes.White, FontWeights.SemiBold);
         AddEllipse(canvas, 720, 96, 24, 24, Color.FromRgb(130, 33, 31), Color.FromRgb(245, 100, 94), 1);
-        AddEllipse(canvas, 720, 124, 24, 24, Color.FromRgb(132, 95, 24), Color.FromRgb(255, 204, 83), 1);
-        AddEllipse(canvas, 720, 152, 24, 24, greenOn ? Color.FromRgb(25, 155, 83) : Color.FromRgb(28, 73, 48), Color.FromRgb(160, 240, 190), 1);
+        AddEllipse(canvas, 720, 124, 24, 24, yellowOn ? Color.FromRgb(210, 150, 35) : Color.FromRgb(82, 64, 28), Color.FromRgb(255, 204, 83), 1);
+        AddEllipse(canvas, 720, 152, 24, 24, Color.FromRgb(28, 73, 48), Color.FromRgb(160, 240, 190), 1);
     }
 
     private static void DrawThetaBaseAndBlade(Canvas canvas, Point center, Point target, DigitalTwinSequenceAssetState state)
@@ -972,7 +979,7 @@ internal static class SequenceAssetCapture
         string VacuumState,
         string WaferLocation,
         string CurrentStep,
-        bool TowerGreen)
+        bool TowerYellow)
     {
         public static DigitalTwinSequenceAssetState LimitedSwingOverview { get; } = new("ChamberB", "Chamber B (CMP)", false, false, "Z Safe", "Cylinder Backward", "Vacuum OFF", "No wafer on blade", "Station arc overview", false);
         public static DigitalTwinSequenceAssetState TransferRobotWithWafer { get; } = new("ChamberA", "Chamber A", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer held on blade", "Place wafer into Chamber A", false);

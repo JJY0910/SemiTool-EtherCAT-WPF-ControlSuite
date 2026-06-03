@@ -286,8 +286,8 @@ public static class WaferPipelineSimulator
             "FOUP A empty / pipeline draining", "B -> C before new feed", "W05", true, "Z Safe", false, false, true, "Off", false, string.Empty, false,
             "FOUP A is empty. Pipeline is draining remaining wafers toward FOUP B."),
         Snapshot(timing, 10, "FOUP B 5 Wafers Complete", "10-foup-b-5-wafers-complete.png", PipelineStateKind.Completed,
-            [], ["W01", "W02", "W03", "W04", "W05"], EmptyA(), EmptyB(), EmptyC(), "FoupB", "Chamber C", "-", "All 5 wafers complete in FOUP B", "Complete", "W05", false, "Z Safe", false, false, true, "Off", false, string.Empty, true,
-            "All 5 wafers completed in FOUP B. Tower green blink enabled."),
+            [], ["W01", "W02", "W03", "W04", "W05"], EmptyA(), EmptyB(), EmptyC(), "FoupB", "Chamber C", "-", "All 5 wafers complete in FOUP B", "Complete", "W05", false, "Z Safe", false, false, true, "Off", false, string.Empty, false,
+            "All 5 wafers completed in FOUP B. Tower yellow complete alarm enabled."),
         Snapshot(timing, 11, "Reset Safe State", "11-reset-safe-state.png", PipelineStateKind.Ready,
             ["W01", "W02", "W03", "W04", "W05"], [], EmptyA(), EmptyB(), EmptyC(), "FoupA", "-", "FOUP A", "Reset to safe simulator state", "Reset", string.Empty, false, "Z Safe", false, false, true, "Off", false, string.Empty, false,
             "Reset returns simulator to FOUP A loaded, FOUP B empty, blade retracted, vacuum off.")

@@ -32,7 +32,9 @@ public sealed class MachineTwinTransferSequenceTests
         var steps = CreateTransferSteps();
 
         Assert.Equal("Home / Start", steps[0].CurrentStation);
-        Assert.Equal(-130, steps[0].VisualThetaAngle);
+        Assert.Equal(-180, steps[0].VisualThetaAngle);
+        Assert.Equal(-120, steps.First(step => step.CurrentStation == "FOUP A").VisualThetaAngle);
+        Assert.Equal(120, steps.First(step => step.CurrentStation == "FOUP B").VisualThetaAngle);
 
         for (var slot = 1; slot <= 5; slot++)
         {
@@ -257,7 +259,7 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.False(final.ChamberC.HasWafer);
         Assert.False(final.IsWaferOnBlade);
         Assert.Equal(nameof(VacuumSequenceState.Off), final.VacuumSequenceState);
-        Assert.True(final.TowerGreen);
+        Assert.False(final.TowerGreen);
         Assert.Equal(nameof(ChamberDoorSequenceState.Closed), final.ChamberADoorState);
         Assert.Equal(nameof(ChamberDoorSequenceState.Closed), final.ChamberBDoorState);
         Assert.Equal(nameof(ChamberDoorSequenceState.Closed), final.ChamberCDoorState);
@@ -292,6 +294,9 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("FoupBCount=\"{Binding FoupBCount}\"", source);
         Assert.Contains("FoupASlotMask=\"{Binding FoupASlotMask}\"", source);
         Assert.Contains("FoupBSlotMask=\"{Binding FoupBSlotMask}\"", source);
+        Assert.Contains("TowerRed=\"{Binding TowerRed}\"", source);
+        Assert.Contains("TowerYellow=\"{Binding TowerYellow}\"", source);
+        Assert.Contains("TowerGreen=\"{Binding TowerGreen}\"", source);
         Assert.Contains("ActiveStationKey=\"{Binding ActiveStationKey}\"", source);
         Assert.Contains("ActiveSlotLevel=\"{Binding ActiveSlotLevel}\"", source);
         Assert.Contains("WaferOnBlade=\"{Binding IsWaferOnBlade}\"", source);
@@ -340,13 +345,20 @@ public sealed class MachineTwinTransferSequenceTests
         Assert.Contains("\"ChamberA\" or \"ChamberC\" => 1.66", source);
         Assert.Contains("\"ChamberB\" => 1.14", source);
         Assert.Contains("UpdateFoupWafers(_foupAWafers, FoupASlotMask, FoupACount)", source);
-        Assert.Contains("UpdateChamberButton(_chamberAButton, ChamberADoorOpen)", source);
+        Assert.Contains("UpdateChamberButton(_chamberAButton, ChamberADoorOpen || WaferInChamberA)", source);
         Assert.Contains("WaferInChamberAProperty", source);
         Assert.Contains("_chamberAWafer", source);
-        Assert.Contains("UpdateChamberWafer(_chamberAWafer, WaferInChamberA, ChamberADoorOpen)", source);
+        Assert.Contains("UpdateChamberWafer(_chamberAWafer, WaferInChamberA)", source);
         Assert.Contains("ChamberAProgressPercentProperty", source);
         Assert.Contains("_chamberAProgressSegments", source);
         Assert.Contains("UpdateChamberProgress(_chamberAProgressSegments, WaferInChamberA, ChamberAProgressPercent)", source);
+        Assert.Contains("TowerRedProperty", source);
+        Assert.Contains("TowerYellowProperty", source);
+        Assert.Contains("TowerGreenProperty", source);
+        Assert.Contains("CreateTowerLight(new Point3D(3.9", source);
+        Assert.DoesNotContain("CreateTowerLight(new Point3D(-3.9", source);
+        Assert.Contains("실제 장비 사진 기준 작업자가 보는 오른쪽 경광봉만", source);
+        Assert.Contains("Material(hasWafer ? \"#8EEBFF\" : \"#B8F2FF\", 0)", source);
     }
 
     [Fact]

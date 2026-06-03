@@ -77,6 +77,15 @@ public sealed class MachineTwin3DView : Viewport3D
     public static readonly DependencyProperty ActiveSlotLevelProperty =
         DependencyProperty.Register(nameof(ActiveSlotLevel), typeof(int), typeof(MachineTwin3DView), new PropertyMetadata(0, OnMotionChanged));
 
+    public static readonly DependencyProperty TowerRedProperty =
+        DependencyProperty.Register(nameof(TowerRed), typeof(bool), typeof(MachineTwin3DView), new PropertyMetadata(false, OnMotionChanged));
+
+    public static readonly DependencyProperty TowerYellowProperty =
+        DependencyProperty.Register(nameof(TowerYellow), typeof(bool), typeof(MachineTwin3DView), new PropertyMetadata(false, OnMotionChanged));
+
+    public static readonly DependencyProperty TowerGreenProperty =
+        DependencyProperty.Register(nameof(TowerGreen), typeof(bool), typeof(MachineTwin3DView), new PropertyMetadata(false, OnMotionChanged));
+
     private readonly Model3DGroup _scene = new();
     private readonly Model3DGroup _robotGroup = new();
     private readonly AxisAngleRotation3D _robotRotation = new(new Vector3D(0, 1, 0), 0);
@@ -103,6 +112,9 @@ public sealed class MachineTwin3DView : Viewport3D
     private GeometryModel3D? _chamberAWafer;
     private GeometryModel3D? _chamberBWafer;
     private GeometryModel3D? _chamberCWafer;
+    private GeometryModel3D? _towerRedLens;
+    private GeometryModel3D? _towerYellowLens;
+    private GeometryModel3D? _towerGreenLens;
 
     public MachineTwin3DView()
     {
@@ -232,6 +244,24 @@ public sealed class MachineTwin3DView : Viewport3D
         set => SetValue(ActiveSlotLevelProperty, value);
     }
 
+    public bool TowerRed
+    {
+        get => (bool)GetValue(TowerRedProperty);
+        set => SetValue(TowerRedProperty, value);
+    }
+
+    public bool TowerYellow
+    {
+        get => (bool)GetValue(TowerYellowProperty);
+        set => SetValue(TowerYellowProperty, value);
+    }
+
+    public bool TowerGreen
+    {
+        get => (bool)GetValue(TowerGreenProperty);
+        set => SetValue(TowerGreenProperty, value);
+    }
+
     private static void OnMotionChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e) =>
         ((MachineTwin3DView)dependencyObject).UpdateMotion(true);
 
@@ -245,6 +275,9 @@ public sealed class MachineTwin3DView : Viewport3D
         _chamberAProgressSegments.Clear();
         _chamberBProgressSegments.Clear();
         _chamberCProgressSegments.Clear();
+        _towerRedLens = null;
+        _towerYellowLens = null;
+        _towerGreenLens = null;
 
         _scene.Children.Add(new AmbientLight(Color.FromRgb(33, 47, 57)));
         _scene.Children.Add(new DirectionalLight(Color.FromRgb(245, 251, 255), new Vector3D(-0.65, -1.1, -0.5)));
@@ -318,7 +351,7 @@ public sealed class MachineTwin3DView : Viewport3D
         AddFoup("A", foupA, AngleFacingOrigin(foupA), "#44F091", _foupAWafers, _foupASlotRails);
         AddFoup("B", foupB, AngleFacingOrigin(foupB), "#F6C453", _foupBWafers, _foupBSlotRails);
 
-        _scene.Children.Add(CreateTowerLight(new Point3D(-3.9, 1.05, -2.0)));
+        // 실제 장비 사진 기준 작업자가 보는 오른쪽 경광봉만 3D 상태등으로 사용합니다.
         _scene.Children.Add(CreateTowerLight(new Point3D(3.9, 1.05, -2.0)));
     }
 
@@ -331,8 +364,8 @@ public sealed class MachineTwin3DView : Viewport3D
         chamber.Children.Add(CreateBox(new Point3D(-0.45, 0.36, 0.57), new Size3D(0.28, 0.06, 0.04), Material("#D7E5EB", 0.85), null));
         chamber.Children.Add(CreateBox(new Point3D(0.45, 0.36, 0.57), new Size3D(0.28, 0.06, 0.04), Material("#D7E5EB", 0.85), null));
 
-        // 내부 웨이퍼 디스크는 공정 중 챔버 점유가 화면에서 사라지지 않도록 문 슬롯 근처에 둡니다.
-        var wafer = CreateCylinder(new Point3D(0, -0.12, 0.72), 0.26, 0.035, 56, Material("#B8F2FF", 0), Material("#FFFFFF", 0));
+        // 챔버 안착 웨이퍼는 실제처럼 깊은 내부 스테이지에 있다고 보고 외부로 튀어나와 보이지 않게 숨깁니다.
+        var wafer = CreateCylinder(new Point3D(0, -0.18, 0.16), 0.22, 0.035, 56, Material("#B8F2FF", 0), Material("#FFFFFF", 0));
         chamber.Children.Add(wafer);
 
         var progressSegments = new List<GeometryModel3D>();
@@ -481,9 +514,12 @@ public sealed class MachineTwin3DView : Viewport3D
     {
         var tower = new Model3DGroup();
         tower.Children.Add(CreateCylinder(new Point3D(center.X, center.Y - 0.45, center.Z), 0.12, 0.22, 28, Material("#D4DCE2"), null));
-        tower.Children.Add(CreateCylinder(new Point3D(center.X, center.Y - 0.2, center.Z), 0.1, 0.22, 28, Material("#2BDB68"), null));
-        tower.Children.Add(CreateCylinder(new Point3D(center.X, center.Y + 0.05, center.Z), 0.1, 0.22, 28, Material("#F6C453"), null));
-        tower.Children.Add(CreateCylinder(new Point3D(center.X, center.Y + 0.3, center.Z), 0.1, 0.22, 28, Material("#EF4444"), null));
+        _towerGreenLens = CreateCylinder(new Point3D(center.X, center.Y - 0.2, center.Z), 0.1, 0.22, 28, Material("#173724"), null);
+        _towerYellowLens = CreateCylinder(new Point3D(center.X, center.Y + 0.05, center.Z), 0.1, 0.22, 28, Material("#3A321B"), null);
+        _towerRedLens = CreateCylinder(new Point3D(center.X, center.Y + 0.3, center.Z), 0.1, 0.22, 28, Material("#381D1F"), null);
+        tower.Children.Add(_towerGreenLens);
+        tower.Children.Add(_towerYellowLens);
+        tower.Children.Add(_towerRedLens);
         return tower;
     }
 
@@ -515,12 +551,13 @@ public sealed class MachineTwin3DView : Viewport3D
         UpdateDoor(_chamberADoor, ChamberADoorOpen);
         UpdateDoor(_chamberBDoor, ChamberBDoorOpen);
         UpdateDoor(_chamberCDoor, ChamberCDoorOpen);
-        UpdateChamberButton(_chamberAButton, ChamberADoorOpen);
-        UpdateChamberButton(_chamberBButton, ChamberBDoorOpen);
-        UpdateChamberButton(_chamberCButton, ChamberCDoorOpen);
-        UpdateChamberWafer(_chamberAWafer, WaferInChamberA, ChamberADoorOpen);
-        UpdateChamberWafer(_chamberBWafer, WaferInChamberB, ChamberBDoorOpen);
-        UpdateChamberWafer(_chamberCWafer, WaferInChamberC, ChamberCDoorOpen);
+        UpdateChamberButton(_chamberAButton, ChamberADoorOpen || WaferInChamberA);
+        UpdateChamberButton(_chamberBButton, ChamberBDoorOpen || WaferInChamberB);
+        UpdateChamberButton(_chamberCButton, ChamberCDoorOpen || WaferInChamberC);
+        UpdateChamberWafer(_chamberAWafer, WaferInChamberA);
+        UpdateChamberWafer(_chamberBWafer, WaferInChamberB);
+        UpdateChamberWafer(_chamberCWafer, WaferInChamberC);
+        UpdateTowerLight();
         UpdateChamberProgress(_chamberAProgressSegments, WaferInChamberA, ChamberAProgressPercent);
         UpdateChamberProgress(_chamberBProgressSegments, WaferInChamberB, ChamberBProgressPercent);
         UpdateChamberProgress(_chamberCProgressSegments, WaferInChamberC, ChamberCProgressPercent);
@@ -590,30 +627,46 @@ public sealed class MachineTwin3DView : Viewport3D
         door.Transform = new TranslateTransform3D(0, isOpen ? 0.24 : 0, isOpen ? 0.05 : 0);
     }
 
-    private static void UpdateChamberButton(GeometryModel3D? button, bool isOpen)
+    private static void UpdateChamberButton(GeometryModel3D? button, bool isActive)
     {
         if (button is null)
         {
             return;
         }
 
-        button.Material = isOpen ? Material("#39FF8A") : Material("#246A45");
+        button.Material = isActive ? Material("#39FF8A") : Material("#246A45");
         button.BackMaterial = button.Material;
     }
 
-    private static void UpdateChamberWafer(GeometryModel3D? wafer, bool hasWafer, bool isDoorOpen)
+    private static void UpdateChamberWafer(GeometryModel3D? wafer, bool hasWafer)
     {
         if (wafer is null)
         {
             return;
         }
 
-        // 문이 열렸을 때는 웨이퍼를 더 밝게 보여서 블레이드 입출고 타이밍을 캡처에서 확인하기 쉽게 합니다.
-        var material = hasWafer
-            ? Material(isDoorOpen ? "#E8FDFF" : "#8EEBFF", isDoorOpen ? 0.96 : 0.72)
-            : Material("#B8F2FF", 0);
+        // 웨이퍼 존재 여부는 버튼/공정바로 표시하고, 물리 웨이퍼 디스크는 챔버 내부 깊은 위치라 외부에서 보이지 않게 둡니다.
+        var material = Material(hasWafer ? "#8EEBFF" : "#B8F2FF", 0);
         wafer.Material = material;
         wafer.BackMaterial = material;
+    }
+
+    private void UpdateTowerLight()
+    {
+        UpdateTowerLens(_towerRedLens, TowerRed, "#EF4444", "#381D1F");
+        UpdateTowerLens(_towerYellowLens, TowerYellow, "#F6C453", "#3A321B");
+        UpdateTowerLens(_towerGreenLens, TowerGreen, "#2BDB68", "#173724");
+    }
+
+    private static void UpdateTowerLens(GeometryModel3D? lens, bool isOn, string onColor, string offColor)
+    {
+        if (lens is null)
+        {
+            return;
+        }
+
+        lens.Material = Material(isOn ? onColor : offColor, isOn ? 1 : 0.7);
+        lens.BackMaterial = lens.Material;
     }
 
     private static void UpdateChamberProgress(IReadOnlyList<GeometryModel3D> segments, bool hasWafer, double progressPercent)
