@@ -6,6 +6,28 @@
 
 공개용 스크린샷은 이제 실제 실행 앱의 첫 번째 탭에 표시되는 WPF `Viewport3D` Machine Twin 화면을 사용합니다. 예전 왼쪽 상단 장비 참조 사진 패널은 런타임 화면에서 제거되었습니다.
 
+## 현재 구현된 3D 파이프라인 설명
+
+GitHub 첫 화면에서 바로 확인할 수 있도록 현재 WPF 앱의 3D Machine Twin 동작 기준을 정리했습니다.
+
+| 순서 | UI 동작 | 확인 포인트 |
+| --- | --- | --- |
+| 1 | `Home / Start` 안전 위치 | 블레이드는 접힌 상태, Z Safe, FOUP A 5장 / FOUP B 0장 |
+| 2 | FOUP A 슬롯 선택 | Home에서 바로 전진하지 않고 FOUP A 각도(`-120 deg`)로 먼저 회전 |
+| 3 | 슬롯 높이 이동 | A1~A5 각 슬롯에 맞춰 Z Work 위치로 이동 |
+| 4 | FOUP A 픽업 | 블레이드 전진, 진공 흡착, FOUP A 카운트 1장 감소 |
+| 5 | Chamber A 투입 및 공정 | 문 열림, 블레이드 진입, 웨이퍼는 챔버 내부로 숨김, 문 닫힘 후 공정 |
+| 6 | Chamber B 이동 및 공정 | Chamber A 완료 후 B로 이송, B 내부 공정 상태 유지 |
+| 7 | Chamber C 이동 및 공정 | Chamber B 완료 후 C로 이송, C 내부 공정 상태 유지 |
+| 8 | FOUP B 적재 | Chamber C 완료 후 FOUP B 슬롯 B1~B5에 순서대로 적재 |
+| 9 | 완료 상태 | FOUP A 0/5, FOUP B 5/5, 오른쪽 경광등 노란 완료 상태 |
+
+전체 5장 파이프라인 검증 자료:
+
+- [Full pipeline QA summary](docs/debug/latest/full-pipeline/full-pipeline-qa-summary.md)
+- [Full pipeline operator review](docs/debug/latest/full-pipeline/full-pipeline-operator-review.md)
+- [Full pipeline contact sheet](docs/debug/latest/full-pipeline/full-pipeline-contact-sheet.png)
+
 | 런타임 화면 | 미리보기 |
 | --- | --- |
 | 3D Machine Twin | ![3D Machine Twin](docs/images/machine-twin-runtime.png) |
