@@ -4,7 +4,7 @@
 
 This project includes design-time sample data so the WPF HMI can be reviewed in Visual Studio Designer before the app is run.
 
-The designer preview is meant for layout, readability, and portfolio review. It is not a simulator execution trace and it is not real-hardware verification.
+The designer preview is meant for layout and readability review. It is not a simulator execution trace and it is not real-hardware verification.
 
 ## Files To Open
 

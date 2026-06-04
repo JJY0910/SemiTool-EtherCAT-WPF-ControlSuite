@@ -2,7 +2,7 @@
   {
     "StepIndex": 0,
     "StepName": "Startup Simulator",
-    "Timestamp": "2026-06-03T16:35:43.9860802+09:00",
+    "Timestamp": "2026-06-04T20:43:30.0755159+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -61,7 +61,7 @@
   {
     "StepIndex": 1,
     "StepName": "Move To FOUP A Slot A1",
-    "Timestamp": "2026-06-03T16:35:46.1147397+09:00",
+    "Timestamp": "2026-06-04T20:43:32.2756168+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -120,7 +120,7 @@
   {
     "StepIndex": 2,
     "StepName": "Z Work At FOUP A Slot A1",
-    "Timestamp": "2026-06-03T16:35:48.133943+09:00",
+    "Timestamp": "2026-06-04T20:43:34.5887429+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -179,7 +179,7 @@
   {
     "StepIndex": 5,
     "StepName": "W01 On Blade From FOUP A Slot A1",
-    "Timestamp": "2026-06-03T16:35:50.1133849+09:00",
+    "Timestamp": "2026-06-04T20:43:36.7220986+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -238,7 +238,7 @@
   {
     "StepIndex": 9,
     "StepName": "Chamber A Door Opening",
-    "Timestamp": "2026-06-03T16:35:52.0772484+09:00",
+    "Timestamp": "2026-06-04T20:43:38.8291945+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -297,7 +297,7 @@
   {
     "StepIndex": 12,
     "StepName": "Blade Entering Chamber A",
-    "Timestamp": "2026-06-03T16:35:54.0438942+09:00",
+    "Timestamp": "2026-06-04T20:43:40.853985+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -356,7 +356,7 @@
   {
     "StepIndex": 14,
     "StepName": "W01 Placed At Chamber A",
-    "Timestamp": "2026-06-03T16:35:56.0019371+09:00",
+    "Timestamp": "2026-06-04T20:43:42.9003567+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -415,7 +415,7 @@
   {
     "StepIndex": 15,
     "StepName": "Blade Retracting Empty From Chamber A",
-    "Timestamp": "2026-06-03T16:35:58.0350839+09:00",
+    "Timestamp": "2026-06-04T20:43:44.9167678+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -474,7 +474,7 @@
   {
     "StepIndex": 19,
     "StepName": "Chamber A Processing W01",
-    "Timestamp": "2026-06-03T16:35:59.9636946+09:00",
+    "Timestamp": "2026-06-04T20:43:47.0320016+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -533,7 +533,7 @@
   {
     "StepIndex": 25,
     "StepName": "Blade Extending Into Chamber A",
-    "Timestamp": "2026-06-03T16:36:01.9220054+09:00",
+    "Timestamp": "2026-06-04T20:43:49.1003072+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -592,7 +592,7 @@
   {
     "StepIndex": 431,
     "StepName": "Sequence Complete - FOUP B 5/5",
-    "Timestamp": "2026-06-03T16:36:04.0047197+09:00",
+    "Timestamp": "2026-06-04T20:43:51.3815528+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,
@@ -651,7 +651,7 @@
   {
     "StepIndex": 432,
     "StepName": "Reset Safe State",
-    "Timestamp": "2026-06-03T16:36:06.04178+09:00",
+    "Timestamp": "2026-06-04T20:43:53.559817+09:00",
     "IsSimulatorMode": true,
     "IsRealHardwareMode": false,
     "IsConnected": true,

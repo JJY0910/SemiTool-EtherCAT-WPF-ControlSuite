@@ -1,57 +1,46 @@
-# Simulator Images
+# Sequence Images
 
-Portfolio screenshots in this folder are generated from the WPF app in Simulator mode.
+This folder contains GitHub-facing simulator images generated from the WPF application.
 
-## Current simulator-mode files
+## Current files
 
-- `digital-twin-limited-theta-swing.png` - exists
-- `digital-twin-wafer-transfer-robot.png` - exists
-- `digital-twin-blade-mechanism.png` - exists
-- `machine-twin-runtime.png` - exists, captured from the actual runtime `MachineTwinView`
-- `real-equipment-context-top-view.jpg` - exists, approved user-provided public context photo
-- `dashboard.png` - exists
-- `manual-control.png` - exists
-- `io-monitor.png` - exists
-- `auto-sequence.png` - exists
-- `wafer-flow.png` - exists
-- `alarm-log.png` - exists
-- `settings.png` - exists
-- `simulator-demo-frame-01.png` - exists
-- `simulator-demo-frame-02.png` - exists
-- `simulator-demo-frame-03.png` - exists
-- `simulator-demo-frame-04.png` - exists
-
-## Physical model note
-
-These are simulator-mode generated visuals, except `real-equipment-context-top-view.jpg`, which is a user-approved real equipment context reference photo.
-
-The visual model is based on the wafer transfer robot sequence monitor and the previous CMP HMI scenario. `CMP Cluster` is a simulator scenario name, while the physical model is explained as a limited-swing wafer transfer robot with a telescopic blade/end-effector.
-
-The theta axis is shown as a limited station-to-station swing, not a 360-degree continuous rotation.
-
-`machine-twin-runtime.png` and `docs/debug/latest/screenshots/*.png` are rendered from the actual WPF `MachineTwinView`, not from a disconnected mockup.
-
-## Optional media
-
-- `real-hardware-short-test.mp4`
-- `simulator-demo.gif`
-
-Do not commit huge videos directly. Use compressed GIFs, GitHub Releases, or an external video link if needed.
+- `machine-twin-runtime.png` - actual runtime `MainWindow` with the 3D `Machine Twin` tab selected.
+- `digital-twin-limited-theta-swing.png` - 3D Machine Twin overview at startup.
+- `digital-twin-wafer-transfer-robot.png` - Chamber A transfer state.
+- `digital-twin-blade-mechanism.png` - blade/end-effector transfer state.
+- `sequence-frame-01.png` - FOUP A pickup target.
+- `sequence-frame-02.png` - blade entering Chamber A with the chamber door open.
+- `sequence-frame-03.png` - Chamber A processing with the wafer hidden inside the chamber.
+- `sequence-frame-04.png` - final FOUP B completion state.
+- `dashboard.png`
+- `manual-control.png`
+- `io-monitor.png`
+- `auto-sequence.png`
+- `wafer-flow.png`
+- `alarm-log.png`
+- `settings.png`
+- `real-equipment-context-top-view.jpg` - user-provided real equipment context reference.
 
 ## Regeneration command
 
 ```powershell
-dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj -- --capture-demo-assets
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-sequence-assets
 ```
 
-Runtime UI evidence pack:
+The capture path uses WPF `RenderTargetBitmap` against the actual views. It stays in Simulator mode, does not load `IEG3268_Dll.dll`, and does not connect to real EtherCAT hardware.
 
-```powershell
-dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
-```
+If Windows App Control blocks generated Release DLLs with `0x800711C7`, rerun with `-p:Deterministic=false` before `--`.
+
+## Verification evidence
+
+Runtime and full-pipeline evidence is kept under:
+
+- `docs/debug/latest/runtime-verification/`
+- `docs/debug/latest/screenshots/`
+- `docs/debug/latest/full-pipeline/`
 
 ## Privacy rule
 
-Do not add real equipment photos or videos that expose private school, customer, or machine details unless they are approved for public portfolio use.
+Do not add real equipment photos or videos that expose private school, customer, or machine details unless they are explicitly approved for public repository use.
 
-Do not commit large real-hardware videos, reference spreadsheets, reference documents, or vendor DLLs.
+Do not commit vendor DLLs, large real-hardware videos, private reference spreadsheets, or private reference documents.

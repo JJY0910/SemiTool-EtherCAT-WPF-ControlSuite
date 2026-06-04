@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using SemiTool.Application;
 using SemiTool.Domain;
@@ -39,8 +38,8 @@ internal static class SequenceAssetCapture
         await RenderAsync(new AlarmEventLogView { DataContext = viewModel.AlarmEventLog }, "Alarm & Event Log", "Simulator alarm and event history", IoPath.Combine(outputDirectory, "alarm-log.png"));
         await RenderAsync(new SettingsView { DataContext = viewModel.Settings }, "Settings", "Simulator-first configuration", IoPath.Combine(outputDirectory, "settings.png"));
 
-        // Generated assets render the actual runtime MachineTwinView instead of a separate drawing path.
-        await CaptureMachineTwinPortfolioFramesAsync(viewModel.MachineTwin, outputDirectory);
+        // GitHub에 공개되는 장비 시퀀스 이미지는 실제 런타임 MachineTwinView를 렌더링한다.
+        await CaptureMachineTwinSequenceFramesAsync(viewModel.MachineTwin, outputDirectory);
     }
 
     public static async Task CaptureUiDebugReportAsync(RuntimeCoordinator runtime, MainViewModel viewModel)
@@ -153,7 +152,7 @@ internal static class SequenceAssetCapture
         await File.WriteAllTextAsync(IoPath.Combine(fullPipelineDirectory, "full-pipeline-qa-summary.md"), BuildFullPipelineQaSummary(trace), Encoding.UTF8);
     }
 
-    private static async Task CaptureMachineTwinPortfolioFramesAsync(MachineTwinViewModel machineTwin, string outputDirectory)
+    private static async Task CaptureMachineTwinSequenceFramesAsync(MachineTwinViewModel machineTwin, string outputDirectory)
     {
         await machineTwin.RunTransferSequenceForCaptureAsync(async step =>
         {
@@ -162,10 +161,10 @@ internal static class SequenceAssetCapture
                 "00-startup-simulator.png" => "digital-twin-limited-theta-swing.png",
                 "03-chamber-a-door-opening.png" => "digital-twin-wafer-transfer-robot.png",
                 "02-blade-holding-wafer-after-pickup.png" => "digital-twin-blade-mechanism.png",
-                "01-foup-a-before-pickup.png" => "simulator-demo-frame-01.png",
-                "04-blade-entering-chamber-a-door-open.png" => "simulator-demo-frame-02.png",
-                "07-chamber-a-processing-door-closed.png" => "simulator-demo-frame-03.png",
-                "09-final-foup-b-5-completed.png" => "simulator-demo-frame-04.png",
+                "01-foup-a-before-pickup.png" => "sequence-frame-01.png",
+                "04-blade-entering-chamber-a-door-open.png" => "sequence-frame-02.png",
+                "07-chamber-a-processing-door-closed.png" => "sequence-frame-03.png",
+                "09-final-foup-b-5-completed.png" => "sequence-frame-04.png",
                 _ => string.Empty
             };
 
@@ -717,276 +716,6 @@ internal static class SequenceAssetCapture
         surface.Children.Add(header);
         surface.Children.Add(body);
         return surface;
-    }
-
-    private static FrameworkElement CreateDigitalTwinLayout(DigitalTwinPhysicalModel model, DigitalTwinSequenceAssetState state)
-    {
-        var root = new Grid { Background = new SolidColorBrush(Color.FromRgb(18, 26, 32)) };
-        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(340) });
-
-        var canvas = new Canvas
-        {
-            Width = 840,
-            Height = 650,
-            Margin = new Thickness(18),
-            Background = new SolidColorBrush(Color.FromRgb(55, 64, 69))
-        };
-        Grid.SetColumn(canvas, 0);
-        root.Children.Add(canvas);
-
-        DrawEquipmentBase(canvas);
-
-        var center = new Point(420, 340);
-        var stationPoints = BuildStationPoints();
-        DrawStationArc(canvas, model, stationPoints);
-        DrawStations(canvas, model, stationPoints, state.CurrentTargetKey);
-        DrawTowerLamp(canvas, state.TowerYellow);
-        DrawThetaBaseAndBlade(canvas, center, stationPoints[state.CurrentTargetKey], state);
-
-        var status = CreateStatusPanel(model, state);
-        Grid.SetColumn(status, 1);
-        root.Children.Add(status);
-        return root;
-    }
-
-    private static FrameworkElement CreateBladeMechanismLayout(DigitalTwinPhysicalModel model)
-    {
-        var root = new Grid { Background = new SolidColorBrush(Color.FromRgb(20, 28, 34)) };
-        var canvas = new Canvas { Width = 940, Height = 600, Margin = new Thickness(24) };
-        root.Children.Add(canvas);
-
-        AddText(canvas, "Two-stage telescopic blade / end-effector", 38, 30, 28, Brushes.White, FontWeights.SemiBold);
-        AddText(canvas, "Display abstraction for simulator mode. Cylinder and vacuum commands remain named IoPoint operations.", 40, 70, 15, Brushes.LightSteelBlue);
-
-        AddRectangle(canvas, 90, 250, 300, 72, Color.FromRgb(104, 115, 122), Color.FromRgb(189, 198, 204), 3);
-        AddText(canvas, "Lower/base slide", 135, 272, 17, Brushes.White, FontWeights.SemiBold);
-        AddText(canvas, model.BladeMechanism.BaseStage, 100, 330, 14, Brushes.LightSteelBlue);
-
-        AddRectangle(canvas, 310, 232, 390, 38, Color.FromRgb(173, 184, 190), Color.FromRgb(224, 230, 234), 2);
-        AddRectangle(canvas, 555, 220, 195, 62, Color.FromRgb(213, 218, 221), Color.FromRgb(247, 250, 252), 2);
-        AddText(canvas, "Upper/front blade extends", 455, 186, 18, Brushes.White, FontWeights.SemiBold);
-        AddText(canvas, "Front stage extends/retracts under cylinder command", 345, 345, 14, Brushes.LightSteelBlue);
-
-        AddEllipse(canvas, 678, 232, 42, 42, Color.FromRgb(116, 191, 157), Color.FromRgb(213, 247, 230), 2);
-        AddText(canvas, "Wafer held by vacuum", 760, 258, 16, Brushes.White, FontWeights.SemiBold);
-
-        DrawArrow(canvas, new Point(140, 430), new Point(315, 430), "CylinderForward = extend");
-        DrawArrow(canvas, new Point(690, 468), new Point(510, 468), "CylinderBackward = retract");
-        DrawArrow(canvas, new Point(628, 115), new Point(698, 222), "VacuumSuction holds / VacuumExhaust releases");
-
-        AddText(canvas, "Limited theta base aims this assembly at FOUP A, Chamber A, Chamber B, Chamber C, and FOUP B.", 80, 535, 16, Brushes.LightSteelBlue);
-        return root;
-    }
-
-    private static void DrawEquipmentBase(Canvas canvas)
-    {
-        AddRectangle(canvas, 42, 34, 756, 558, Color.FromRgb(92, 102, 108), Color.FromRgb(171, 182, 188), 2);
-        AddRectangle(canvas, 62, 54, 716, 518, Color.FromRgb(67, 75, 80), Color.FromRgb(221, 230, 236), 1);
-        AddText(canvas, "Transparent cover outline / fixed aluminum base", 72, 62, 14, Brushes.LightSteelBlue);
-        AddText(canvas, "Simulator Mode / Digital Twin / No Real Hardware Connected", 72, 532, 15, Brushes.LightGreen, FontWeights.SemiBold);
-    }
-
-    private static void DrawStationArc(Canvas canvas, DigitalTwinPhysicalModel model, IReadOnlyDictionary<string, Point> stationPoints)
-    {
-        var polyline = new Polyline
-        {
-            Stroke = new SolidColorBrush(Color.FromRgb(115, 205, 255)),
-            StrokeThickness = 4,
-            StrokeDashArray = new DoubleCollection { 8, 5 },
-            Points = new PointCollection(new[] { "FoupA", "ChamberA", "ChamberB", "ChamberC", "FoupB" }.Select(key => stationPoints[key]))
-        };
-        canvas.Children.Add(polyline);
-        AddText(canvas, $"Limited Theta Swing ~{model.ThetaSwing.VisualSweepApproxDegrees} deg visual arc / not 360 deg", 250, 102, 17, Brushes.White, FontWeights.SemiBold);
-    }
-
-    private static void DrawStations(Canvas canvas, DigitalTwinPhysicalModel model, IReadOnlyDictionary<string, Point> stationPoints, string currentTargetKey)
-    {
-        foreach (var station in model.ThetaSwing.Stations.OrderBy(station => station.Order))
-        {
-            var point = stationPoints[station.PoseKey];
-            var isCurrent = station.PoseKey == currentTargetKey;
-            var fill = isCurrent ? Color.FromRgb(63, 171, 132) : Color.FromRgb(42, 52, 58);
-            AddRectangle(canvas, point.X - 58, point.Y - 28, 116, 56, fill, Color.FromRgb(218, 230, 235), isCurrent ? 3 : 1.5);
-            AddText(canvas, station.DisplayName, point.X - 45, point.Y - 17, 14, Brushes.White, FontWeights.SemiBold);
-            AddText(canvas, $"Theta enc {station.ThetaEncoderPosition}", point.X - 45, point.Y + 3, 11, Brushes.LightSteelBlue);
-        }
-    }
-
-    private static void DrawTowerLamp(Canvas canvas, bool yellowOn)
-    {
-        AddText(canvas, "Tower Lamp", 690, 70, 13, Brushes.White, FontWeights.SemiBold);
-        AddEllipse(canvas, 720, 96, 24, 24, Color.FromRgb(130, 33, 31), Color.FromRgb(245, 100, 94), 1);
-        AddEllipse(canvas, 720, 124, 24, 24, yellowOn ? Color.FromRgb(210, 150, 35) : Color.FromRgb(82, 64, 28), Color.FromRgb(255, 204, 83), 1);
-        AddEllipse(canvas, 720, 152, 24, 24, Color.FromRgb(28, 73, 48), Color.FromRgb(160, 240, 190), 1);
-    }
-
-    private static void DrawThetaBaseAndBlade(Canvas canvas, Point center, Point target, DigitalTwinSequenceAssetState state)
-    {
-        AddEllipse(canvas, center.X - 66, center.Y - 66, 132, 132, Color.FromRgb(38, 47, 54), Color.FromRgb(207, 216, 222), 3);
-        AddEllipse(canvas, center.X - 34, center.Y - 34, 68, 68, Color.FromRgb(85, 96, 104), Color.FromRgb(232, 238, 242), 2);
-        AddText(canvas, "Theta base", center.X - 27, center.Y - 10, 14, Brushes.White, FontWeights.SemiBold);
-
-        var direction = Normalize(new Vector(target.X - center.X, target.Y - center.Y));
-        var baseEnd = center + direction * 118;
-        var bladeEnd = center + direction * (state.BladeExtended ? 232 : 164);
-        var waferPoint = center + direction * (state.BladeExtended ? 188 : 138);
-
-        AddLine(canvas, center, baseEnd, Color.FromRgb(130, 140, 146), 28);
-        AddLine(canvas, center + direction * 88, bladeEnd, Color.FromRgb(214, 221, 225), 18);
-        AddLine(canvas, center + direction * 118, bladeEnd, Color.FromRgb(245, 248, 250), 5);
-        AddText(canvas, state.BladeExtended ? "blade extended" : "blade retracted", center.X - 64, center.Y + 78, 14, Brushes.LightSteelBlue);
-
-        if (state.WaferHeld)
-        {
-            AddEllipse(canvas, waferPoint.X - 19, waferPoint.Y - 19, 38, 38, Color.FromRgb(95, 181, 148), Color.FromRgb(216, 249, 233), 2);
-        }
-    }
-
-    private static Border CreateStatusPanel(DigitalTwinPhysicalModel model, DigitalTwinSequenceAssetState state)
-    {
-        var panel = new StackPanel { Margin = new Thickness(16) };
-        panel.Children.Add(new TextBlock { Text = "Physical Model", Foreground = Brushes.White, FontSize = 22, FontWeight = FontWeights.SemiBold });
-        panel.Children.Add(new TextBlock { Text = model.EquipmentKind, Foreground = Brushes.LightSteelBlue, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 14) });
-        panel.Children.Add(StatusLine("Scenario", "CMP Cluster = simulator/HMI reference"));
-        panel.Children.Add(StatusLine("Theta Target", state.TargetLabel));
-        panel.Children.Add(StatusLine("Theta Motion", "Limited station-to-station swing"));
-        panel.Children.Add(StatusLine("Z", state.ZState));
-        panel.Children.Add(StatusLine("Cylinder", state.CylinderState));
-        panel.Children.Add(StatusLine("Vacuum", state.VacuumState));
-        panel.Children.Add(StatusLine("Wafer", state.WaferLocation));
-        panel.Children.Add(StatusLine("Step", state.CurrentStep));
-        panel.Children.Add(new TextBlock
-        {
-            Text = "Encoder theta values are preserved profile positions, not literal UI degrees.",
-            Foreground = Brushes.LightGoldenrodYellow,
-            TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(0, 18, 0, 0)
-        });
-
-        return new Border
-        {
-            Margin = new Thickness(0, 18, 18, 18),
-            Padding = new Thickness(18),
-            Background = new SolidColorBrush(Color.FromRgb(34, 44, 52)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(94, 112, 124)),
-            BorderThickness = new Thickness(1),
-            Child = panel
-        };
-    }
-
-    private static FrameworkElement StatusLine(string label, string value) =>
-        new TextBlock
-        {
-            Text = $"{label}: {value}",
-            Foreground = Brushes.WhiteSmoke,
-            FontSize = 15,
-            TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(0, 0, 0, 8)
-        };
-
-    private static IReadOnlyDictionary<string, Point> BuildStationPoints() => new Dictionary<string, Point>
-    {
-        ["FoupA"] = new(210, 500),
-        ["ChamberA"] = new(120, 320),
-        ["ChamberB"] = new(420, 150),
-        ["ChamberC"] = new(720, 320),
-        ["FoupB"] = new(630, 500)
-    };
-
-    private static Vector Normalize(Vector vector)
-    {
-        vector.Normalize();
-        return vector;
-    }
-
-    private static void AddText(Canvas canvas, string text, double x, double y, double fontSize, Brush brush, FontWeight? weight = null)
-    {
-        var block = new TextBlock
-        {
-            Text = text,
-            Foreground = brush,
-            FontSize = fontSize,
-            FontWeight = weight ?? FontWeights.Normal,
-            TextWrapping = TextWrapping.Wrap,
-            MaxWidth = 760
-        };
-        Canvas.SetLeft(block, x);
-        Canvas.SetTop(block, y);
-        canvas.Children.Add(block);
-    }
-
-    private static void AddRectangle(Canvas canvas, double x, double y, double width, double height, Color fill, Color stroke, double strokeThickness)
-    {
-        var rectangle = new Rectangle
-        {
-            Width = width,
-            Height = height,
-            RadiusX = 6,
-            RadiusY = 6,
-            Fill = new SolidColorBrush(fill),
-            Stroke = new SolidColorBrush(stroke),
-            StrokeThickness = strokeThickness
-        };
-        Canvas.SetLeft(rectangle, x);
-        Canvas.SetTop(rectangle, y);
-        canvas.Children.Add(rectangle);
-    }
-
-    private static void AddEllipse(Canvas canvas, double x, double y, double width, double height, Color fill, Color stroke, double strokeThickness)
-    {
-        var ellipse = new Ellipse
-        {
-            Width = width,
-            Height = height,
-            Fill = new SolidColorBrush(fill),
-            Stroke = new SolidColorBrush(stroke),
-            StrokeThickness = strokeThickness
-        };
-        Canvas.SetLeft(ellipse, x);
-        Canvas.SetTop(ellipse, y);
-        canvas.Children.Add(ellipse);
-    }
-
-    private static void AddLine(Canvas canvas, Point start, Point end, Color color, double thickness)
-    {
-        canvas.Children.Add(new Line
-        {
-            X1 = start.X,
-            Y1 = start.Y,
-            X2 = end.X,
-            Y2 = end.Y,
-            Stroke = new SolidColorBrush(color),
-            StrokeThickness = thickness,
-            StrokeStartLineCap = PenLineCap.Round,
-            StrokeEndLineCap = PenLineCap.Round
-        });
-    }
-
-    private static void DrawArrow(Canvas canvas, Point start, Point end, string label)
-    {
-        AddLine(canvas, start, end, Color.FromRgb(102, 204, 255), 4);
-        AddText(canvas, label, Math.Min(start.X, end.X), Math.Min(start.Y, end.Y) - 30, 15, Brushes.White, FontWeights.SemiBold);
-    }
-
-    private sealed record DigitalTwinSequenceAssetState(
-        string CurrentTargetKey,
-        string TargetLabel,
-        bool BladeExtended,
-        bool WaferHeld,
-        string ZState,
-        string CylinderState,
-        string VacuumState,
-        string WaferLocation,
-        string CurrentStep,
-        bool TowerYellow)
-    {
-        public static DigitalTwinSequenceAssetState LimitedSwingOverview { get; } = new("ChamberB", "Chamber B (CMP)", false, false, "Z Safe", "Cylinder Backward", "Vacuum OFF", "No wafer on blade", "Station arc overview", false);
-        public static DigitalTwinSequenceAssetState TransferRobotWithWafer { get; } = new("ChamberA", "Chamber A", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer held on blade", "Place wafer into Chamber A", false);
-        public static DigitalTwinSequenceAssetState PickFromFoupA { get; } = new("FoupA", "FOUP A Slot 1", true, true, "Z Work", "Cylinder Forward", "Vacuum Suction ON", "Wafer picked from FOUP A", "Pick FOUP A Slot 1", false);
-        public static DigitalTwinSequenceAssetState PlaceToChamberA { get; } = new("ChamberA", "Chamber A", true, false, "Z Work", "Cylinder Forward", "Vacuum Exhaust / release", "Wafer in Chamber A", "PreClean_Default starts", false);
-        public static DigitalTwinSequenceAssetState TransferToChamberC { get; } = new("ChamberC", "Chamber C", false, true, "Z Safe", "Cylinder Backward", "Vacuum Suction ON", "Wafer carried from Chamber B", "CMP_Main complete, moving to PostClean_Dry", false);
-        public static DigitalTwinSequenceAssetState PlaceToFoupB { get; } = new("FoupB", "FOUP B Slot 1", true, false, "Z Work -> Z Safe", "Cylinder Forward then Backward", "Vacuum Exhaust / release", "Wafer stored in FOUP B Slot 1", "Overall simulator flow complete", true);
     }
 
     private static string FindRepositoryRoot()

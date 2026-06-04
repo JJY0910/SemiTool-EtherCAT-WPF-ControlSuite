@@ -4,236 +4,113 @@
 
 [한국어 README](README.ko.md)
 
-## Visual Evidence
+## Current 3D Machine Twin
 
-These screenshots are simulator-mode visuals generated from the WPF UI. The original WinForms project controlled real EtherCAT hardware; the new WPF implementation is prepared for supervised real-hardware verification.
+The public screenshots now use the native WPF `Viewport3D` Machine Twin that is shown in the running app. The old reference-photo panel is not part of the runtime view.
 
-| Screen | Preview |
-|---|---|
-| Runtime Machine Twin | ![Runtime Machine Twin](docs/images/machine-twin-runtime.png) |
-| Dashboard | ![Dashboard](docs/images/dashboard.png) |
-| Manual Control | ![Manual Control](docs/images/manual-control.png) |
-| I/O Monitor | ![I/O Monitor](docs/images/io-monitor.png) |
-| Auto Sequence | ![Auto Sequence](docs/images/auto-sequence.png) |
-| Alarm & Event Log | ![Alarm & Event Log](docs/images/alarm-log.png) |
+| Runtime screen | Preview |
+| --- | --- |
+| 3D Machine Twin | ![3D Machine Twin](docs/images/machine-twin-runtime.png) |
 
-Simulator sequence frames: [01](docs/images/simulator-demo-frame-01.png), [02](docs/images/simulator-demo-frame-02.png), [03](docs/images/simulator-demo-frame-03.png), [04](docs/images/simulator-demo-frame-04.png)
+Sequence frames from the same WPF view:
 
-## Digital Twin Equipment Context
+- [FOUP A pickup target](docs/images/sequence-frame-01.png)
+- [Blade entering Chamber A](docs/images/sequence-frame-02.png)
+- [Chamber A processing](docs/images/sequence-frame-03.png)
+- [FOUP B completed](docs/images/sequence-frame-04.png)
 
-| Digital Twin Visual | Preview |
-|---|---|
-| Real equipment context reference | ![Real equipment context reference](docs/images/real-equipment-context-top-view.jpg) |
-| Limited theta swing | ![Limited theta swing](docs/images/digital-twin-limited-theta-swing.png) |
-| Wafer transfer robot | ![Wafer transfer robot](docs/images/digital-twin-wafer-transfer-robot.png) |
-| Blade mechanism | ![Blade mechanism](docs/images/digital-twin-blade-mechanism.png) |
+## Machine Twin Behavior
 
-The Digital Twin now uses an abstract wafer transfer robot field HMI physical model: fixed aluminum-like base, central limited-swing theta base, two-stage/telescopic blade/end-effector, Z Safe/Work movement, cylinder extend/retract, vacuum hold/release, FOUP A, Chamber A/B/C, FOUP B, and tower lamp context.
-
-`CMP Cluster` is treated as a previous-year simulator/HMI scenario name. The physical wafer transfer setup is explained as a wafer transfer robot. The theta axis is displayed as a limited station-to-station swing, not a 360-degree continuous rotation. Preserved theta values remain encoder positions, not literal UI degrees.
-
-The real-equipment top-view photo is included with user approval as public portfolio context. It is not used as a claim that the new WPF app has already been verified on the physical machine.
-
-## Runtime Machine Twin UI
-
-The running WPF application now opens with a first tab named `Machine Twin`.
-
-This is not a static documentation mockup. The `MachineTwinView` is bound to `MachineTwinViewModel` and exposes simulator state for:
-
-- current station and sequence step
-- simulator / real hardware mode
-- connection state
-- limited theta visual angle
-- preserved theta encoder target
-- Z Safe / Work state
-- blade extend/retract state
-- cylinder forward/backward state
-- vacuum suction/exhaust state
-- wafer location on FOUP/chamber/blade
-- chamber door indicators
-- tower lamp indicators
-- alarm summary and runtime event trace
-
-`Run Transfer Sequence` animates the actual Machine Twin view through readable simulator-only mechanical substeps:
+`Run Transfer Sequence` drives a five-wafer simulator pipeline:
 
 ```text
 FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 ```
 
-The transfer sequence makes the chamber-gated motion visible: chamber door open, blade extend, vacuum suction or exhaust, wafer pick/place, blade retract, chamber door close, process start, process complete, and unload. The sequence run executes in Simulator mode only. It does not load `IEG3268_Dll.dll`, does not connect to real equipment, and does not claim real-hardware verification. The real EtherCAT adapter, vendor DLL loading, preserved theta values, and I/O mapping are not changed by this UI transfer sequence.
+The visual sequence is intentionally station-gated:
 
-The first runtime debug screenshot captures the actual `MainWindow` with the `Machine Twin` tab selected. That tab contains `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`, and `MainViewModel.MachineTwin` shares the same `RuntimeCoordinator` used by the other HMI tabs.
+- reset returns to `Home / Start` with the blade retracted.
+- pickup moves from Home to the FOUP A station angle before Z Work and blade extension.
+- FOUP A drains from five wafers to zero, one slot at a time.
+- Chamber A/B/C wafers are hidden inside the chamber after placement while processing continues.
+- chamber buttons stay green while a chamber door is open or a chamber contains a wafer.
+- FOUP B fills from zero wafers to five.
+- the right-side tower lamp is the runtime status lamp: green while running, red while paused/stopped by operator action, yellow when the pipeline is complete.
 
-## Visual Studio Designer Preview
+The visual angle is an HMI display angle only. Preserved theta encoder values from `config/EquipmentProfile.finaltest.json` are not converted into new hardware teaching values.
 
-The XAML designer now has static sample data for the main shell and Machine Twin view.
+## Verification Evidence
 
-Open these files in Visual Studio Designer:
+Latest simulator-only evidence:
 
-- `src/SemiTool.Hmi.Wpf/MainWindow.xaml`
-- `src/SemiTool.Hmi.Wpf/Views/MachineTwinView.xaml`
+- [Runtime verification README](docs/debug/latest/runtime-verification/README.md)
+- [UI runtime verification report](docs/debug/latest/ui-runtime-verification.md)
+- [Full pipeline operator review](docs/debug/latest/full-pipeline/full-pipeline-operator-review.md)
+- [Full pipeline QA summary](docs/debug/latest/full-pipeline/full-pipeline-qa-summary.md)
+- `docs/debug/latest/runtime-verification/dev-actual/*.png`
+- `docs/debug/latest/full-pipeline/screenshots/*.png`
 
-The preview should show:
+The local verification captures were generated from `C:\dev\SemiTool-EtherCAT-WPF-ControlSuite`, which is the active development checkout for this project.
 
-- `Machine Twin` as the first/default tab.
-- The approved real-equipment context photo panel.
-- FOUP A as a 5-slot cassette with remaining waiting sample wafer state.
-- FOUP B as a 5-slot cassette with completed/empty sample states.
-- Chamber A/B/C sample wafer, recipe, step, and progress states.
-- Limited theta swing arc, telescopic blade state, Z, cylinder, vacuum, and tower indicators.
-- Event log sample rows.
+## Screens
 
-The static designer preview keeps exactly five unique sample wafers total across FOUP A, Chamber A/B/C, FOUP B, and the blade. It must not duplicate a wafer ID just to make more UI regions look occupied.
+Additional HMI screens are still available:
 
-Designer data comes from `src/SemiTool.Hmi.Wpf/DesignTime`. It does not connect to real hardware, does not load `IEG3268_Dll.dll`, and does not replace runtime MVVM bindings.
+| Screen | Preview |
+| --- | --- |
+| Dashboard | ![Dashboard](docs/images/dashboard.png) |
+| Manual Control | ![Manual Control](docs/images/manual-control.png) |
+| I/O Monitor | ![I/O Monitor](docs/images/io-monitor.png) |
+| Auto Sequence | ![Auto Sequence](docs/images/auto-sequence.png) |
+| Wafer / Recipe Flow | ![Wafer / Recipe Flow](docs/images/wafer-flow.png) |
+| Alarm & Event Log | ![Alarm & Event Log](docs/images/alarm-log.png) |
+| Settings | ![Settings](docs/images/settings.png) |
 
-More detail: [Visual Studio Designer Preview](docs/visual-studio-designer-preview.md).
+## Safety Boundary
 
-## Five-Wafer Pipeline Simulator
+The WPF app starts in Simulator mode. It does not auto-connect, auto-run, auto-home, auto-motion, or activate outputs on startup.
 
-The runtime simulator now models a five-wafer cassette pipeline instead of a single-wafer toy sequence.
+Real Hardware mode is available only through explicit operator selection, unlock, and manual Connect. The real adapter loads the vendor DLL only inside `Ieg3268EthercatController`; simulator capture commands do not load the DLL and do not connect to physical EtherCAT hardware.
 
-- FOUP A starts with five wafers in slots `A1` through `A5`.
-- FOUP B starts empty in slots `B1` through `B5`.
-- Each FOUP slot shows an occupied/empty wafer disk, wafer ID, state, and active highlight.
-- FOUP A count decreases from `5/5` to `0/5`.
-- FOUP B count increases from `0/5` to `5/5`.
-- Chamber A, Chamber B, and Chamber C show wafer ID, recipe, current step, remaining time, and progress.
-- The sequence completes only when all five wafers are in FOUP B and the chambers/blade are empty.
+The new WPF implementation has not been verified on the school equipment in this repository state. Do not describe simulator evidence as real-hardware commissioning.
 
-Scheduler priority is downstream-first:
+## Preserved Equipment Values
 
-1. Chamber C -> FOUP B when Chamber C is complete.
-2. Chamber B -> Chamber C when Chamber B is complete and Chamber C is empty.
-3. Chamber A -> Chamber B when Chamber A is complete and Chamber B is empty.
-4. FOUP A -> Chamber A when Chamber A is empty and FOUP A still has waiting wafers.
-5. If no transfer is possible, chamber process countdown advances.
+These values are protected and must not be changed unless a newer approved `EquipmentProfile.finaltest.json` requires it:
 
-Normal runtime sequence timing defaults to `Normal`, so the robot, chamber doors, blade, Z, vacuum, and chamber processing states remain visible instead of instantly jumping to completion. `Realistic`, `Fast`, and `Step` speed options are available for review and capture workflows, but they still preserve intermediate states. The visible app remains open and holds the completed FOUP B 5/5 state after the sequence completes; it returns to FOUP A loaded only when the user presses Reset.
+- DO0-DO15 output map
+- DI0-DI5 and DI12-DI13 input map
+- Home, FOUP A/B, Chamber A/B/C robot poses
+- FOUP slot Z safe/work values
+- motion, door, cylinder, vacuum, polling, and auto tick timing values
+- auto scheduler priority
 
-## Runtime UI Evidence Pack
+The HMI uses named I/O points and the hardware abstraction boundary instead of raw DO/DI channel calls.
 
-The repo includes a repeatable runtime UI evidence pack:
+## Build, Test, And Capture
 
-- [Runtime UI verification report](docs/debug/latest/ui-runtime-verification.md)
-- `docs/debug/latest/machine-twin-state-trace.json`
-- `docs/debug/latest/machine-twin-state-trace.csv`
-- `docs/debug/latest/event-log.txt`
-- `docs/debug/latest/screenshots/*.png`
+```powershell
+dotnet restore SemiTool.EtherCAT.WPF.ControlSuite.sln
+dotnet build SemiTool.EtherCAT.WPF.ControlSuite.sln --configuration Debug
+dotnet test SemiTool.EtherCAT.WPF.ControlSuite.sln --configuration Debug --no-build --no-restore
+```
 
-The startup screenshot `docs/debug/latest/screenshots/00-startup-simulator.png` is the integration proof: it shows the actual running shell with Machine Twin selected as the first/default tab.
+Regenerate GitHub-facing images:
 
-The debug evidence now includes the five-wafer pipeline and chamber-gated sequence milestones:
+```powershell
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-sequence-assets
+```
 
-- `01-foup-a-before-pickup.png`
-- `02-blade-holding-wafer-after-pickup.png`
-- `03-chamber-a-door-opening.png`
-- `04-blade-entering-chamber-a-door-open.png`
-- `05-wafer-placed-chamber-a-stage.png`
-- `06-blade-retracted-before-chamber-a-door-closes.png`
-- `07-chamber-a-processing-door-closed.png`
-- `08-chamber-a-unload-after-process-complete.png`
-- `09-final-foup-b-5-completed.png`
+If Windows App Control blocks generated Release DLLs with `0x800711C7`, rerun the same command with `-p:Deterministic=false` before `--`.
 
-Regenerate it with:
+Regenerate verification evidence:
 
 ```powershell
 dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-full-pipeline-qa
 ```
 
-## Summary
-
-SemiTool-EtherCAT-WPF-ControlSuite is a WPF/MVVM semiconductor equipment-control HMI and sequence platform rebuilt from a legacy WinForms EtherCAT project that successfully controlled real hardware.
-
-This is not a simple screen conversion. The new project separates the HMI, application services, sequence logic, scheduler, hardware abstraction, simulator, real EtherCAT adapter, configuration, alarms, interlocks, logs, recipes, and wafer transfer flow.
-
-The original WinForms project controlled real EtherCAT hardware. This new WPF project preserves the real equipment values and is prepared for supervised real-hardware verification, but it does not claim that the new WPF implementation has already been verified on the physical machine.
-
-## Portfolio Highlights
-
-- Real EtherCAT equipment-control experience base
-- WPF/MVVM redesign from a legacy WinForms control project
-- Simulator-first safe startup
-- No auto-connect on startup
-- No auto-run on startup
-- No automatic motion on startup
-- All outputs off on startup
-- Real hardware adapter isolated behind `IEthercatController`
-- Preserved DO/DI, robot pose, FOUP slot, and timing values in `EquipmentProfile`
-- Async sequence logic with cancellation, timeout, alarm, and interlock handling
-- Unit tests for preserved values and simulator behavior
-- Public repository excludes vendor DLLs and legacy binaries
-
-## Current Verification Status
-
-- Build: passed locally
-- Tests: 41 passed locally
-- GitHub Actions: enabled for Windows .NET build/test
-- Simulator mode: ready for developer PC verification
-- Real hardware mode: prepared for verification with local `IEG3268_Dll.dll` and school equipment
-
-## Verification Documents
-
-- [Simulator verification](docs/simulator-verification.md)
-- [Quality gates](docs/quality-gates.md)
-- [Physical equipment model](docs/physical-equipment-model.md)
-- [Blade transfer mechanism](docs/blade-transfer-mechanism.md)
-- [Theta limited swing model](docs/theta-limited-swing.md)
-- [Runtime UI verification report](docs/debug/latest/ui-runtime-verification.md)
-- [Real hardware DLL notes](docs/real-hardware-dll-notes.md)
-- [Real hardware commissioning checklist](.github/ISSUE_TEMPLATE/real-hardware-commissioning.md)
-
-## Sequence Asset Plan
-
-- Add simulator sequence GIF: `docs/images/simulator-demo.gif`
-- Add Dashboard screenshot: `docs/images/dashboard.png`
-- Add Manual Control screenshot: `docs/images/manual-control.png`
-- Add I/O Monitor screenshot: `docs/images/io-monitor.png`
-- Add Auto Sequence screenshot: `docs/images/auto-sequence.png`
-- Add Alarm/reset screenshot: `docs/images/alarm-log.png`
-- Add short real-equipment verification video only after supervised commissioning
-
-## TODO: Actual Equipment Verification
-
-- [ ] Run simulator mode on a developer PC
-- [ ] Capture simulator screenshots
-- [ ] Place local vendor DLL outside git
-- [ ] Confirm E-stop and wiring before real hardware mode
-- [ ] Connect real hardware manually
-- [ ] Verify Servo ON
-- [ ] Verify Z homing
-- [ ] Verify Theta homing
-- [ ] Verify small Z move
-- [ ] Verify small Theta move
-- [ ] Verify DO channels
-- [ ] Verify DI sensors
-- [ ] Verify cylinder forward/backward
-- [ ] Verify vacuum suction/exhaust
-- [ ] Verify chamber door open/close
-- [ ] Verify short auto sequence
-- [ ] Verify alarm/reset recovery
-- [ ] Capture approved real-hardware verification media
-
-## Why This Is Real Equipment-Control Related
-
-The preserved I/O map, Z/Theta robot poses, FOUP slot positions, timing constants, and transfer priority came from the original EtherCAT equipment-control project.
-
-The new project keeps those values in `config/EquipmentProfile.finaltest.json` and protects them with unit tests.
-
-The HMI starts in Simulator mode. Real Hardware mode is present, but the vendor DLL is loaded only by `Ieg3268EthercatController` at runtime.
-
-## Architecture
-
-```text
-WPF HMI
-  -> ViewModels / Commands
-  -> Application Services
-  -> IEthercatController
-  -> SimulatedEthercatController OR Ieg3268EthercatController
-  -> Digital I/O, motion axes, cylinder, vacuum, doors, lamps
-```
-
-Project layout:
+## Project Layout
 
 ```text
 src/SemiTool.Hmi.Wpf        WPF views, ViewModels, commands, bootstrap
@@ -242,123 +119,4 @@ src/SemiTool.Application    Sequence, scheduler, alarms, interlocks, recipes, ev
 src/SemiTool.Hardware       IEthercatController, simulator, real IEG3268 adapter
 src/SemiTool.Infrastructure Config/settings/profile loading and CSV support
 src/SemiTool.Tests          Value preservation and behavior tests
-```
-
-## Screens
-
-- Dashboard
-- Manual Control
-- I/O Monitor
-- Auto Sequence
-- Wafer / Recipe Flow
-- Alarm & Event Log
-- Settings
-
-## Simulator Mode
-
-Run:
-
-```powershell
-dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj
-```
-
-Startup mode is Simulator. Click `Connect`, then use Manual Control for servo, home, move, and output checks.
-
-Simulator input states can be toggled in the I/O Monitor.
-
-## Real Hardware Mode
-
-1. Keep vendor DLLs out of git.
-2. Place the local vendor DLL at `libs/IEG3268_Dll.dll` or set the path in Settings.
-3. In Settings, select `RealHardware`.
-4. Confirm hardware unlock.
-5. Apply settings.
-6. Click `Connect` manually.
-
-If the DLL is missing, Real Hardware mode reports a clear connection error and Simulator mode remains usable.
-
-If `libs/IEG3268_Dll.dll` exists locally, the WPF project conditionally copies it to the output folder without committing it. Absolute DLL paths are also supported in Settings.
-
-The real hardware adapter resolves and loads the DLL only after Real Hardware mode is selected, hardware unlock is enabled, and Connect is clicked.
-
-## Safety Warning
-
-Real hardware mode can move axes and actuate outputs.
-
-Use only with the correct machine, verified wiring, E-stop path, and operator supervision.
-
-Disconnect, Emergency Stop, communication failure, or fatal alarm should stop motion where possible and turn off risky outputs.
-
-## Preserved Hardware Values Summary
-
-Digital outputs:
-
-```text
-DO0  Tower Red
-DO1  Tower Yellow
-DO2  Tower Green
-DO3  Chamber A Lamp
-DO4  Chamber A Door Close
-DO5  Chamber A Door Open
-DO6  Chamber B Lamp
-DO7  Chamber B Door Close
-DO8  Chamber B Door Open
-DO9  Chamber C Lamp
-DO10 Chamber C Door Close
-DO11 Chamber C Door Open
-DO12 Cylinder Forward
-DO13 Cylinder Backward
-DO14 Vacuum Suction
-DO15 Vacuum Exhaust
-```
-
-Digital inputs:
-
-```text
-DI0  Chamber A Door Open Sensor
-DI1  Chamber A Door Close Sensor
-DI2  Chamber B Door Open Sensor
-DI3  Chamber B Door Close Sensor
-DI4  Chamber C Door Open Sensor
-DI5  Chamber C Door Close Sensor
-DI12 Cylinder Rear Sensor
-DI13 Cylinder Front Sensor
-```
-
-Robot poses, FOUP slot Z values, timing constants, and recipes are preserved in `config/EquipmentProfile.finaltest.json` and covered by tests.
-
-## Build / Test
-
-```powershell
-dotnet restore SemiTool.EtherCAT.WPF.ControlSuite.sln
-dotnet build SemiTool.EtherCAT.WPF.ControlSuite.sln
-dotnet test SemiTool.EtherCAT.WPF.ControlSuite.sln --no-build --no-restore
-```
-
-## Portfolio Explanation
-
-This project shows how real WinForms-based EtherCAT equipment-control experience can be redesigned into a safer WPF/MVVM architecture.
-
-It keeps the equipment constants that mattered on hardware, while introducing simulator-first startup, named I/O points, async sequences, interlocks, alarm logging, and a reflection-isolated real hardware adapter.
-
-## Interview Explanation
-
-English:
-
-```text
-My previous project controlled real EtherCAT equipment from a WinForms application.
-For this portfolio project I redesigned that experience as a clean WPF/MVVM control suite.
-The preserved digital I/O map, Z/Theta poses, FOUP slot positions, timing values, and transfer priority are stored in an EquipmentProfile JSON file and protected by unit tests.
-The UI talks to ViewModels, the ViewModels call application services, and all hardware access goes through IEthercatController.
-Simulator mode runs on any developer PC, while real hardware mode is isolated behind a runtime-loaded IEG3268 adapter.
-```
-
-Korean:
-
-```text
-기존 프로젝트에서는 WinForms 기반 프로그램으로 실제 EtherCAT 장비를 제어했습니다.
-이 프로젝트에서는 그 경험을 바탕으로 WPF/MVVM 구조의 장비 제어 HMI와 시퀀스 플랫폼을 새로 설계했습니다.
-실제 장비에서 사용했던 DO/DI 맵, Z/Theta 포즈, FOUP 슬롯 위치, 타이밍 값, 이송 우선순위를 EquipmentProfile JSON으로 분리했고 단위 테스트로 보존값을 검증합니다.
-UI는 ViewModel을 통해 Application Service를 호출하고, 실제 하드웨어 접근은 IEthercatController 인터페이스 뒤로 격리했습니다.
-하드웨어가 없는 PC에서는 Simulator 모드로 동작하고, 실제 장비 모드는 IEG3268 어댑터에서 vendor DLL을 런타임에 로드하도록 분리했습니다.
 ```

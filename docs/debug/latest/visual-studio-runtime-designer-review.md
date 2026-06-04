@@ -37,7 +37,7 @@ Result:
 The simulator-only capture commands were re-run successfully.
 
 ```powershell
-dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-demo-assets
+dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-sequence-assets
 dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
 ```
 

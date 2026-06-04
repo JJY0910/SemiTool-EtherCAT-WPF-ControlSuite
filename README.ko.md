@@ -2,257 +2,117 @@
 
 [English README](README.md)
 
-## Digital Twin 장비 맥락
+## 최신 3D Machine Twin
 
-| Digital Twin Visual | Preview |
-|---|---|
-| 실제 장비 참고 사진 | ![Real equipment context reference](docs/images/real-equipment-context-top-view.jpg) |
-| 런타임 Machine Twin | ![Runtime Machine Twin](docs/images/machine-twin-runtime.png) |
-| 제한 θ 스윙 | ![Limited theta swing](docs/images/digital-twin-limited-theta-swing.png) |
-| 웨이퍼 이송 로봇 | ![Wafer transfer robot](docs/images/digital-twin-wafer-transfer-robot.png) |
-| 블레이드 메커니즘 | ![Blade mechanism](docs/images/digital-twin-blade-mechanism.png) |
+공개용 스크린샷은 이제 실제 실행 앱의 첫 번째 탭에 표시되는 WPF `Viewport3D` Machine Twin 화면을 사용합니다. 예전 왼쪽 상단 장비 참조 사진 패널은 런타임 화면에서 제거되었습니다.
 
-실제 장비 사진은 사용자가 포트폴리오 맥락으로 공개해도 된다고 승인한 참고 이미지입니다. 이 사진은 새 WPF 앱이 실제 장비 검증을 완료했다는 주장으로 사용하지 않습니다.
+| 런타임 화면 | 미리보기 |
+| --- | --- |
+| 3D Machine Twin | ![3D Machine Twin](docs/images/machine-twin-runtime.png) |
 
-Digital Twin은 웨이퍼 이송 로봇 장비를 추상화해서 표현합니다. 고정 알루미늄 베이스, 중앙 θ축 제한 스윙 베이스, 2단/텔레스코픽 블레이드, Z Safe/Work, 실린더 전진/후진, 진공 흡착/배기, FOUP A, Chamber A/B/C, FOUP B, 타워램프 맥락을 보여줍니다.
+같은 WPF 화면에서 생성한 시퀀스 프레임:
 
-`CMP Cluster`는 이전 HMI simulator scenario 이름으로 유지합니다. 실제 물리 장비는 웨이퍼 이송 로봇 장비로 설명하며, θ축은 360도 무한회전이 아니라 station-to-station 제한 스윙으로 시각화합니다. 보존된 theta 숫자는 encoder position 값이지 literal degree 값이 아닙니다.
+- [FOUP A 픽업 위치](docs/images/sequence-frame-01.png)
+- [Chamber A 진입](docs/images/sequence-frame-02.png)
+- [Chamber A 공정 진행](docs/images/sequence-frame-03.png)
+- [FOUP B 완료](docs/images/sequence-frame-04.png)
 
-단, 새 WPF 앱이 실제 장비에서 검증 완료되었다고 주장하지 않습니다. 현재 저장소는 supervised real-hardware verification을 준비한 상태입니다.
+## Machine Twin 동작 기준
 
-## Runtime Machine Twin UI
-
-실제 실행되는 WPF 앱은 첫 번째 탭으로 `Machine Twin`을 보여줍니다.
-
-이 화면은 문서용 정적 그림이 아니라 `MachineTwinView`와 `MachineTwinViewModel`에 바인딩된 런타임 화면입니다.
-
-상태 매핑 항목은 다음과 같습니다.
-
-- 현재 station과 sequence step
-- Simulator / RealHardware mode
-- connection state
-- 제한 θ축 visual angle
-- 보존 theta encoder target
-- Z Safe / Work
-- blade extend/retract
-- cylinder forward/backward
-- vacuum suction/exhaust
-- wafer 위치
-- chamber door indicator
-- tower lamp indicator
-- alarm summary와 runtime event trace
-
-`Run Transfer Sequence` 버튼은 실제 Machine Twin 화면을 이송 시퀀스로 움직입니다.
+`Run Transfer Sequence`는 5장 웨이퍼 파이프라인을 시뮬레이터 기준으로 구동합니다.
 
 ```text
 FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 ```
 
-이 시퀀스는 Simulator mode 전용이며 vendor DLL을 로드하지 않고 실제 장비에 연결하지 않습니다.
+UI 동작은 스테이션 순서를 명확히 보이도록 설계했습니다.
 
-첫 번째 runtime debug screenshot은 실제 `MainWindow`에서 `Machine Twin` 탭이 선택된 상태를 캡처합니다. 이 탭은 `<views:MachineTwinView DataContext="{Binding MachineTwin}" />`를 사용하며, `MainViewModel.MachineTwin`은 다른 HMI 탭과 같은 `RuntimeCoordinator`를 공유합니다.
+- Reset은 `Home / Start`로 돌아가며 블레이드는 접힌 상태를 유지합니다.
+- 픽업은 Home에서 FOUP A 각도로 먼저 이동한 뒤 Z Work와 블레이드 전진을 진행합니다.
+- FOUP A는 5장 웨이퍼가 슬롯별로 하나씩 빠지며 `5/5`에서 `0/5`로 감소합니다.
+- Chamber A/B/C에 들어간 웨이퍼는 공정 중 챔버 내부에 숨겨져 바깥으로 튀어나와 보이지 않습니다.
+- 챔버 문이 열려 있거나 웨이퍼가 챔버 안에 있으면 챔버 버튼은 초록 상태를 유지합니다.
+- FOUP B는 `0/5`에서 `5/5`로 채워집니다.
+- 오른쪽 경광등을 런타임 상태등으로 사용합니다. 진행 중은 초록, 일시정지/정지 계열은 빨강, 전체 파이프라인 완료는 노랑으로 표시합니다.
 
-## Visual Studio Designer Preview
+UI 각도는 HMI 표시용 각도입니다. `config/EquipmentProfile.finaltest.json`에 보존된 실제 theta encoder teaching 값은 임의로 바꾸지 않습니다.
 
-Visual Studio XAML Designer에서도 Machine Twin 화면을 바로 이해할 수 있도록 design-time sample data를 추가했습니다.
+## 검증 근거
 
-Designer에서 열 파일:
+최신 시뮬레이터 전용 검증 자료:
 
-- `src/SemiTool.Hmi.Wpf/MainWindow.xaml`
-- `src/SemiTool.Hmi.Wpf/Views/MachineTwinView.xaml`
+- [런타임 검증 README](docs/debug/latest/runtime-verification/README.md)
+- [UI 런타임 검증 리포트](docs/debug/latest/ui-runtime-verification.md)
+- [전체 파이프라인 작업자 검토](docs/debug/latest/full-pipeline/full-pipeline-operator-review.md)
+- [전체 파이프라인 QA 요약](docs/debug/latest/full-pipeline/full-pipeline-qa-summary.md)
+- `docs/debug/latest/runtime-verification/dev-actual/*.png`
+- `docs/debug/latest/full-pipeline/screenshots/*.png`
 
-Designer preview에는 다음이 보입니다.
+검증 캡처는 실제 개발 경로인 `C:\dev\SemiTool-EtherCAT-WPF-ControlSuite`에서 생성했습니다.
 
-- 첫 번째/default `Machine Twin` 탭
-- 승인된 실제 장비 context photo panel
-- 남은 대기 wafer 상태가 보이는 FOUP A 5-slot cassette
-- completed/empty sample 상태가 보이는 FOUP B 5-slot cassette
-- Chamber A/B/C sample recipe, wafer, step, progress 상태
-- 제한 θ swing arc, telescopic blade 상태, Z, cylinder, vacuum, tower lamp indicator
-- event log sample rows
+## 추가 HMI 화면
 
-정적 designer preview는 FOUP A, Chamber A/B/C, FOUP B, blade 전체에서 sample wafer ID가 정확히 5개만 보이도록 유지합니다. UI 영역을 채우기 위해 같은 wafer ID를 중복 표시하지 않습니다.
+| 화면 | 미리보기 |
+| --- | --- |
+| Dashboard | ![Dashboard](docs/images/dashboard.png) |
+| Manual Control | ![Manual Control](docs/images/manual-control.png) |
+| I/O Monitor | ![I/O Monitor](docs/images/io-monitor.png) |
+| Auto Sequence | ![Auto Sequence](docs/images/auto-sequence.png) |
+| Wafer / Recipe Flow | ![Wafer / Recipe Flow](docs/images/wafer-flow.png) |
+| Alarm & Event Log | ![Alarm & Event Log](docs/images/alarm-log.png) |
+| Settings | ![Settings](docs/images/settings.png) |
 
-이 preview는 `src/SemiTool.Hmi.Wpf/DesignTime`의 정적 sample data만 사용합니다. 실제 장비에 연결하지 않고, `IEG3268_Dll.dll`도 로드하지 않으며, runtime MVVM binding을 대체하지 않습니다.
+## 안전 경계
 
-자세한 내용: [Visual Studio Designer Preview](docs/visual-studio-designer-preview.md).
+WPF 앱은 Simulator mode로 시작합니다. 시작 시 자동 연결, 자동 실행, 자동 원점, 자동 모션, 출력 활성화를 하지 않습니다.
 
-## 5-wafer Pipeline Simulator
+Real Hardware mode는 작업자가 명시적으로 모드를 선택하고 unlock한 뒤 수동으로 Connect해야만 사용할 수 있습니다. vendor DLL은 `Ieg3268EthercatController` 내부에서만 로드됩니다. 캡처 명령은 실제 EtherCAT 장비에 연결하지 않습니다.
 
-런타임 simulator는 이제 단일 wafer 장난감 시퀀스가 아니라 5장 cassette pipeline을 모델링합니다.
+현재 저장소 상태는 학교 장비에서 실장비 검증을 완료했다고 주장하지 않습니다. 시뮬레이터 검증 자료를 실장비 commissioning 완료 자료처럼 설명하면 안 됩니다.
 
-- FOUP A는 `A1`~`A5` 슬롯에 wafer 5장으로 시작합니다.
-- FOUP B는 `B1`~`B5`가 비어 있는 상태로 시작합니다.
-- 각 FOUP slot은 wafer disk, wafer ID, 상태, active highlight를 표시합니다.
-- FOUP A count는 `5/5`에서 `0/5`로 감소합니다.
-- FOUP B count는 `0/5`에서 `5/5`로 증가합니다.
-- Chamber A/B/C는 wafer ID, recipe, current step, remaining time, progress를 표시합니다.
-- 모든 wafer 5장이 FOUP B에 들어가고 chamber/blade가 비어야 완료됩니다.
+## 보존 장비값
 
-Scheduler priority는 downstream-first입니다.
+아래 값은 새로 승인된 `EquipmentProfile.finaltest.json`이 없는 한 변경하지 않습니다.
 
-1. Chamber C complete -> FOUP B
-2. Chamber B complete -> Chamber C
-3. Chamber A complete -> Chamber B
-4. FOUP A waiting wafer -> Chamber A
-5. 이동이 불가능하면 chamber process countdown 진행
+- DO0-DO15 출력 맵
+- DI0-DI5, DI12-DI13 입력 맵
+- Home, FOUP A/B, Chamber A/B/C 로봇 pose
+- FOUP slot Z safe/work 값
+- motion, door, cylinder, vacuum, polling, auto tick timing 값
+- auto scheduler priority
 
-일반 runtime 시퀀스 기본 속도는 `Normal`입니다. 그래서 robot, chamber door, blade, Z, vacuum, chamber processing 상태가 눈에 보이게 진행되며 즉시 완료로 점프하지 않습니다. `Realistic`, `Fast`, `Step` 옵션은 리뷰/캡처용으로 사용할 수 있지만 중간 상태는 유지합니다. 시퀀스가 끝나도 실제 앱 창은 닫히지 않고 FOUP B 5/5 completed 상태를 유지하며, FOUP A loaded 상태로 돌아가는 것은 사용자가 Reset을 눌렀을 때만 수행됩니다.
+HMI와 sequence logic은 raw DO/DI 번호가 아니라 named I/O point와 하드웨어 추상화 경계를 사용합니다.
 
-## Machine Twin Transfer Sequence Update
+## 빌드, 테스트, 캡처
 
-`Run Transfer Sequence`는 실제 EtherCAT 동작이 아니라 WPF UI / 시뮬레이터 시각화입니다.
+```powershell
+dotnet restore SemiTool.EtherCAT.WPF.ControlSuite.sln
+dotnet build SemiTool.EtherCAT.WPF.ControlSuite.sln --configuration Debug
+dotnet test SemiTool.EtherCAT.WPF.ControlSuite.sln --configuration Debug --no-build --no-restore
+```
 
-- Chamber door open 이후에만 blade가 chamber로 들어갑니다.
-- Vacuum suction이 켜진 뒤 wafer를 blade로 pick합니다.
-- Vacuum exhaust/release가 표시된 뒤 wafer를 chamber 또는 FOUP B에 place합니다.
-- Blade가 완전히 retract된 뒤 chamber door가 close됩니다.
-- Chamber process는 wafer가 stage에 있고 door가 closed인 상태에서만 시작됩니다.
-- Chamber unload는 process complete 이후에만 진행됩니다.
-- 일반 runtime 시퀀스 기본 속도는 `Normal`이며 즉시 완료로 점프하지 않습니다.
-- Real EtherCAT adapter, vendor DLL loading, preserved theta value, I/O mapping은 이 UI 수정으로 변경하지 않습니다.
-- 새 WPF 앱의 실제 장비 검증 완료를 주장하지 않습니다.
+GitHub 공개 이미지 재생성:
 
-Debug evidence의 주요 sequence screenshot은 다음 파일명으로 갱신됩니다.
+```powershell
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-sequence-assets
+```
 
-- `01-foup-a-before-pickup.png`
-- `02-blade-holding-wafer-after-pickup.png`
-- `03-chamber-a-door-opening.png`
-- `04-blade-entering-chamber-a-door-open.png`
-- `05-wafer-placed-chamber-a-stage.png`
-- `06-blade-retracted-before-chamber-a-door-closes.png`
-- `07-chamber-a-processing-door-closed.png`
-- `08-chamber-a-unload-after-process-complete.png`
-- `09-final-foup-b-5-completed.png`
+Windows App Control이 생성된 Release DLL을 `0x800711C7`로 차단하면 `--` 앞에 `-p:Deterministic=false`를 붙여 다시 실행합니다.
 
-## Runtime UI Evidence Pack
-
-런타임 UI 동작 증거는 다음 경로에 생성됩니다.
-
-- [Runtime UI verification report](docs/debug/latest/ui-runtime-verification.md)
-- `docs/debug/latest/machine-twin-state-trace.json`
-- `docs/debug/latest/machine-twin-state-trace.csv`
-- `docs/debug/latest/event-log.txt`
-- `docs/debug/latest/screenshots/*.png`
-
-`docs/debug/latest/screenshots/00-startup-simulator.png`는 실제 실행 셸에서 Machine Twin이 첫 번째/default 탭으로 선택되어 있음을 보여주는 통합 증거입니다.
-
-debug evidence에는 다음 5-wafer pipeline milestone이 포함됩니다.
-
-- `01-foup-a-before-pickup.png`
-- `02-blade-holding-wafer-after-pickup.png`
-- `03-chamber-a-door-opening.png`
-- `04-blade-entering-chamber-a-door-open.png`
-- `05-wafer-placed-chamber-a-stage.png`
-- `06-blade-retracted-before-chamber-a-door-closes.png`
-- `07-chamber-a-processing-door-closed.png`
-- `08-chamber-a-unload-after-process-complete.png`
-- `09-final-foup-b-5-completed.png`
-
-재생성 명령:
+검증 자료 재생성:
 
 ```powershell
 dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
+dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-full-pipeline-qa
 ```
 
-## 프로젝트 요약
-
-SemiTool-EtherCAT-WPF-ControlSuite는 실제 EtherCAT 장비를 제어했던 기존 WinForms 프로젝트 경험을 바탕으로 새로 설계한 WPF/MVVM 기반 반도체 장비 제어 HMI 및 시퀀스 플랫폼입니다.
-
-이 저장소는 단순 화면 시퀀스가 아니라, 장비 제어에서 중요한 I/O 매핑, 로봇 포즈, FOUP 슬롯 위치, 타이밍 값, 시퀀스, 알람, 인터락, simulator/real hardware 분리 구조를 포함합니다.
-
-## 왜 화면만 만든 시퀀스가 아닌가
-
-- 기존 WinForms 프로젝트는 실제 EtherCAT 장비 제어에 사용되었습니다.
-- 새 WPF 프로젝트는 기존 UI를 그대로 변환하지 않고 MVVM 구조로 재설계했습니다.
-- HMI는 Application Service를 호출하고, 모든 하드웨어 접근은 `IEthercatController` 인터페이스 뒤로 격리했습니다.
-- 실제 하드웨어 DLL이 없어도 simulator mode로 빌드, 테스트, 시연이 가능합니다.
-- real hardware mode는 사용자가 명시적으로 선택하고 unlock/connect해야만 접근됩니다.
-
-## 실제 EtherCAT 프로젝트에서 보존한 것
-
-- DO0~DO15 출력 매핑
-- DI0~DI5, DI12, DI13 입력 매핑
-- Z/Theta 로봇 포즈
-- FOUP slot Z safe/work 위치
-- motion wait, door wait, vacuum wait, cylinder timeout 등 타이밍 값
-- PM C -> FOUP B, PM B -> PM C, PM A -> PM B, FOUP A -> PM A 우선순위
-
-보존값은 `config/EquipmentProfile.finaltest.json`에 있으며 단위 테스트로 검증합니다.
-
-## 아키텍처 요약
+## 프로젝트 구조
 
 ```text
-WPF HMI
-  -> ViewModel / Command
-  -> Application Service
-  -> IEthercatController
-  -> SimulatedEthercatController 또는 Ieg3268EthercatController
-  -> Digital I/O, motion, cylinder, vacuum, door, lamp
+src/SemiTool.Hmi.Wpf        WPF view, ViewModel, command, bootstrap
+src/SemiTool.Domain         장비 모델, enum, profile 객체
+src/SemiTool.Application    sequence, scheduler, alarm, interlock, recipe, event log
+src/SemiTool.Hardware       IEthercatController, simulator, real IEG3268 adapter
+src/SemiTool.Infrastructure config/settings/profile loading, CSV support
+src/SemiTool.Tests          보존값과 동작 검증 테스트
 ```
-
-## 안전 설계
-
-- 시작 기본값은 Simulator mode입니다.
-- 시작 시 real hardware 자동 연결이 없습니다.
-- 시작 시 auto-run이 없습니다.
-- 시작 시 축 자동 이동이 없습니다.
-- 시작 시 출력은 OFF 상태입니다.
-- manual command는 auto running 중 차단됩니다.
-- auto start는 connection과 homing 조건을 확인합니다.
-- emergency stop은 simulator 출력 OFF와 alarm 상태 전환을 테스트합니다.
-
-## Simulator Mode
-
-Simulator mode는 개발 PC에서 vendor DLL 없이 실행됩니다.
-
-```powershell
-dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj
-```
-
-포트폴리오용 simulator 화면은 다음 명령으로 생성할 수 있습니다.
-
-```powershell
-dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj -- --capture-demo-assets
-```
-
-## Real Hardware Mode 경계
-
-이 WPF 프로젝트는 real hardware mode를 위한 adapter 구조를 준비했지만, 새 WPF 구현이 실제 장비에서 검증되었다고 주장하지 않습니다.
-
-실제 장비 검증에는 local `IEG3268_Dll.dll`, 장비 전원, EtherCAT 연결, E-stop, wiring, operator supervision, 학교 장비 환경에서의 commissioning이 필요합니다.
-
-자세한 DLL 배치와 아키텍처 주의사항은 [Real hardware DLL notes](docs/real-hardware-dll-notes.md)를 참고하면 됩니다.
-
-Digital Twin 물리 모델과 블레이드/θ축 설명은 [Physical equipment model](docs/physical-equipment-model.md), [Blade transfer mechanism](docs/blade-transfer-mechanism.md), [Theta limited swing model](docs/theta-limited-swing.md)에 정리했습니다.
-
-공개 GitHub 저장소에는 vendor DLL을 포함하지 않습니다. 실제 장비 PC 또는 Visual Studio 로컬 환경에서는 `libs/IEG3268_Dll.dll`에 DLL을 두거나 Settings에서 절대경로를 지정할 수 있습니다.
-
-DLL은 RealHardware mode를 선택하고 hardware unlock 후 Connect를 눌렀을 때만 로드됩니다. Simulator mode와 simulator visual asset은 DLL 없이 동작합니다.
-
-## Build / Test / CI 상태
-
-- GitHub Actions `.NET CI`: 통과
-- Local Release build: 통과
-- Unit tests: 41 passed / 0 failed
-- Safety audit: vendor DLL, exe, pdb, bin, obj, legacy zip 추적 없음
-
-## 면접 설명
-
-기존 프로젝트에서는 WinForms 기반 프로그램으로 실제 EtherCAT 장비를 제어했습니다. 이 포트폴리오 프로젝트에서는 그 경험을 WPF/MVVM 구조로 재설계했습니다.
-
-핵심은 화면만 만든 것이 아니라, 실제 장비에서 사용했던 DO/DI 매핑, 로봇 포즈, FOUP 슬롯 위치, 타이밍 값, 이송 우선순위를 `EquipmentProfile`로 분리하고 테스트로 보존했다는 점입니다.
-
-또한 simulator mode와 real hardware mode를 분리해 안전하게 개발 PC에서 검증할 수 있게 했고, 실제 장비 접근은 `IEthercatController`와 `Ieg3268EthercatController` 뒤로 격리했습니다.
-
-## 실제 장비 검증 전 현재 상태
-
-현재 저장소는 simulator 기준으로 build/test/CI와 visual sequence asset 생성까지 완료된 상태입니다. 실제 장비 검증 전이므로 README와 문서에서는 새 WPF 앱의 real hardware 검증 완료를 주장하지 않습니다.
-
-## 학교 장비 검증 후 추가할 항목
-
-- 실제 장비 commissioning checklist 결과
-- 짧은 real hardware 동작 영상 또는 승인된 캡처
-- I/O monitor 실제 센서 반응 기록
-- Servo ON, homing, small move, cylinder/vacuum/door 검증 기록
-- alarm/reset recovery 기록

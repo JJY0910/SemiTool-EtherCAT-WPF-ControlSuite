@@ -32,7 +32,7 @@
 - Build: success
 - Tests: 99 passed / 0 failed
 - Capture commands: success
-  - `dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-demo-assets`
+  - `dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-sequence-assets`
   - `dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report`
 - GitHub Actions: success on main
 

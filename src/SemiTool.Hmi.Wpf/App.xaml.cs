@@ -25,8 +25,11 @@ public partial class App : System.Windows.Application
         var scheduler = new TransferScheduler(recipes);
         var runtime = new RuntimeCoordinator(profile, controller, sequence, scheduler, safety, alarms, events, recipes);
 
-        if (e.Args.Any(arg => string.Equals(arg, "--capture-demo-assets", StringComparison.OrdinalIgnoreCase)))
+        if (HasArgument(e.Args, "--capture-sequence-assets") ||
+            HasArgument(e.Args, "--capture-demo-assets"))
         {
+            // 기존 자동화가 깨지지 않도록 옛 캡처 인자는 유지하고,
+            // 공개 문서에서는 장비 시퀀스 산출물 이름을 사용한다.
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
             var viewModel = new MainViewModel(runtime, profilePath, settingsPath);
             await SequenceAssetCapture.CaptureAsync(runtime, viewModel);
@@ -58,6 +61,9 @@ public partial class App : System.Windows.Application
         };
         window.Show();
     }
+
+    private static bool HasArgument(IEnumerable<string> args, string value) =>
+        args.Any(arg => string.Equals(arg, value, StringComparison.OrdinalIgnoreCase));
 
     private static string ResolvePath(string relativePath, bool mustExist = true)
     {

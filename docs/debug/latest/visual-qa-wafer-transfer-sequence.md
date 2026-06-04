@@ -8,7 +8,7 @@ This report reviews the latest simulator-only Machine Twin / Wafer Transfer Sequ
 - Real hardware validation: not performed and not claimed
 - Hardware behavior scope: RealHardware adapter, vendor DLL handling, preserved theta/detent/axis values, and I/O mapping semantics were not changed
 - Capture commands:
-  - `dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-demo-assets`
+  - `dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-sequence-assets`
   - `dotnet run --project src\SemiTool.Hmi.Wpf\SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report`
 
 ## Validation Summary
