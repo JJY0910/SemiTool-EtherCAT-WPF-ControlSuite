@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Real hardware commissioning checklist
+    url: https://github.com/JJY0910/SemiTool-EtherCAT-WPF-ControlSuite/issues/new?template=real-hardware-commissioning.md
+    about: Use this checklist for supervised equipment verification.

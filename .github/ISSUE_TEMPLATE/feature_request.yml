@@ -1,0 +1,41 @@
+name: Feature request
+description: Propose a focused improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What operator or maintainer problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the intended behavior and scope.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - WPF HMI
+        - Machine Twin
+        - Simulator
+        - Safety / interlocks
+        - Documentation
+        - CI / tests
+        - Real hardware boundary
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety boundary
+      description: Explain whether preserved equipment values, startup behavior, or real outputs are touched.
+    validations:
+      required: true

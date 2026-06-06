@@ -4,15 +4,22 @@ on:
   push:
     branches:
       - main
-      - codex/wpf-migration-initial
+      - codex/**
+      - fix/**
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-test:
+  windows-build-test:
     name: Windows build and test
     runs-on: windows-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout

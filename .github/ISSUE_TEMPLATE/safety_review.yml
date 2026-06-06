@@ -1,0 +1,36 @@
+name: Safety review
+description: Request review for a change that may affect hardware or sequence safety.
+title: "[Safety]: "
+labels:
+  - safety
+body:
+  - type: textarea
+    id: change
+    attributes:
+      label: Change under review
+      description: What changed or what is being proposed?
+    validations:
+      required: true
+  - type: checkboxes
+    id: affected
+    attributes:
+      label: Affected boundary
+      options:
+        - label: Startup behavior
+        - label: Preserved equipment profile values
+        - label: Real EtherCAT connection
+        - label: Motion, servo, door, cylinder, or vacuum outputs
+        - label: Auto sequence scheduling
+        - label: Vendor DLL loading
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Mitigation and validation
+      description: Which tests, screenshots, or commissioning steps cover this risk?
+    validations:
+      required: true
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Known limitations
+      description: What cannot be validated without equipment access?

@@ -1,60 +1,92 @@
 # Architecture
 
-## Layers
+SemiTool EtherCAT WPF Control Suite is structured around a safety-first WPF/MVVM boundary. The HMI can run fully in Simulator mode, while the real EtherCAT path remains behind an explicit operator-controlled adapter.
+
+## Layer Map
 
 ```text
 SemiTool.Hmi.Wpf
-  Views, ViewModels, commands, WPF bootstrap
+  WPF views, ViewModels, commands, startup, design-time previews
 
 SemiTool.Application
-  EquipmentSequenceService, TransferScheduler, SafetyInterlockService,
-  AlarmService, EventLogService, RecipeService
+  EquipmentSequenceService, RuntimeCoordinator, TransferScheduler,
+  SafetyInterlockService, AlarmService, EventLogService, RecipeService
 
 SemiTool.Hardware
   IEthercatController, SimulatedEthercatController,
-  Ieg3268EthercatController, SelectableEthercatController
+  SelectableEthercatController, Ieg3268EthercatController
 
 SemiTool.Domain
   EquipmentProfile, IoPoint, AxisId, RobotPose, FoupSlotPose,
   ChamberId, MachineState, AlarmCode, EquipmentStatus
 
 SemiTool.Infrastructure
-  EquipmentProfileLoader, AppSettingsStore, CSV writer
+  EquipmentProfileLoader, AppSettingsStore, CSV and profile support
 ```
 
-## Data Flow
+## Runtime Flow
 
 ```text
-WPF HMI
-  -> ViewModel command
-  -> Application Service
+Operator command
+  -> WPF ViewModel
+  -> RuntimeCoordinator / Application service
+  -> SafetyInterlockService
   -> IEthercatController
-  -> EtherCAT Adapter / Simulator
-  -> Motion axis or Digital I/O
+  -> Simulator or real IEG3268 adapter
+  -> status, alarms, event log, Machine Twin
 ```
 
-## Simulator Flow
+The ViewModel layer should bind to state and commands. It should not know raw hardware channels or vendor DLL details.
+
+## Startup Safety Boundary
+
+Startup creates the equipment profile, controller selector, services, and main window. It must not connect to hardware, start auto sequence, home axes, move axes, or activate outputs.
+
+Simulator mode is the default operator mode. Real Hardware mode requires explicit mode selection, hardware unlock, and manual Connect.
+
+## Simulator Path
 
 ```text
-Operator selects Simulator
-  -> manual Connect
+Simulator selected
+  -> operator presses Connect
   -> SimulatedEthercatController
-  -> in-memory DO/DI/axis state
-  -> I/O Monitor and sequence status update
+  -> in-memory axes and I/O
+  -> HMI status, event log, Machine Twin
 ```
 
-Simulator mode is the default startup mode. It does not require vendor DLLs and never connects to real equipment.
+The simulator is used for normal development, CI tests, and screenshot capture. It does not load the vendor DLL.
 
-## Real Hardware Flow
+## Real Hardware Path
 
 ```text
-Operator selects RealHardware
-  -> checks hardware unlock
-  -> manual Connect
+Real Hardware selected
+  -> hardware unlock confirmed
+  -> operator presses Connect
   -> Ieg3268EthercatController
-  -> reflection loads libs/IEG3268_Dll.dll
-  -> vendor IEG3268 API
+  -> libs/IEG3268_Dll.dll loaded by adapter only
   -> real EtherCAT I/O and motion
 ```
 
-The default public build compiles without the vendor DLL. Missing DLL errors are contained in real hardware connection handling.
+The public build can compile without the vendor DLL. Missing DLL errors are contained in the real-hardware connection path.
+
+## 3D Machine Twin
+
+The Machine Twin is a native WPF `Viewport3D` visual layer driven by simulator sequence state:
+
+- FOUP A starts with five slots populated.
+- The robot stays at `Home / Start` with the blade retracted until a station target is selected.
+- FOUP A and FOUP B station angles are display angles only; they do not rewrite preserved encoder teaching values.
+- Chamber doors, button lamps, wafer ownership, blade extension, Z state, and tower lamp state are derived from the transfer sequence snapshot.
+- Wafers placed inside a chamber are tracked logically while hidden from the outside view during processing.
+
+## Preserved Values
+
+`config/EquipmentProfile.finaltest.json` is the authority for protected hardware values. Tests should protect:
+
+- DO/DI maps
+- robot station poses
+- FOUP slot Z safe/work values
+- timing and scheduler priority
+- named I/O usage in application logic
+
+UI layout or simulator display improvements must not rewrite the approved profile.
