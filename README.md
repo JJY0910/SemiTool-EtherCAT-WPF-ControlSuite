@@ -3,74 +3,86 @@
 [![.NET CI](https://github.com/JJY0910/SemiTool-EtherCAT-WPF-ControlSuite/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/JJY0910/SemiTool-EtherCAT-WPF-ControlSuite/actions/workflows/dotnet-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[Korean README](README.ko.md)
+반도체 웨이퍼 이송 제어 트레이너를 WPF/MVVM 기반으로 구현한 장비제어 포트폴리오 프로젝트입니다.
 
-WPF/MVVM control suite for a semiconductor wafer-transfer trainer. The project keeps the approved EtherCAT teaching profile intact while providing a simulator-first HMI, a native WPF `Viewport3D` machine twin, safety interlocks, named I/O points, and automated verification around the five-wafer transfer pipeline.
+이 프로젝트는 승인된 EtherCAT 티칭 프로파일 값을 보존하면서, 실제 장비 없이도 웨이퍼 이송 흐름을 검증할 수 있도록 Simulator-first HMI, WPF `Viewport3D` 기반 3D Machine Twin, 안전 인터록, named I/O point, 5장 웨이퍼 이송 파이프라인 검증 구조를 제공합니다.
 
-The current public screenshots show the same 3D machine twin used by the running app. The old reference-photo panel is no longer part of the runtime Machine Twin view.
+현재 공개 스크린샷은 실행 앱에서 보이는 3D Machine Twin 화면입니다. 예전 장비 참고 사진 패널은 현재 런타임 Machine Twin 화면에서 제거되었습니다.
 
-## Current 3D Machine Twin
+---
 
-| Runtime screen | Preview |
+## 현재 3D Machine Twin
+
+| 실행 화면 | 미리보기 |
 | --- | --- |
 | 3D Machine Twin | ![3D Machine Twin](docs/images/machine-twin-runtime.png) |
 
-Sequence frames captured from the WPF runtime:
+같은 WPF 런타임에서 캡처한 시퀀스 프레임입니다.
 
-- [FOUP A pickup target](docs/images/sequence-frame-01.png)
-- [Blade entering Chamber A](docs/images/sequence-frame-02.png)
-- [Chamber A processing](docs/images/sequence-frame-03.png)
-- [FOUP B completed](docs/images/sequence-frame-04.png)
+- [FOUP A 픽업 위치](docs/images/sequence-frame-01.png)
+- [Chamber A 블레이드 진입](docs/images/sequence-frame-02.png)
+- [Chamber A 공정 진행](docs/images/sequence-frame-03.png)
+- [FOUP B 완료 상태](docs/images/sequence-frame-04.png)
 
-## Wafer Transfer Pipeline
+---
 
-`Run Transfer Sequence` drives the simulator through the full five-wafer route:
+## 웨이퍼 이송 파이프라인
+
+`Run Transfer Sequence`는 시뮬레이터에서 5장 웨이퍼를 아래 순서로 이송합니다.
 
 ```text
 FOUP A -> Chamber A -> Chamber B -> Chamber C -> FOUP B
 ```
 
-| Step | Visual behavior | Verification point |
+| 순서 | UI 동작 | 확인 포인트 |
 | --- | --- | --- |
-| 1 | Reset or startup at `Home / Start` | Blade retracted, Z safe, FOUP A 5/5, FOUP B 0/5 |
-| 2 | Move from Home to FOUP A | The blade does not extend at Home; theta targets FOUP A first |
-| 3 | Move Z to the selected FOUP A slot | A1-A5 slot height is selected before extension |
-| 4 | Pick wafer from FOUP A | Blade extends, suction turns on, FOUP A count decreases by one |
-| 5 | Place wafer in Chamber A | Door opens, blade enters, wafer is hidden inside during processing |
-| 6 | Move wafer to Chamber B | Chamber B door and process indicators track the wafer state |
-| 7 | Move wafer to Chamber C | Chamber C receives the wafer after Chamber B completion |
-| 8 | Place wafer in FOUP B | FOUP B fills B1-B5 in order |
-| 9 | Complete cycle | FOUP A 0/5, FOUP B 5/5, right-side tower lamp shows completion |
+| 1 | Reset 또는 시작 시 `Home / Start` | 블레이드 retract, Z safe, FOUP A 5/5, FOUP B 0/5 |
+| 2 | Home에서 FOUP A로 이동 | Home에서 바로 전진하지 않고 FOUP A 각도를 먼저 잡음 |
+| 3 | 선택한 FOUP A 슬롯 높이로 Z 이동 | A1~A5 슬롯 높이에 맞춘 뒤 블레이드 전진 |
+| 4 | FOUP A 웨이퍼 픽업 | 블레이드 전진, 진공 흡착, FOUP A 수량 1장 감소 |
+| 5 | Chamber A 투입 | 문 열림, 블레이드 진입, 공정 중 웨이퍼는 챔버 내부에 숨김 |
+| 6 | Chamber B 이송 | Chamber B 문과 공정 표시가 웨이퍼 상태와 연동 |
+| 7 | Chamber C 이송 | Chamber B 완료 뒤 Chamber C로 이동 |
+| 8 | FOUP B 적재 | FOUP B B1~B5 슬롯에 순서대로 적재 |
+| 9 | 사이클 완료 | FOUP A 0/5, FOUP B 5/5, 오른쪽 경광봉 완료 상태 |
 
-Full simulator evidence:
+전체 시뮬레이터 검증 자료는 아래 경로에 정리했습니다.
 
 - [Full pipeline QA summary](docs/debug/latest/full-pipeline/full-pipeline-qa-summary.md)
 - [Full pipeline operator review](docs/debug/latest/full-pipeline/full-pipeline-operator-review.md)
 - [Full pipeline contact sheet](docs/debug/latest/full-pipeline/full-pipeline-contact-sheet.png)
 - `docs/debug/latest/full-pipeline/screenshots/*.png`
 
-## Safety Boundary
+---
 
-The application starts in Simulator mode. It does not auto-connect, auto-run, auto-home, auto-motion, or activate outputs on startup.
+## 안전 경계
 
-Real Hardware mode requires explicit operator selection, hardware unlock, and manual Connect. The real adapter loads the vendor DLL only inside `Ieg3268EthercatController`; simulator commands and screenshot capture commands do not load the DLL and do not connect to physical EtherCAT hardware.
+앱은 기본적으로 Simulator mode로 시작합니다. 시작 시 자동 연결, 자동 실행, 자동 원점, 자동 모션, 출력 활성화를 수행하지 않습니다.
 
-The repository evidence is simulator-side WPF verification only. It must not be described as real-equipment commissioning.
+Real Hardware mode는 작업자가 명시적으로 모드를 선택하고, hardware unlock 후 수동 Connect를 눌러야 사용할 수 있습니다.
 
-## Preserved Equipment Values
+실제 장비 어댑터는 `Ieg3268EthercatController` 내부에서만 vendor DLL을 로드합니다. 시뮬레이터 명령과 캡처 명령은 DLL을 로드하거나 실제 EtherCAT 장비에 연결하지 않습니다.
 
-Do not change these values unless a newer approved `config/EquipmentProfile.finaltest.json` explicitly requires it:
+이 저장소의 검증 자료는 Simulator-side WPF verification 기준입니다. 실제 장비 commissioning 완료 자료처럼 설명하면 안 됩니다.
 
-- DO0-DO15 output map
-- DI0-DI5 and DI12-DI13 input map
-- Home, FOUP A/B, Chamber A/B/C robot poses
-- FOUP slot Z safe/work values
-- motion, door, cylinder, vacuum, polling, and auto tick timing values
+---
+
+## 보존 장비값
+
+새 승인본 `config/EquipmentProfile.finaltest.json`이 명시적으로 요구하지 않는 한 아래 값은 변경하지 않습니다.
+
+- DO0~DO15 출력 맵
+- DI0~DI5 및 DI12~DI13 입력 맵
+- Home, FOUP A/B, Chamber A/B/C 로봇 pose
+- FOUP 슬롯 Z safe/work 값
+- motion, door, cylinder, vacuum, polling, auto tick timing 값
 - auto scheduler priority
 
-The application logic uses named I/O points and the EtherCAT abstraction boundary instead of raw DO/DI channel calls.
+앱 로직은 raw DO/DI 번호 직접 호출 대신 named I/O point와 EtherCAT abstraction boundary를 사용합니다.
 
-## Build And Test
+---
+
+## 빌드와 테스트
 
 ```powershell
 dotnet restore SemiTool.EtherCAT.WPF.ControlSuite.sln
@@ -78,33 +90,61 @@ dotnet build SemiTool.EtherCAT.WPF.ControlSuite.sln --configuration Release --no
 dotnet test SemiTool.EtherCAT.WPF.ControlSuite.sln --configuration Release --no-build --no-restore
 ```
 
-Regenerate GitHub-facing runtime images:
+GitHub 공개용 런타임 이미지를 다시 생성하려면 아래 명령을 사용합니다.
 
 ```powershell
 dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-sequence-assets
 ```
 
-Regenerate detailed verification evidence:
+상세 검증 자료를 다시 생성하려면 아래 명령을 사용합니다.
 
 ```powershell
 dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-ui-debug-report
 dotnet run --project src/SemiTool.Hmi.Wpf/SemiTool.Hmi.Wpf.csproj --configuration Release -- --capture-full-pipeline-qa
 ```
 
-If Windows App Control blocks generated Release DLLs with `0x800711C7`, rerun the same command with `-p:Deterministic=false` before `--`.
+Windows App Control이 생성된 Release DLL을 `0x800711C7`로 차단하면 `--` 앞에 `-p:Deterministic=false`를 붙여 다시 실행합니다.
 
-## Project Layout
+---
+
+## 프로젝트 구조
 
 ```text
-src/SemiTool.Hmi.Wpf        WPF views, ViewModels, commands, bootstrap
-src/SemiTool.Application    sequence, scheduler, alarms, interlocks, recipes, event logs
+src/SemiTool.Hmi.Wpf        WPF view, ViewModel, command, bootstrap
+src/SemiTool.Application    sequence, scheduler, alarm, interlock, recipe, event log
 src/SemiTool.Hardware       IEthercatController, simulator, real IEG3268 adapter
-src/SemiTool.Domain         equipment models, enums, profile objects
-src/SemiTool.Infrastructure config/settings/profile loading and CSV support
-src/SemiTool.Tests          preservation, safety, simulator, and machine-twin tests
+src/SemiTool.Domain         장비 모델, enum, profile 객체
+src/SemiTool.Infrastructure config/settings/profile loading, CSV support
+src/SemiTool.Tests          보존값, 안전, 시뮬레이터, Machine Twin 테스트
 ```
 
-## Maintainer Docs
+---
+
+## 핵심 구현 포인트
+
+### 1. WPF HMI 기반 장비 제어 화면
+
+WPF와 MVVM 구조를 기반으로 장비 상태, 웨이퍼 이송 흐름, 시퀀스 실행 상태, I/O 상태, 알람 및 로그를 화면에서 확인할 수 있도록 구성했습니다.
+
+### 2. 3D Machine Twin
+
+WPF `Viewport3D`를 활용하여 FOUP A/B, Chamber A/B/C, Robot Blade, Z축 및 Theta 동작 흐름을 시각화했습니다. 이를 통해 실제 장비 없이도 웨이퍼 이송 시퀀스와 인터록 흐름을 검증할 수 있습니다.
+
+### 3. Simulator-first 구조
+
+프로젝트는 기본적으로 Simulator mode에서 동작합니다. 실제 장비 연결 없이도 전체 이송 흐름, 센서 상태, I/O 상태, 장비 시퀀스를 검증할 수 있습니다.
+
+### 4. EtherCAT Abstraction Boundary
+
+Raw DO/DI channel을 직접 호출하는 구조 대신 named I/O point와 controller interface를 통해 Simulator mode와 Real Hardware mode를 분리했습니다.
+
+### 5. Five-wafer Transfer Verification
+
+FOUP A의 5장 웨이퍼가 Chamber A, Chamber B, Chamber C를 거쳐 FOUP B에 순서대로 적재되는 흐름을 검증합니다. 이 과정에서 Blade 상태, Vacuum, Door, Z safe/work, Theta target, Chamber processing 상태를 함께 확인합니다.
+
+---
+
+## 유지보수 문서
 
 - [Architecture](docs/architecture.md)
 - [Roadmap](docs/roadmap.md)
